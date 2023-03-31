@@ -1,0 +1,342 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * cryptjj.css
+ *
+ * CryptJj stylesheet
+ *
+ */
+
+/*
+    This is the CSS stylesheet of your game User Interface.
+    
+    Styles defined on this file will be applied to the HTML elements you define in your
+    HTML template (cryptjj_cryptjj.tpl), and to HTML elements you create dynamically
+    (in cryptjj.js).
+    
+    Usually, you are using CSS to:
+    
+    1°) define the overall layout of your game
+        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
+
+    2°) create your CSS-sprites:
+        All images of your games should be gathered into a small number of image files. Then, using
+        background-image and background-position CSS properties, you create HTML blocks that can 
+        display these images correctly (see example below).
+    
+    3°) ... anything else:
+        It is really easy to add and remove CSS classes dynamically from your Javascript with
+        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
+        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
+        very often, using CSS classes for the logic of your user interface allow you to do complex
+        thing easily.
+        
+        
+     Note: on the production platform, this file will be compressed and comments will be removed.
+           Consequently, don't hesitate to put as many comments as necessary.
+*/
+
+
+/* Note: you must not use any @import directive */
+
+
+/********* You can start writing your CSS below this line: **********/
+
+
+/*
+    Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+
+    .white_token {
+        background-image: url('img/tokens.png');
+        background-position: 0px 0px;
+    }
+    .black_token {
+        background-image: url('img/tokens.png');
+        background-position: -20px 0px;
+    }
+    .token {
+        width: 20px;
+        height: 20px;
+        background-repeat: none;
+    }
+*/
+
+.card {
+    width:178px;
+    height:261px;
+    background-size: cover;
+    border-radius: 5px;
+    display: inline-block;
+    position: relative;
+}
+
+.selectable {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+    transform: scale(1);
+    animation: pulse 2s infinite;
+    cursor: pointer;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+.die-placement-area {
+    position: relative;
+    top: 182px;
+    left: 17px;
+}
+
+
+#treasure-cards-row {
+    display: flex;
+    width: 100%;
+}
+
+
+#treasure-cards-row #treasure-cards-deck {
+    width: 200px;
+}
+
+#treasure-cards-row #treasure-cards-deck .deck-count {
+    color: white;
+    text-align: center;
+    margin-top: 120px;
+    margin-left: 50px;
+    margin-right: 50px;
+    padding: 5px;
+    border-radius: 25px;
+    background-color: black;
+    opacity: 0.6;
+}
+
+#treasure-cards-row #treasure-cards-display {
+    flex-grow: 1;
+}
+
+#treasure-cards-row #treasure-cards-display .card {
+    margin-right: 10px;
+}
+
+.player-card-262f33-female { background-image: url('img/player-cards.png'); background-position: 0 0; }
+.player-card-262f33-male { background-image: url('img/player-cards.png'); background-position: 14.2857142857% 0; }
+.player-card-00808d-female { background-image:url('img/player-cards.png'); background-position: 28.5714285714% 0; }
+.player-card-00808d-male  { background-image: url('img/player-cards.png'); background-position: 42.8571428571% 0; }
+.player-card-8250a0-female {background-image: url('img/player-cards.png'); background-position: 57.1428571429% 0;}
+.player-card-8250a0-male {background-image: url('img/player-cards.png'); background-position: 71.4285714286% 0;}
+.player-card-be252e-female {background-image: url('img/player-cards.png'); background-position:  85.7142857143% 0;}
+.player-card-be252e-male {background-image: url('img/player-cards.png'); background-position: 100% 0;}
+
+
+
+.treasure-card-idol-1 {background-image: url("img/treasure-cards-idol.png"); background-position: 0% 0;}
+.treasure-card-idol-2 {background-image: url("img/treasure-cards-idol.png"); background-position: 25% 0;}
+.treasure-card-idol-3 {background-image: url("img/treasure-cards-idol.png"); background-position: 50% 0;}
+.treasure-card-idol-4 {background-image: url("img/treasure-cards-idol.png"); background-position: 75% 0;}
+.treasure-card-idol-back {background-image: url("img/treasure-cards-idol.png"); background-position: 100% 0;}
+
+.treasure-card-jewelery-1 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 0% 0;}
+.treasure-card-jewelery-2 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 25% 0;}
+.treasure-card-jewelery-3 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 50% 0;}
+.treasure-card-jewelery-4 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 75% 0;}
+.treasure-card-jewelery-back {background-image: url("img/treasure-cards-jewelery.png"); background-position: 100% 0;}
+
+.treasure-card-remains-1 {background-image: url("img/treasure-cards-remains.png"); background-position: 0% 0;}
+.treasure-card-remains-2 {background-image: url("img/treasure-cards-remains.png"); background-position: 25% 0;}
+.treasure-card-remains-3 {background-image: url("img/treasure-cards-remains.png"); background-position: 50% 0;}
+.treasure-card-remains-4 {background-image: url("img/treasure-cards-remains.png"); background-position: 75% 0;}
+.treasure-card-remains-back {background-image: url("img/treasure-cards-remains.png"); background-position: 100% 0;}
+
+.treasure-card-manuscript-1 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 0% 0;}
+.treasure-card-manuscript-2 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 25% 0;}
+.treasure-card-manuscript-3 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 50% 0;}
+.treasure-card-manuscript-4 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 75% 0;}
+.treasure-card-manuscript-back {background-image: url("img/treasure-cards-manuscript.png"); background-position: 100% 0;}
+
+.treasure-card-pottery-1 {background-image: url("img/treasure-cards-pottery.png"); background-position: 0% 0;}
+.treasure-card-pottery-2 {background-image: url("img/treasure-cards-pottery.png"); background-position: 25% 0;}
+.treasure-card-pottery-3 {background-image: url("img/treasure-cards-pottery.png"); background-position: 50% 0;}
+.treasure-card-pottery-4 {background-image: url("img/treasure-cards-pottery.png"); background-position: 75% 0;}
+.treasure-card-pottery-back {background-image: url("img/treasure-cards-pottery.png"); background-position: 100% 0;}
+
+.treasure-card-tapestry-1 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 0% 0;}
+.treasure-card-tapestry-2 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 25% 0;}
+.treasure-card-tapestry-3 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 50% 0;}
+.treasure-card-tapestry-4 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 75% 0;}
+.treasure-card-tapestry-back {background-image: url("img/treasure-cards-tapestry.png"); background-position: 100% 0;}
+
+
+.collector-card-idol-a
+{
+    background:url('img/collector-cards.png') 0px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-idol-b
+{
+    background:url('img/collector-cards.png') -497px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-jewelery-a
+{
+    background:url('img/collector-cards.png') -994px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-jewelery-b
+{
+    background:url('img/collector-cards.png') -1491px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-manuscript-a
+{
+    background:url('img/collector-cards.png') -1988px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-manuscript-b
+{
+    background:url('img/collector-cards.png') -2485px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-pottery-a
+{
+    background:url('img/collector-cards.png') -2982px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-pottery-b
+{
+    background:url('img/collector-cards.png') -3479px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-remains-a
+{
+    background:url('img/collector-cards.png') -3976px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-remains-b
+{
+    background:url('img/collector-cards.png') -4473px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-tapestry-a
+{
+    background:url('img/collector-cards.png') -4970px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.collector-card-tapestry-b
+{
+    background:url('img/collector-cards.png') -5467px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+
+.die {
+    display: grid;
+    grid-template-areas:
+		"a . c"
+		"e g f"
+		"d . b";
+
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    float:left;
+    margin: 2px;
+
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+    border-radius: 10%;
+}
+
+.die-262f33 { background-color: #262f33; }
+.die-00808d { background-color: #00808d; }
+.die-8250a0 { background-color: #8250a0; }
+.die-be252e { background-color: #be252e; }
+
+.pip {
+    display: block;
+    align-self: center;
+    justify-self: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #e5c347;
+    box-shadow: inset 0 3px #111, inset 0 -3px #555;
+}
+
+.pip:nth-child(2) {
+    grid-area: b;
+}
+.pip:nth-child(3) {
+    grid-area: c;
+}
+.pip:nth-child(4) {
+    grid-area: d;
+}
+.pip:nth-child(5) {
+    grid-area: e;
+}
+.pip:nth-child(6) {
+    grid-area: f;
+}
+/* This selects the last pip of odd-valued dice (1, 3, 5) and positions the pip in the center */
+.pip:nth-child(odd):last-child {
+    grid-area: g;
+}
+
+
+
+.torch-card-leader
+{
+    background:url('img/torch-cards.png') 0px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+.torch-card-lightsout
+{
+    background:url('img/torch-cards.png') -497px -0px;
+    width:497px;height:733px;
+    display:inline-block;
+}
+
+
