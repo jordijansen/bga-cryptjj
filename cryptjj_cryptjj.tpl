@@ -25,15 +25,22 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="collectors-row" class="whiteblock">
-    <h2>Collectors</h2>
+<div id="oversurface"></div>
+
+<div class="ui-row">
+    <div id="collector-cards" class="whiteblock"><h2>Collectors</h2></div>
 </div>
-<div id="exhausted-servants-row" class="whiteblock">
-    <h2>Exhausted Servants</h2>
-</div>
-<div id="treasure-cards-row">
+<div class="ui-row">
     <div id="treasure-cards-deck" class="whiteblock"><h2>Deck</h2></div>
-    <div id="treasure-cards-display" class="whiteblock"><h2>Treasure Cards</h2></div>
+    <div id="exhausted-servants" class="whiteblock">
+        <h2>Exhausted Servants</h2>
+        <img src="{GAMETHEMEURL}img/exhausted-servants.png" />
+    </div>
+    <div id="treasure-cards-discard" class="whiteblock"><h2>Discard</h2></div>
+</div>
+<div class="ui-row">
+    <div id="treasure-cards-display" class="whiteblock">
+    </div>
 </div>
 <hr />
 <div id="player-areas-row">
@@ -44,17 +51,22 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}" style="color: #${color}" id="player-area-${color}"><h2>${name}</h2><div class="card player-card-${color}-male"><div id="player-area-die-area-${id}" class="die-placement-area"></div></div></div>';
+var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}" style="color: #${color}" id="player-area-${color}">\
+    <h2>${name}</h2>\
+    <div class="card player-card-${color}-male">\
+        <div id="player-area-die-area-${id}" class="die-placement-area lower">\
+        </div>\
+    </div>\
+</div>';
 var jstpl_treasure_deck='<div class="card treasure-card-${topCardType}-back"><h2 class="deck-count">${size}</h2></div>';
-var jstpl_treasure_card='<div id="treasure-card-${id}" class="card treasure-card-${type}-${value}"></div>';
+var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="card treasure-card treasure-card-${type}-${value}">\
+    <div class="row" style="padding-top: 55px;"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
+    <div class="dice-selection-area row">\
+    </div>\
+    <div class="row"><a href="#" data-id="${id}" id="decrease-dice-${id}" class="bgabutton bgabutton_blue"><span>-</span></a></div>\
+<div>';
 
-var jstpl_die_1='<div class="die die-${color}"><span class="pip"></span></div>';
-var jstpl_die_2='<div class="die die-${color}"><span class="pip"></span><span class="pip"></span></div>';
-var jstpl_die_3='<div class="die die-${color}"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>';
-var jstpl_die_4='<div class="die die-${color}"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>';
-var jstpl_die_5='<div class="die die-${color}"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>';
-var jstpl_die_6='<div class="die die-${color}"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>';
-
+var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die die-${color}"></div>';
 
 </script>  
 

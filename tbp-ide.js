@@ -36,7 +36,39 @@ const TBP = {
   addTooltip: (id, text, clickText) => {},
   addTooltipHtml: (id, html) => {},
   showMessage: (text, type) => {},
-  gamedatas: { players: { 0: {} } },
+  gamedatas: {
+    gamestate: {
+      name: 'state'
+    },
+    treasureDeck: {
+      size: 0,
+      topCardType: 'empty'
+    },
+    treasureDisplay: {
+      cards: [{
+        id: 1,
+        type: 'idol',
+        value: 4
+      }]
+    },
+    players: {
+      1: {
+        id: 1,
+        color: "be252e",
+        name: "player 1"
+      }
+    },
+    servantDice: {
+      1: {
+        id: 1,
+        type: '2380014',
+        type_arg: '262f33',
+        location: 'player_area',
+        location_arg: '1',
+        name: 'player 1'
+      }
+    }
+    },
 };
 
 const _ = (t) => t;

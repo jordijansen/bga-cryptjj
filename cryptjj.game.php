@@ -126,7 +126,7 @@ class CryptJj extends Table
     protected function getAllDatas()
     {
         $result = array();
-    
+
         $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
 
         // Get information about players
@@ -137,7 +137,7 @@ class CryptJj extends Table
         $players = self::loadPlayersBasicInfos();
         foreach( $players as $player_id => $player )
         {
-            $result['servant_dice'][$player_id] = $this->servantDiceManager->getAllServantDice($player_id);
+            $result['servantDice'][$player_id] = $this->servantDiceManager->getAllServantDice($player_id);
         }
         $result['treasureDeck']['size'] = $this->treasure_cards->countCardInLocation('deck');
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];

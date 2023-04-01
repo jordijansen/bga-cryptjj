@@ -24,15 +24,10 @@ define(
               this.game = game;
             },
 
-            setup(gameData = {
-                treasureDeck: {
-                    size: 0,
-                    topCardType: 'empty'
-                }
-            }) {
+            setup() {
                 console.log("DeckManager#setup")
                 // Set-up treasure deck
-                const treasureDeck = this.game.format_block('jstpl_treasure_deck', gameData.treasureDeck);
+                const treasureDeck = this.game.format_block('jstpl_treasure_deck', this.game.gamedatas.treasureDeck);
 
                 dojo.place(treasureDeck, "treasure-cards-deck")
             },

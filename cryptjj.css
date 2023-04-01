@@ -76,8 +76,37 @@
     position: relative;
 }
 
-.selectable {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+.card .row {
+    text-align: center;
+    width: 100%;
+    float: left;
+    height: 44px;
+}
+
+.treasure-card.selected .row .bgabutton {
+    visibility: visible;
+    width: 50px;
+}
+
+.treasure-card .row .bgabutton {
+    visibility: hidden;
+}
+
+.dice-selection-area {
+    padding-left: 17px;
+}
+
+.selected {
+    border: 4px rgba(80, 200, 255, 0.75) solid;
+}
+
+.die.selectable {
+    cursor: pointer;
+    box-shadow: 1px 1px 1px 1px rgba(255, 255, 255, 1);
+}
+
+.card.selectable {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
     transform: scale(1);
     animation: pulse 2s infinite;
     cursor: pointer;
@@ -85,39 +114,61 @@
 
 @keyframes pulse {
     0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
     }
 
     70% {
         transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
     }
 
     100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
     }
 }
 
 .die-placement-area {
     position: relative;
-    top: 182px;
     left: 17px;
 }
 
+.die-placement-area.lower {
+    top: 182px;
+}
 
-#treasure-cards-row {
+.die-placement-area.center {
+    top: 100px;
+}
+
+.ui-row {
     display: flex;
     width: 100%;
 }
 
-
-#treasure-cards-row #treasure-cards-deck {
-    width: 200px;
+.ui-row h2 {
+    text-align: center;
 }
 
-#treasure-cards-row #treasure-cards-deck .deck-count {
+.ui-row #treasure-cards-deck {
+    width: 178px;
+}
+
+.ui-row #collector-cards {
+    flex-grow: 1;
+}
+
+.ui-row #exhausted-servants {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.ui-row #treasure-cards-discard {
+    width: 178px;
+}
+
+.ui-row #treasure-cards-deck .deck-count {
     color: white;
     text-align: center;
     margin-top: 120px;
@@ -129,12 +180,17 @@
     opacity: 0.6;
 }
 
-#treasure-cards-row #treasure-cards-display {
+.ui-row #treasure-cards-display {
     flex-grow: 1;
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
 }
 
-#treasure-cards-row #treasure-cards-display .card {
-    margin-right: 10px;
+.ui-row #treasure-cards-display .treasure-card {
+    margin-left: 5px;
+    margin-bottom: 5px;
+    margin-right: 5px;
 }
 
 .player-card-262f33-female { background-image: url('img/player-cards.png'); background-position: 0 0; }
@@ -337,6 +393,27 @@
     background:url('img/torch-cards.png') -497px -0px;
     width:497px;height:733px;
     display:inline-block;
+}
+
+
+/* These are important styles to copy*/
+#oversurface {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    outline: solid green 1px;
+}
+#oversurface > * {
+    position: absolute;
+    transition-property: all;
+    transition-duration: 500ms;
+    transition-timing-function: ease-in-out;
+    /* background-color: blue; */
+    transform-origin: center center;
 }
 
 

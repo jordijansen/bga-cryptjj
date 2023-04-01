@@ -20,8 +20,11 @@ define(["dojo",
         "ebg/core/gamegui",
         "ebg/counter",
 
+        g_gamethemeurl + 'modules/js/oversurface.js',
         g_gamethemeurl + 'modules/js/DeckManager.js',
         g_gamethemeurl + 'modules/js/DisplayManager.js',
+        g_gamethemeurl + 'modules/js/PlayerManager.js',
+        g_gamethemeurl + 'modules/js/ServantManager.js',
     ],
 function (dojo, declare) {
     return declare("bgagame.cryptjj", ebg.core.gamegui, {
@@ -30,9 +33,21 @@ function (dojo, declare) {
 
             this.deckManager = new crypt.DeckManager(this);
             this.displayManager = new crypt.DisplayManager(this);
+            this.playerManager = new crypt.PlayerManager(this);
+            this.servantManager = new crypt.ServantManager(this);
             // Here, you can init the global variables of your user interface
             // Example:
             // this.myGlobalValue = 0;
+
+            this.gameStates = {
+                playerTurn: 'playerTurn',
+                claimTreasureStep1: 'claimTreasureStep1',
+                claimTreasureStep2: 'claimTreasureStep2',
+            }
+
+            this.gameActions = {
+                claimTreasure: 'claimTreasure'
+            }
 
         },
         
@@ -49,55 +64,15 @@ function (dojo, declare) {
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
         
-        setup: function( gamedatas )
+        setup: function( gameData )
         {
             console.log( "Starting game setup" );
-            console.dir(gamedatas);
+            console.dir(gameData);
 
-            // Set-up treasure deck and display
-            this.deckManager.setup(gamedatas);
-            this.displayManager.setup(gamedatas);
-
-            // Set-up player areas
-            let thisPlayerArea;
-            const otherPlayerAreas = [];
-            for( var player_id in gamedatas.players )
-            {
-                var player = gamedatas.players[player_id];
-                var playerArea = this.format_block('jstpl_player_area', {
-                    "id": player.id,
-                    "color" : player.color,
-                    "name": player.name
-                });
-                if (Number(player.id) === this.player_id) {
-                    thisPlayerArea = playerArea;
-                } else {
-                    otherPlayerAreas.push(playerArea);
-                }
-            }
-            dojo.place(thisPlayerArea, "player-areas-row")
-            otherPlayerAreas.forEach(playerArea => dojo.place(playerArea, "player-areas-row"))
-
-            // Set-up servant dice
-            for( var playerId in gamedatas.servant_dice )
-            {
-                var servantDiceForPlayer = gamedatas.servant_dice[playerId];
-                for (var index in servantDiceForPlayer) {
-                    var servantDie = servantDiceForPlayer[index];
-                    if (servantDie.location === 'player_area') {
-                        var servantDieElement = this.format_block('jstpl_die_' + servantDie.location_arg, {
-                            "id": servantDie.id,
-                            "type" : servantDie.type,
-                            "color": servantDie.type_arg
-                        });
-                        dojo.place(servantDieElement, "player-area-die-area-" + servantDie.type)
-                    } else if (servantDie.location === 'treasure_card') {
-                        // TODO implement placement on card
-                    } else if (servantDie.location === 'exhausted') {
-                        // TODO implement placement on exhausted
-                    }
-                }
-            }
+            this.deckManager.setup(gameData);
+            this.displayManager.setup(gameData);
+            this.playerManager.setup(gameData);
+            this.servantManager.setup(gameData);
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -184,12 +159,16 @@ function (dojo, declare) {
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
                     break;
 */
-                    case 'playerTurn':
+                    case this.gameStates.playerTurn:
                         this.addActionButton( 'claim_treasure_button', _('Claim Treasure'), 'enterClaimTreasureMode' );
-                        this.addActionButton( 'recover_servant_dice_button', _('Recover Servants'), 'onMyMethodToCall2' );
                         break;
-                    case 'claimTreasureState':
-                        this.addActionButton( 'undo_claim_treasure_state', _('Undo'), 'undoClaimTreasureState');
+                    case this.gameStates.claimTreasureStep1:
+                        this.addActionButton( 'undo_claim_treasure_state_step1', _('Undo'), 'undoClaimTreasure');
+                        break;
+                    case this.gameStates.claimTreasureStep2:
+                        this.addActionButton( 'confirm_claim_treasure_state_step2', _('Confirm'), 'confirmClaimTreasure');
+                        this.addActionButton( 'undo_claim_treasure_state_step2', _('Undo'), 'undoClaimTreasure');
+                        break;
                 }
             }
         },        
@@ -260,47 +239,39 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            if( ! this.checkAction( 'claimTreasure' ) )
+            if( ! this.checkAction( this.gameActions.claimTreasure ) )
             {   return; }
 
-            this.setClientState('claimTreasureState')
+            this.setClientState(this.gameStates.claimTreasureStep1, {
+                descriptionmyturn: _("${you} must select a treasure card")
+            })
 
-            for (var i in this.gamedatas.treasure_cards_display) {
-                const card_id = this.gamedatas.treasure_cards_display[i].id;
-                dojo.toggleClass($('treasure-card-' + card_id), 'selectable')
-            }
+            this.displayManager.enterClaimTreasureMode();
         },
 
-        onTreasureCardClick: function(evt)
-        {
-            console.log('click');
-        },
 
-        undoClaimTreasureState: function( evt )
+        undoClaimTreasure: function( evt )
         {
-            console.log( 'undoClaimTreasureState' );
+            console.log( 'undoClaimTreasure' );
 
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            if(this.on_client_state) {
-                for (var i in this.gamedatas.treasure_cards_display) {
-                    const card_id = this.gamedatas.treasure_cards_display[i].id;
-                    dojo.toggleClass($('treasure-card-' + card_id), 'selectable')
-                }
-
-                this.disconnectAll();
-
-                this.restoreServerGameState();
-            }
+            this.displayManager.exitClaimTreasureMode();
+            this.restoreServerGameState();
         },
 
-        onMyMethodToCall2: function( evt )
+        confirmClaimTreasure: function( evt )
         {
-            console.log( 'onMyMethodToCall2' );
+            console.log( 'confirmClaimTreasure' );
 
             // Preventing default browser reaction
             dojo.stopEvent( evt );
+
+            // TODO sent selection to backend
+
+            this.displayManager.exitClaimTreasureMode();
+            this.restoreServerGameState();
         },
 
         ///////////////////////////////////////////////////
