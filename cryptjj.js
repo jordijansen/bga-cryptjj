@@ -21,6 +21,7 @@ define(["dojo",
         "ebg/counter",
 
         g_gamethemeurl + 'modules/js/oversurface.js',
+        g_gamethemeurl + 'modules/js/ActionManager.js',
         g_gamethemeurl + 'modules/js/DeckManager.js',
         g_gamethemeurl + 'modules/js/DisplayManager.js',
         g_gamethemeurl + 'modules/js/PlayerManager.js',
@@ -31,6 +32,7 @@ function (dojo, declare) {
         constructor: function(){
             console.log('cryptjj constructor');
 
+            this.actionManager = new crypt.ActionManager(this);
             this.deckManager = new crypt.DeckManager(this);
             this.displayManager = new crypt.DisplayManager(this);
             this.playerManager = new crypt.PlayerManager(this);
@@ -242,6 +244,8 @@ function (dojo, declare) {
             if( ! this.checkAction( this.gameActions.claimTreasure ) )
             {   return; }
 
+            this.servantManager.g
+
             this.setClientState(this.gameStates.claimTreasureStep1, {
                 descriptionmyturn: _("${you} must select a treasure card")
             })
@@ -268,10 +272,10 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            // TODO sent selection to backend
+            this.actionManager.claimTreasure(this.displayManager.currentSelection)
 
             this.displayManager.exitClaimTreasureMode();
-            this.restoreServerGameState();
+            this.servantManager.hideSelectableServants();
         },
 
         ///////////////////////////////////////////////////
@@ -291,7 +295,10 @@ function (dojo, declare) {
             console.log( 'notifications subscriptions setup' );
             
             // TODO: here, associate your game notifications with local methods
-            
+
+            dojo.subscribe('treasureCardClaimed', this, 'notif_treasureCardClaimed');
+
+
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             
@@ -312,12 +319,22 @@ function (dojo, declare) {
         {
             console.log( 'notif_cardPlayed' );
             console.log( notif );
-            
+
             // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-            
+
             // TODO: play the card in the user interface.
-        },    
+        },
         
         */
-   });             
+
+        notif_treasureCardClaimed: function( notif = {args: {servantDice: [{id: 1, location_arg: 3}], treasureCard: {id: 1}}} )
+        {
+            console.log( 'notif_treasureCardClaimed' );
+
+            const treasureCardClaimed = notif['args'];
+            console.log( treasureCardClaimed );
+
+            treasureCardClaimed.servantDice.forEach(servantDie => this.servantManager.moveServantDieToTreasureCard(servantDie.id, treasureCardClaimed.treasureCard.id, servantDie.location_arg))
+        },
+    });
 });

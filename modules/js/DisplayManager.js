@@ -51,7 +51,6 @@ define(
                     this.selectCard(null);
 
                     for (const cardId in this.currentSelection) {
-                        this.currentSelection[cardId].servantDice.forEach(dieId => this.game.servantManager.moveServantDieToPlayerArea(dieId, this.game.player_id))
                         this.currentSelection[cardId] = { servantDice: [], value: 1 }
                     }
                 },
@@ -100,7 +99,7 @@ define(
                         for (var cardId in this.currentSelection) {
                             this.removeServantDieFromCard(cardId, servantId);
                         }
-                        // Add the servant die to the currentSelectedCard and move it there
+                        // Add the the servant die to the currentSelectedCard and move it there
                         this.currentSelection[this.currentSelectedCard].servantDice.push(servantId);
 
                         // Move the die to the treasure card and set the die value to thats card current value

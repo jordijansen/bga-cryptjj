@@ -174,6 +174,26 @@ class CryptJj extends Table
     /*
         In this space, you can put any utility methods useful for your game logic
     */
+    function assertCardInDisplay($cardId) {
+        $cardsInDisplay = $this->treasureCardsManager->getTreasureCardsInDisplay();
+        foreach ($cardsInDisplay as $card) {
+            self::debug('Card in Display: ' . $card['id'] . ' - ' . $cardId);
+            if ($card['id'] == $cardId) {
+                return $card;
+            }
+        }
+        throw new BgaUserException("Card " . $cardId . " not in treasure card display!");
+    }
+
+    function assertServantDieInActivePlayerArea($servantDieId) {
+        $servantDice = $this->servantDiceManager->getServantDiceInPlayerArea(self::getActivePlayerId());
+        foreach ($servantDice as $servantDie) {
+            if ($servantDie['id'] == $servantDieId) {
+                return $servantDie;
+            }
+        }
+        throw new BgaUserException("Servant die " . $servantDieId . " not owned by active player!");
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -210,6 +230,52 @@ class CryptJj extends Table
     
     */
 
+    /**
+     * @throws BgaUserException
+     */
+    function claimTreasure($claimTreasureSelection )
+    {
+        self::debug("claimTreasureAction2");
+        // Check if this is a valid action
+        self::checkAction(ACTION_CLAIM_TREASURE);
+        self::debug("after check action");
+        self::trace(json_encode($claimTreasureSelection));
+
+        $notifications = array();
+        foreach( $claimTreasureSelection as $treasureCardId => $treasureCardSelection )
+        {
+            // You can only claim cards in the display
+            $treasureCard = self::assertCardInDisplay($treasureCardId);
+            if (sizeof($treasureCardSelection['servantDice']) > 0) {
+                foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
+                    // You can only claim using your own dice and they must be in you player area
+                    self::assertServantDieInActivePlayerArea($servantDieId);
+                }
+
+                // Move the servant dice to the treasure cards and update their value
+                $servantDice = array();
+                foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
+                    $servantDice[] = $this->servantDiceManager->moveServantDiceToTreasureCardWithValue($servantDieId, $treasureCardId, $treasureCardSelection['value']);
+                }
+
+                $notifications[] = array(
+                    'playerId' => self::getActivePlayerId(),
+                    'playerName' => self::getActivePlayerName(),
+                    'treasureCard' => $treasureCard,
+                    'servantDice' => $servantDice
+                );
+            }
+        }
+
+        // Notify all players
+        foreach( $notifications as $notification )
+        {
+            self::notifyAllPlayers( "treasureCardClaimed", clienttranslate( '${playerName} claims ${treasureCard.type}' ), $notification);
+        }
+
+        $this->gamestate->nextState(STATE_NEXT_PLAYER);
+    }
+
     
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
@@ -224,7 +290,7 @@ class CryptJj extends Table
     /*
     
     Example for game state "MyGameState":
-    
+
     function argMyGameState()
     {
         // Get some values from the current game situation in database...
@@ -259,6 +325,12 @@ class CryptJj extends Table
         $this->gamestate->nextState( 'some_gamestate_transition' );
     }    
     */
+
+    function stNextPlayer() {
+        $this->activeNextPlayer();
+
+        $this->gamestate->nextState(STATE_PLAYER_TURN);
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

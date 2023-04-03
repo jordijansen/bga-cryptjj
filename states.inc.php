@@ -64,10 +64,10 @@ $machinestates = array(
     STATE_PLAYER_TURN_ID => array(
     		"name" => STATE_PLAYER_TURN,
     		"description" => clienttranslate('${actplayer} must claim treasure card(s) or recover servant dice'),
-    		"descriptionmyturn" => clienttranslate('${you} must claim treasure cards or recover servant dice'),
+    		"descriptionmyturn" => clienttranslate('${you} must claim treasure card(s) or recover servant dice'),
     		"type" => "activeplayer",
     		"possibleactions" => array( ACTION_CLAIM_TREASURE, ACTION_RECOVER ),
-    		"transitions" => array( ACTION_CLAIM_TREASURE => STATE_NEXT_PLAYER_ID, ACTION_RECOVER => STATE_NEXT_PLAYER_ID)
+    		"transitions" => array( STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID )
     ),
 
     STATE_NEXT_PLAYER_ID => array(
@@ -76,7 +76,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
-        "transitions" => array( "endGame" => 99, "nextPlayer" => STATE_PLAYER_TURN_ID )
+        "transitions" => array( "endGame" => 99, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
     ),
     
 /*

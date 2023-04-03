@@ -56,12 +56,16 @@ function project(from, postfix) {
     return clone;
 }
 
-function phantomMove(mobileId, newparentId, duration) {
+function phantomMove(mobileId, newparentId, duration, append = true) {
     var box = $(mobileId);
     var newparent = $(newparentId);
     var clone = project(box.id, "_temp");
     box.style.opacity = 0;
-    newparent.appendChild(box);
+    if (append) {
+        newparent.appendChild(box);
+    } else {
+        newparent.prepend(box)
+    }
 
     var desti = project(box.id, "_temp2");
 

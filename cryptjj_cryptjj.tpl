@@ -54,7 +54,7 @@
 var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}" style="color: #${color}" id="player-area-${color}">\
     <h2>${name}</h2>\
     <div class="card player-card-${color}-male">\
-        <div id="player-area-die-area-${id}" class="die-placement-area lower">\
+        <div class="dice-placement-area lower">\
         </div>\
     </div>\
 </div>';
@@ -62,8 +62,13 @@ var jstpl_treasure_deck='<div class="card treasure-card-${topCardType}-back"><h2
 var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="card treasure-card treasure-card-${type}-${value}">\
     <div class="row" style="padding-top: 55px;"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
     <div class="dice-selection-area row">\
+    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
     </div>\
     <div class="row"><a href="#" data-id="${id}" id="decrease-dice-${id}" class="bgabutton bgabutton_blue"><span>-</span></a></div>\
+    <div class="dice-placement-area lower">\
+    </div>\
 <div>';
 
 var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die die-${color}"></div>';

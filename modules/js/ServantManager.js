@@ -28,22 +28,25 @@ define(
                     console.log("ServantManager#setup")
                     // Set-up servant dice
                     for (const playerId in this.game.gamedatas.servantDice) {
-                        var servantDiceForPlayer = this.game.gamedatas.servantDice[playerId];
+                        const servantDiceForPlayer = this.game.gamedatas.servantDice[playerId];
                         for (const dieId in servantDiceForPlayer) {
-                            var servantDie = servantDiceForPlayer[dieId];
+                            const servantDie = servantDiceForPlayer[dieId];
+                            const servantDieElement = this.game.format_block('jstpl_die', {
+                                "id": servantDie.id,
+                                "type": servantDie.type,
+                                "color": servantDie.type_arg
+                            });
                             if (servantDie.location === 'player_area') {
-                                var servantDieElement = this.game.format_block('jstpl_die', {
-                                    "id": servantDie.id,
-                                    "type": servantDie.type,
-                                    "color": servantDie.type_arg
-                                });
-                                dojo.place(servantDieElement, "player-area-die-area-" + servantDie.type)
-                                this.setServantDieValue(servantDie.id, servantDie.location_arg)
-                            } else if (servantDie.location === 'treasure_card') {
-                                // TODO implement placement on card
+                                dojo.place(servantDieElement, dojo.query(`#player-area-${servantDie.type} .dice-placement-area`)[0])
+                            } else if (servantDie.location.startsWith('treasure_card_')) {
+                                const treasureCardId = servantDie.location.replace('treasure_card_', '');
+                                dojo.place(servantDieElement, dojo.query(`#treasure-card-${treasureCardId} .dice-placement-area`)[0])
                             } else if (servantDie.location === 'exhausted') {
                                 // TODO implement placement on exhausted
                             }
+                            // Set the value of the die
+                            this.setServantDieValue(servantDie.id, servantDie.location_arg)
+                            // Add the onclick listener
                             dojo.connect($('servant-die-' + servantDie.id), 'onclick', this, "onServantDieClicked")
                         }
                     }
@@ -55,6 +58,14 @@ define(
                     for (const dieId in servantDiceForPlayer) {
                         // TODO check if die is actually selectable based on previously deployed servants and number of dice left
                         dojo.addClass($('servant-die-' + dieId), 'selectable')
+                    }
+                },
+
+                hideSelectableServants() {
+                    console.log("ServantManager#hideSelectableServants")
+                    var servantDiceForPlayer = this.game.gamedatas.servantDice[this.game.player_id]
+                    for (const dieId in servantDiceForPlayer) {
+                        dojo.removeClass($('servant-die-' + dieId), 'selectable')
                     }
                 },
 
@@ -82,12 +93,17 @@ define(
                 },
 
                 moveServantDieToPlayerArea(servantId, playerId) {
-                    phantomMove($('servant-die-' + servantId), $(`player-area-die-area-${playerId}`), 500);
+                    phantomMove($('servant-die-' + servantId), dojo.query(`#player-area-${playerId} .dice-placement-area`)[0], 500);
                     this.setServantDieValue(servantId, 1);
                 },
 
                 moveServantDieToTreasureCardSelectionArea(servantId, cardId, value) {
-                    phantomMove($('servant-die-' + servantId), dojo.query(`#treasure-card-${cardId} .dice-selection-area`)[0], 500);
+                    phantomMove($('servant-die-' + servantId), dojo.query(`#treasure-card-${cardId} .dice-selection-area`)[0], 500, false);
+                    this.setServantDieValue(servantId, value);
+                },
+
+                moveServantDieToTreasureCard(servantId, cardId, value) {
+                    phantomMove($('servant-die-' + servantId), dojo.query(`#treasure-card-${cardId} .dice-placement-area`)[0], 500);
                     this.setServantDieValue(servantId, value);
                 }
     });

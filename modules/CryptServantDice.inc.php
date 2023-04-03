@@ -12,8 +12,12 @@
  *
  * Handles the servant dice, locations and states
  *
+ * id -> servant die id
+ * type -> player id
+ * type_arg -> player / die color
+ * location -> current die location possible values: player_area, treasure_card_<card-id>
+ * location_arg -> current die value
  */
-
 class CryptServantDice extends APP_DbObject
 {
     protected $game;
@@ -25,10 +29,6 @@ class CryptServantDice extends APP_DbObject
 
     public function createServantDice()
     {
-        // Create treasure cards deck based on player count
-        // For a 1 or 2 player game the deck contains 1 copy of each treasure type and value
-        // For a 3 player game the deck contains 2 copy of each treasure type values 2 & 3 and 1 copy of each treasure type values 1 & 4
-        // For a 4 player game the deck contains 2 copies of each treasure type and value
         $dice = array();
         $players = $this->game->loadPlayersBasicInfos();
         foreach( $players as $player_id => $player )
@@ -43,5 +43,12 @@ class CryptServantDice extends APP_DbObject
         return $this->game->servant_dice->getCardsOfType($player_id);
     }
 
+    public function getServantDiceInPlayerArea($playerId) {
+        return $this->game->servant_dice->getCardsOfTypeInLocation($playerId, null, 'player_area', null);
+    }
 
+    public function moveServantDiceToTreasureCardWithValue($id, $treasureCardId, $dieValue) {
+        $this->game->servant_dice->moveCard($id, 'treasure_card_' .$treasureCardId, $dieValue);
+        return $this->game->servant_dice->getCard($id);
+    }
 }
