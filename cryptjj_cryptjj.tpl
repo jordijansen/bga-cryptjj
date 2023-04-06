@@ -32,15 +32,16 @@
 </div>
 <div class="ui-row">
     <div id="treasure-cards-deck" class="whiteblock"><h2>Deck</h2></div>
-    <div id="exhausted-servants" class="whiteblock">
+    <div class="whiteblock">
         <h2>Exhausted Servants</h2>
-        <img src="{GAMETHEMEURL}img/exhausted-servants.png" />
+        <div id="exhausted-servants">
+
+        </div>
     </div>
     <div id="treasure-cards-discard" class="whiteblock"><h2>Discard</h2></div>
 </div>
-<div class="ui-row">
-    <div id="treasure-cards-display" class="whiteblock">
-    </div>
+<div class="whiteblock">
+    <div id="treasure-cards-display"></div>
 </div>
 <hr />
 <div id="player-areas-row">
@@ -60,19 +61,25 @@ var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}
 </div>';
 var jstpl_treasure_deck='<div class="card treasure-card-${topCardType}-back"><h2 class="deck-count">${size}</h2></div>';
 var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="card treasure-card treasure-card-${type}-${value}">\
-    <div class="row" style="padding-top: 55px;"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
-    <div class="dice-selection-area row">\
-    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
-    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
-    <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+    <div class="button-container" style="padding-top: 70px;"> \
+        <div class="row"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
+        <div class="row">\
+            <div data-id="${id}" id="dice-selection-area-${id}" class="dice-selection-area row">\
+                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+            </div>\
+        </div>\
+        <div class="row"><a href="#" data-id="${id}" id="decrease-dice-${id}" class="bgabutton bgabutton_blue"><span>-</span></a></div>\
     </div>\
-    <div class="row"><a href="#" data-id="${id}" id="decrease-dice-${id}" class="bgabutton bgabutton_blue"><span>-</span></a></div>\
     <div class="dice-placement-area lower">\
     </div>\
 <div>';
 
-var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die die-${color}"></div>';
+var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die servant-die die-${color}"></div>';
+var jstpl_torch_card_leader='<div class="card small torch-card-leader"></div>';
+var jstpl_torch_card_lights_out='<div class="card small torch-card-lights-out"></div>';
 
-</script>  
+</script>
 
 {OVERALL_GAME_FOOTER}

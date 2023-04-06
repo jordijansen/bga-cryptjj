@@ -18,7 +18,12 @@ define(
         return declare(
             'crypt.ServantManager',
             null, {
+                servantSize: 44,
                 game: null,
+                playerAreas: {},
+                displayTreasureCardSelectionAreas: {},
+                displayTreasureCardAreas: {},
+                exhaustedArea: null,
 
                 constructor(game) {
                     this.game = game;
@@ -27,85 +32,119 @@ define(
                 setup() {
                     console.log("ServantManager#setup")
                     // Set-up servant dice
-                    for (const playerId in this.game.gamedatas.servantDice) {
-                        const servantDiceForPlayer = this.game.gamedatas.servantDice[playerId];
-                        for (const dieId in servantDiceForPlayer) {
-                            const servantDie = servantDiceForPlayer[dieId];
-                            const servantDieElement = this.game.format_block('jstpl_die', {
-                                "id": servantDie.id,
-                                "type": servantDie.type,
-                                "color": servantDie.type_arg
-                            });
-                            if (servantDie.location === 'player_area') {
-                                dojo.place(servantDieElement, dojo.query(`#player-area-${servantDie.type} .dice-placement-area`)[0])
-                            } else if (servantDie.location.startsWith('treasure_card_')) {
-                                const treasureCardId = servantDie.location.replace('treasure_card_', '');
-                                dojo.place(servantDieElement, dojo.query(`#treasure-card-${treasureCardId} .dice-placement-area`)[0])
-                            } else if (servantDie.location === 'exhausted') {
-                                // TODO implement placement on exhausted
-                            }
-                            // Set the value of the die
-                            this.setServantDieValue(servantDie.id, servantDie.location_arg)
-                            // Add the onclick listener
-                            dojo.connect($('servant-die-' + servantDie.id), 'onclick', this, "onServantDieClicked")
-                        }
-                    }
-                },
+                    this.exhaustedArea = new ebg.zone();
+                    this.exhaustedArea.create(this.game, $('exhausted-servants'), this.servantSize, 48);
 
-                showSelectableServants() {
-                    console.log("ServantManager#showSelectableServants")
-                    var servantDiceForPlayer = this.game.gamedatas.servantDice[this.game.player_id]
-                    for (const dieId in servantDiceForPlayer) {
-                        // TODO check if die is actually selectable based on previously deployed servants and number of dice left
-                        dojo.addClass($('servant-die-' + dieId), 'selectable')
-                    }
-                },
+                    const { cards } = this.game.gamedatas.treasureDisplay;
+                    cards.forEach(card => {
+                        this.displayTreasureCardSelectionAreas[card.id] = new ebg.zone();
+                        this.displayTreasureCardSelectionAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-selection-area`)[0], this.servantSize, this.servantSize);
 
-                hideSelectableServants() {
-                    console.log("ServantManager#hideSelectableServants")
-                    var servantDiceForPlayer = this.game.gamedatas.servantDice[this.game.player_id]
-                    for (const dieId in servantDiceForPlayer) {
-                        dojo.removeClass($('servant-die-' + dieId), 'selectable')
-                    }
-                },
+                        this.displayTreasureCardAreas[card.id] = new ebg.zone();
+                        this.displayTreasureCardAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
+                    })
 
-                onServantDieClicked(event) {
-                    console.log("ServantManager#onServantDieClicked")
-                    event.stopPropagation();
+                    Object.values(this.game.gamedatas.players).forEach(player => {
+                        this.playerAreas[player.id] = new ebg.zone();
+                        this.playerAreas[player.id].create(this.game, dojo.query(`#player-area-${player.id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
+                    })
 
-                    const clickedServantDie = this.game.gamedatas.servantDice[this.game.player_id][event.currentTarget.dataset.id]
-                    if (!clickedServantDie) {
-                        console.log("Clicked die unknown to this player, ignoring")
-                        return;
-                    }
+                    this.game.gamedatas.servantDice.forEach(servantDie => {
+                        const servantDieElement = this.game.format_block('jstpl_die', {
+                            "id": servantDie.id,
+                            "type": servantDie.type,
+                            "color": servantDie.type_arg
+                        });
+                        // This is just a temp placement, die will be moved to correct zone
+                        dojo.place(servantDieElement, $('exhausted-servants'))
+                    })
 
-                    if (this.game.gamedatas.gamestate.name === this.game.gameStates.claimTreasureStep2) {
-                        this.game.displayManager.addOrRemoveServantDieFromSelection(event.currentTarget.dataset.id)
-                    }
+                    this.moveServantDiceToLocations(this.game.gamedatas.servantDice);
                 },
 
                 setServantDieValue(dieId, value) {
-                    const servantDie = $(`servant-die-${dieId}`);
-                    dojo.empty(servantDie);
+                    const servantDie = this.game.gamedatas.servantDice.find(die => die.id === dieId);
+                    servantDie.location_arg = value;
+
+                    const servantDieElement = $(`servant-die-${servantDie.id}`);
+                    dojo.empty(servantDieElement);
                     for (let i = 0; i < value; i++) {
-                        dojo.create("span", { class: "pip" }, servantDie);
+                        dojo.create("span", { class: "pip" }, servantDieElement);
                     }
                 },
 
+                moveAllServantDieBackToPlayerArea(playerId) {
+                    this.getServantDieInPlayerArea(playerId).forEach(die => this.moveServantDieToPlayerArea(die.id, playerId));
+                },
+
                 moveServantDieToPlayerArea(servantId, playerId) {
-                    phantomMove($('servant-die-' + servantId), dojo.query(`#player-area-${playerId} .dice-placement-area`)[0], 500);
+                    this.removeServantDieFromZones(servantId);
+                    this.playerAreas[playerId].placeInZone(`servant-die-${servantId}`);
                     this.setServantDieValue(servantId, 1);
                 },
 
                 moveServantDieToTreasureCardSelectionArea(servantId, cardId, value) {
-                    phantomMove($('servant-die-' + servantId), dojo.query(`#treasure-card-${cardId} .dice-selection-area`)[0], 500, false);
+                    this.removeServantDieFromZones(servantId);
+                    this.displayTreasureCardSelectionAreas[cardId].placeInZone(`servant-die-${servantId}`)
                     this.setServantDieValue(servantId, value);
                 },
 
                 moveServantDieToTreasureCard(servantId, cardId, value) {
-                    phantomMove($('servant-die-' + servantId), dojo.query(`#treasure-card-${cardId} .dice-placement-area`)[0], 500);
+                    this.removeServantDieFromZones(servantId);
+                    this.displayTreasureCardAreas[cardId].placeInZone(`servant-die-${servantId}`)
                     this.setServantDieValue(servantId, value);
-                }
+                },
+
+                moveServantDieToExhaustedArea(servantId, value) {
+                    this.removeServantDieFromZones(servantId);
+                    this.exhaustedArea.placeInZone(`servant-die-${servantId}`)
+                    this.setServantDieValue(servantId, value);
+                },
+
+                getServantDieForTreasureCardSelection(cardId) {
+                    return this.displayTreasureCardSelectionAreas[cardId].getAllItems()
+                        .map(id => id.replace('servant-die-', ''))
+                        .map(id => this.game.gamedatas.servantDice.find(die => die.id === id));
+                },
+
+                getServantDieForTreasureCard(cardId) {
+                    return this.displayTreasureCardAreas[cardId].getAllItems()
+                        .map(id => id.replace('servant-die-', ''))
+                        .map(id => this.game.gamedatas.servantDice.find(die => die.id === id));
+                },
+
+                getServantDieInPlayerArea(playerId) {
+                    return this.playerAreas[playerId].getAllItems()
+                        .map(id => id.replace('servant-die-', ''))
+                        .map(id => this.game.gamedatas.servantDice.find(die => die.id === id));
+                },
+
+                moveServantDiceToLocations(servantDice) {
+                    servantDice.forEach(servantDie => {
+                        if (servantDie.location === 'player_area') {
+                            this.moveServantDieToPlayerArea(servantDie.id, servantDie.type);
+                        } else if (servantDie.location.startsWith('treasure_card_')) {
+                            const treasureCardId = servantDie.location.replace('treasure_card_', '');
+                            this.moveServantDieToTreasureCard(servantDie.id, treasureCardId, servantDie.location_arg)
+                        } else if (servantDie.location === 'exhausted') {
+                            this.moveServantDieToExhaustedArea(servantDie.id, servantDie.location_arg);
+                        }
+                    })
+                },
+
+                removeServantDieFromZones(servantId) {
+                    const id = `servant-die-${servantId}`;
+                    this.exhaustedArea.removeFromZone(id, false);
+                    Object.values(this.game.gamedatas.players).forEach(player => {
+                        this.playerAreas[player.id].removeFromZone(id, false);
+                    })
+
+                    const { cards } = this.game.gamedatas.treasureDisplay;
+                    cards.forEach(card => {
+                        this.displayTreasureCardSelectionAreas[card.id].removeFromZone(id, false);
+                        this.displayTreasureCardAreas[card.id].removeFromZone(id, false);
+                    })
+                },
     });
     }
 );

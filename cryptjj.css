@@ -73,70 +73,67 @@
     background-size: cover;
     border-radius: 5px;
     display: inline-block;
-    position: relative;
     box-shadow: 3px 3px 3px #000000a0;
     box-sizing: border-box;
+    z-index: 1;
+}
+
+.card.small {
+    width:71px;
+    height:104px;
 }
 
 .card .row {
     text-align: center;
     width: 100%;
-    float: left;
-    height: 44px;
-}
-
-.treasure-card.selected .row .bgabutton {
-    visibility: visible;
-    width: 80px;
-}
-
-.treasure-card.selected .die-placeholder {
-    visibility: visible;
-}
-
-.treasure-card .row .bgabutton {
-    visibility: hidden;
-}
-
-.dice-selection-area {
-    padding-left: 13px;
-}
-
-.selected {
-    border: 4px rgba(80, 200, 255, 0.75) solid;
-}
-
-.die.selectable {
-    cursor: pointer;
 }
 
 .card.selectable {
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
     animation: pulse 2s infinite;
+}
+
+.treasure-card.selected .row .bgabutton {
+    visibility: visible;
+}
+
+.treasure-card.selected {
+    border: 4px rgba(80, 200, 255, 0.75) solid;
+}
+
+.treasure-card.selectable .dice-selection-area,
+.treasure-card.selected .dice-selection-area,
+.dice-selection-area:has(.servant-die){
+    visibility: visible;
     cursor: pointer;
 }
 
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-    }
+.treasure-card .row .bgabutton {
+    visibility: hidden;
+    width: 80px;
+    margin: 2px;
+}
 
-    70% {
-        box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
-    }
+.player-area .dice-placement-area {
+    position: relative;
+    top: 180px;
+}
 
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
+.dice-selection-area {
+    position: relative;
+    height: 50px;
+    width: 150px;
+    margin-left: 13px;
+    visibility: hidden;
+}
+
+.invalid {
+    border: 4px rgba(255, 0, 0, 0.75) solid !important;
 }
 
 .dice-placement-area {
-    position: absolute;
-    left: 17px;
-}
-
-.dice-placement-area.lower {
-    top: 188px;
+    margin-left: 13px;
+    width: 150px;
 }
 
 .ui-row {
@@ -178,10 +175,7 @@
 }
 
 .ui-row #treasure-cards-display {
-    flex-grow: 1;
-    display: flex;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
+    width: 100%;
 }
 
 .ui-row #treasure-cards-display .treasure-card {
@@ -335,21 +329,18 @@
     margin: 2px;
     box-shadow: 3px 3px 3px #000000a0;
     border-radius: 10%;
+    z-index: 2;
 }
+
 .die-placeholder {
     background-color: white;
     opacity: 0.6;
+}
+
+.die-placeholder:nth-child(1):nth-last-child(n+4),
+.die-placeholder:nth-child(2):nth-last-child(n+4),
+.die-placeholder:nth-child(3):nth-last-child(n+4){
     visibility: hidden;
-}
-
-.die-placeholder:nth-child(n+4) {
-    display: none;
-}
-
-.die-placeholder:nth-child(4):nth-last-child(3),
-.die-placeholder:nth-child(5):nth-last-child(2),
-.die-placeholder:nth-child(6):nth-last-child(1) {
-    display: none;
 }
 
 .die-262f33 { background-color: #262f33; }
@@ -399,16 +390,14 @@
 
 .torch-card-leader
 {
-    background:url('img/torch-cards.png') 0px -0px;
-    width:497px;height:733px;
-    display:inline-block;
+    background-image: url('img/torch-cards.png');
+    background-position: 0 0;
 }
 
-.torch-card-lightsout
+.torch-card-lights-out
 {
-    background:url('img/torch-cards.png') -497px -0px;
-    width:497px;height:733px;
-    display:inline-block;
+    background-image: url('img/torch-cards.png');
+    background-position: 100% 0;
 }
 
 
@@ -433,3 +422,16 @@
 }
 
 
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}

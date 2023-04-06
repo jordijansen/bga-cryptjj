@@ -22,6 +22,7 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once("modules/CryptGlobals.inc.php");
 require_once("modules/CryptTreasureCards.inc.php");
 require_once("modules/CryptServantDice.inc.php");
+require_once("modules/CryptTorchCards.inc.php");
 
 class CryptJj extends Table
 {
@@ -52,6 +53,7 @@ class CryptJj extends Table
 
         $this->treasureCardsManager = new CryptTreasureCards($this);
         $this->servantDiceManager = new CryptServantDice($this);
+        $this->torchCardsManager = new CryptTorchCards($this);
 	}
 	
     protected function getGameName( )
@@ -108,6 +110,9 @@ class CryptJj extends Table
         // 3. Create Servant Dice and place in player_area
         $this->servantDiceManager->createServantDice();
 
+        // 4. Distribute torch & last light cards to players
+        $this->torchCardsManager->distributeInitialTorchCards($players);
+
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
@@ -131,13 +136,16 @@ class CryptJj extends Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id FROM player ";
+        $sql = "SELECT player_id id, has_torch_card_leader, has_torch_card_lights_out FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
         $players = self::loadPlayersBasicInfos();
+        $result['servantDice'] = array();
         foreach( $players as $player_id => $player )
         {
-            $result['servantDice'][$player_id] = $this->servantDiceManager->getAllServantDice($player_id);
+            foreach ($this->servantDiceManager->getAllServantDice($player_id) as $servantDie) {
+                $result['servantDice'][] = $servantDie;
+            }
         }
         $result['treasureDeck']['size'] = $this->treasure_cards->countCardInLocation('deck');
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
@@ -174,25 +182,14 @@ class CryptJj extends Table
     /*
         In this space, you can put any utility methods useful for your game logic
     */
-    function assertCardInDisplay($cardId) {
-        $cardsInDisplay = $this->treasureCardsManager->getTreasureCardsInDisplay();
-        foreach ($cardsInDisplay as $card) {
-            self::debug('Card in Display: ' . $card['id'] . ' - ' . $cardId);
-            if ($card['id'] == $cardId) {
-                return $card;
-            }
-        }
-        throw new BgaUserException("Card " . $cardId . " not in treasure card display!");
-    }
 
-    function assertServantDieInActivePlayerArea($servantDieId) {
-        $servantDice = $this->servantDiceManager->getServantDiceInPlayerArea(self::getActivePlayerId());
-        foreach ($servantDice as $servantDie) {
-            if ($servantDie['id'] == $servantDieId) {
-                return $servantDie;
+    function findById($array, $id) {
+        foreach ($array as $item) {
+            if ($item['id'] == $id) {
+                return $item;
             }
         }
-        throw new BgaUserException("Servant die " . $servantDieId . " not owned by active player!");
+        return null;
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -235,42 +232,88 @@ class CryptJj extends Table
      */
     function claimTreasure($claimTreasureSelection )
     {
-        self::debug("claimTreasureAction2");
         // Check if this is a valid action
         self::checkAction(ACTION_CLAIM_TREASURE);
-        self::debug("after check action");
+
         self::trace(json_encode($claimTreasureSelection));
 
+        $cardsInDisplay = $this->treasureCardsManager->getTreasureCardsInDisplay();
+
+        self::trace(json_encode($cardsInDisplay));
+
         $notifications = array();
-        foreach( $claimTreasureSelection as $treasureCardId => $treasureCardSelection )
+        if (sizeof($claimTreasureSelection) > 1 && $this->torchCardsManager->hasLightsOutCard(self::getActivePlayerId())) {
+            throw new BgaUserException("You can only claim one card if you have the Lights Out card");
+        }
+
+        foreach($claimTreasureSelection as $treasureCardSelection)
         {
-            // You can only claim cards in the display
-            $treasureCard = self::assertCardInDisplay($treasureCardId);
             if (sizeof($treasureCardSelection['servantDice']) > 0) {
+                $servantDice = $this->servantDiceManager->getServantDiceInPlayerArea(self::getActivePlayerId());
+                self::trace(json_encode($servantDice));
+
+                // Check if the provided treasure card is in the treasure card display
+                $treasureCard = self::findById($cardsInDisplay, $treasureCardSelection['id']);
+                if ($treasureCard == null) {
+                    throw new BgaUserException("Card " . $treasureCardSelection['id'] . " not in treasure card display!");
+                }
+
+                // Check if the provided servant dice are in the player area
                 foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
-                    // You can only claim using your own dice and they must be in you player area
-                    self::assertServantDieInActivePlayerArea($servantDieId);
+                    if ($servantDice[$servantDieId] == null) {
+                        throw new BgaUserException("Servant die " . $servantDieId . " not owned by active player!");
+                    }
+                }
+
+                // Check if there are already servantDice on the treasure card from other players
+                $servantDiceOnTreasureCard = $this->servantDiceManager->getServantDiceOnTreasureCard($treasureCardSelection['id']);
+                if (sizeof($servantDiceOnTreasureCard) > 0) {
+                    $treasureCardSelectionEffort = sizeof($treasureCardSelection['servantDice']) * $treasureCardSelection['value'];
+                    $treasureCardEffort = array_sum(array_column($servantDiceOnTreasureCard, 'location_arg'));
+                    // The effort value needs to be higher
+                    if ($treasureCardEffort >= $treasureCardSelectionEffort) {
+                        throw new BgaUserException("Servant dice effort for card " .$treasureCardSelection['id']. " too low! ");
+                    }
+                    // Bump the other servants of the card
+                    $this->servantDiceManager->exhaustServantDice(array_column($servantDiceOnTreasureCard, 'id'));
+
+                    $notifications[] = array(
+                        'type' => 'treasureCardBumped',
+                        'message' => clienttranslate( '${playerName} bumps from ${treasureCard.type}'),
+                        'args' => array(
+                            'playerId' => self::getActivePlayerId(),
+                            'playerName' => self::getActivePlayerName(),
+                            'treasureCard' => $treasureCard,
+                            'bumpedServantDice' => $servantDiceOnTreasureCard
+                        )
+                    );
                 }
 
                 // Move the servant dice to the treasure cards and update their value
                 $servantDice = array();
                 foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
-                    $servantDice[] = $this->servantDiceManager->moveServantDiceToTreasureCardWithValue($servantDieId, $treasureCardId, $treasureCardSelection['value']);
+                    $servantDice[] = $this->servantDiceManager->moveServantDiceToTreasureCardWithValue($servantDieId, $treasureCardSelection['id'], $treasureCardSelection['value']);
                 }
 
                 $notifications[] = array(
-                    'playerId' => self::getActivePlayerId(),
-                    'playerName' => self::getActivePlayerName(),
-                    'treasureCard' => $treasureCard,
-                    'servantDice' => $servantDice
+                    'type' => "treasureCardClaimed",
+                    'message' => clienttranslate( '${playerName} claims ${treasureCard.type}'),
+                    'args' => array(
+                        'playerId' => self::getActivePlayerId(),
+                        'playerName' => self::getActivePlayerName(),
+                        'treasureCard' => $treasureCard,
+                        'servantDice' => $servantDice,
+                        'bumpedServantDice' => $servantDiceOnTreasureCard
+                    )
                 );
             }
+
         }
 
         // Notify all players
         foreach( $notifications as $notification )
         {
-            self::notifyAllPlayers( "treasureCardClaimed", clienttranslate( '${playerName} claims ${treasureCard.type}' ), $notification);
+            self::notifyAllPlayers( $notification['type'], $notification['message'], $notification['args']);
         }
 
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
@@ -327,8 +370,38 @@ class CryptJj extends Table
     */
 
     function stNextPlayer() {
-        $this->activeNextPlayer();
+        self::debug("stNextPlayer");
+        self::debug($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId()));
+        // If the current player has the LightsOutCard we move into the Collect Treasure State
+        if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId())) {
+            $this->gamestate->nextState(STATE_COLLECT_TREASURE);
+        } else {
+            $this->activeNextPlayer();
+            $this->gamestate->nextState(STATE_PLAYER_TURN);
+        }
+    }
 
+    function stCollectTreasure() {
+        self::debug("stCollectTreasure");
+
+        // TODO If deck is not empty
+        if (true) {
+            $this->gamestate->nextState(STATE_PASS_TORCH_CARDS);
+        } else  {
+            $this->gamestate->nextState(STATE_GAME_END);
+        }
+    }
+
+    function stPassTorchCards() {
+        self::debug("stPassTorchCards");
+
+        $this->gamestate->nextState(STATE_NEXT_ROUND);
+    }
+
+    function stNextRound() {
+        self::debug("stNextRound");
+        // TODO ACTIVE NEW PLAYER BASED ON TORCH CARD DISTRIBUTION
+        $this->activeNextPlayer();
         $this->gamestate->nextState(STATE_PLAYER_TURN);
     }
 

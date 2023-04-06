@@ -75,9 +75,39 @@ $machinestates = array(
         "description" => '',
         "type" => "game",
         "action" => "stNextPlayer",
-        "updateGameProgression" => true,
-        "transitions" => array( "endGame" => 99, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID, STATE_COLLECT_TREASURE => STATE_COLLECT_TREASURE_ID )
     ),
+
+    STATE_COLLECT_TREASURE_ID => array(
+        "name" => STATE_COLLECT_TREASURE,
+        "description" => '',
+        "type" => "game",
+        "action" => "stCollectTreasure",
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_PASS_TORCH_CARDS => STATE_PASS_TORCH_CARDS_ID, STATE_GAME_END => STATE_GAME_END_ID, )
+    ),
+
+    STATE_PASS_TORCH_CARDS_ID => array(
+        "name" => STATE_PASS_TORCH_CARDS,
+        "description" => '',
+        "type" => "game",
+        "action" => "stPassTorchCards",
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_NEXT_ROUND => STATE_NEXT_ROUND_ID )
+    ),
+
+    STATE_NEXT_ROUND_ID => array(
+        "name" => STATE_NEXT_ROUND,
+        "description" => '',
+        "type" => "game",
+        "action" => "stNextRound",
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
+    ),
+
+
+
     
 /*
     Examples:

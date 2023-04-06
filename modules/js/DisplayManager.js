@@ -8,6 +8,8 @@
  * -----
  */
 
+const blankCurrentSelection = { servantDice: [], value: 1, valid: true };
+
 define(
     [
         'dojo',
@@ -19,8 +21,10 @@ define(
             'crypt.DisplayManager',
             null, {
                 game: null,
-                currentSelectedCard: null,
-                currentSelection: {},
+                cardDisplay: null,
+                availableServants: [],
+                availableServantsIndex: -1,
+                claimTreasureMode: false,
 
                 constructor(game) {
                     this.game = game;
@@ -28,134 +32,196 @@ define(
 
                 setup() {
                     console.log("DisplayManager#setup")
+
                     // Set-up treasure display
+                    this.cardDisplay = new ebg.zone();
+                    this.cardDisplay.create(this.game, $('treasure-cards-display'), this.game.cardWidth, this.game.cardHeight);
+                    this.cardDisplay.item_margin = 20;
+
                     const { cards } = this.game.gamedatas.treasureDisplay;
+                    this.createCardAndAddToDisplay(cards);
+                },
+
+                createCardAndAddToDisplay(cards) {
                     for (const card of cards) {
                         const treasureCard = this.game.format_block('jstpl_treasure_card', card);
-
-                        this.currentSelection[card.id] = { servantDice: [], value: 1 }
-
                         dojo.place(treasureCard, 'treasure-cards-display')
-                        dojo.connect($(`treasure-card-${card.id}`), 'onclick', this, 'onDisplayCardClicked')
+                        this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
                         dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
+                        dojo.connect($(`dice-selection-area-${card.id}`), 'onclick', this, 'onAddDiceClicked')
                         dojo.connect($(`decrease-dice-${card.id}`), 'onclick', this, 'onDecreaseDiceClicked')
                     }
                 },
 
                 enterClaimTreasureMode() {
+                    this.claimTreasureMode = true;
+                    this.availableServants = this.game.servantManager.getServantDieInPlayerArea(this.game.player_id).map(die => die.id);
+                    this.availableServantsIndex = -1;
+
                     this.toggleSelectableCards(true);
                 },
 
-                exitClaimTreasureMode() {
-                    this.toggleSelectableCards(false);
-                    this.selectCard(null);
+                exitClaimTreasureMode(resetServants) {
+                    this.claimTreasureMode = false;
+                    this.cardDisplay.getAllItems()
+                        .forEach(id => {
+                            dojo.removeClass($(id), 'selectable')
+                            dojo.removeClass($(id), 'invalid')
+                            dojo.removeClass($(id), 'selected')
 
-                    for (const cardId in this.currentSelection) {
-                        this.currentSelection[cardId] = { servantDice: [], value: 1 }
-                    }
+                            if (resetServants) {
+                                this.game.servantManager.getServantDieForTreasureCardSelection(id.replace('treasure-card-', ''))
+                                    .forEach(die => this.game.servantManager.moveServantDieToPlayerArea(die.id, this.game.player_id))
+                            }
+                        });
                 },
 
                 toggleSelectableCards(show) {
                     console.log("DisplayManager#showSelectableCards")
-                    const { cards } = this.game.gamedatas.treasureDisplay;
-                    for (const card of cards) {
+                    this.cardDisplay.getAllItems().forEach(id => {
                         if (show) {
-                            // TODO check if card is actually selectable based on previously deployed servants and number of dice left
-                            dojo.addClass($('treasure-card-' + card.id), 'selectable')
+                            dojo.addClass($(id), 'selectable')
                         } else {
-                            dojo.removeClass($('treasure-card-' + card.id), 'selectable')
+                            dojo.removeClass($(id), 'selectable')
                         }
-
-                    }
+                    })
                 },
 
-                selectCard(cardId) {
-                    console.log("DisplayManager#selectCard")
-                    if (this.currentSelectedCard != null && this.currentSelectedCard !== cardId) {
-                        const oldSelectedCard = $('treasure-card-' + this.currentSelectedCard );
-                        dojo.removeClass(oldSelectedCard, 'selected');
-                    }
-
-                    this.currentSelectedCard = cardId;
-                    if (cardId) {
-                        const newSelectedCard = $('treasure-card-' + cardId);
-                        dojo.addClass(newSelectedCard, 'selected')
-                    }
-                },
-
-                addOrRemoveServantDieFromSelection(servantId) {
+                addServantDieToCard(servantId, targetCardId) {
                     console.log("DisplayManager#addOrRemoveServantDieFromSelection")
+                    console.log(servantId + '-' + targetCardId)
 
-                    console.log(this.currentSelection)
+                    // Retrieve the servant dice already there
+                    const servantDieAlreadyInSelection = this.game.servantManager.getServantDieForTreasureCardSelection(targetCardId);
 
-                    if (this.currentSelection[this.currentSelectedCard].servantDice.includes(servantId)) {
-                        // Remove the servant die from the currentSelectedCard and move it back to the player area
-                        this.removeServantDieFromCard(this.currentSelectedCard, servantId);
+                    let valueToUse = 1;
 
-                        // Move the die back to the player area and reset the die value to 1
-                        this.game.servantManager.moveServantDieToPlayerArea(servantId, this.game.player_id)
-                    } else {
-                        // Remove the servant die from a treasure card if it had been placed there previously
-                        for (var cardId in this.currentSelection) {
-                            this.removeServantDieFromCard(cardId, servantId);
+                    if (servantDieAlreadyInSelection.length > 0) {
+                        valueToUse = servantDieAlreadyInSelection[0].location_arg;
+                    } else if (servantDieAlreadyInSelection.length === 0) {
+                        if (this.game.playerManager.hasLightsOutCard(this.game.player_id)) {
+                            this.toggleSelectableCards(false);
                         }
-                        // Add the the servant die to the currentSelectedCard and move it there
-                        this.currentSelection[this.currentSelectedCard].servantDice.push(servantId);
+                    }
 
-                        // Move the die to the treasure card and set the die value to thats card current value
-                        this.game.servantManager.moveServantDieToTreasureCardSelectionArea(servantId, this.currentSelectedCard, this.currentSelection[this.currentSelectedCard].value)
+                    this.game.servantManager.moveServantDieToTreasureCardSelectionArea(servantId, targetCardId, valueToUse);
+
+                    this.updateInvalid();
+                    this.updateSelected()
+                },
+
+                updateInvalid() {
+                    this.cardDisplay.getAllItems()
+                        .forEach(id => {
+                            if (this.isValidSelection(id.replace('treasure-card-', ''))) {
+                                dojo.removeClass($(id), 'invalid')
+                            } else {
+                                dojo.addClass($(id), 'invalid')
+                            }
+                        })
+                },
+
+                updateSelected() {
+                    this.cardDisplay.getAllItems()
+                        .forEach(id => {
+                            if (this.game.servantManager.getServantDieForTreasureCardSelection(id.replace('treasure-card-', '')).length > 0) {
+                                dojo.addClass($(id), 'selected')
+                            } else {
+                                dojo.removeClass($(id), 'selected')
+                            }
+                        })
+                },
+
+                isValidSelection(cardId) {
+                    const diceOnCard = this.game.servantManager.getServantDieForTreasureCard(cardId);
+                    const diceSelectionOnCard = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
+                    console.log(diceOnCard);
+                    // If no dice already on card, or no dice selection assigned to it always true
+                    if (diceOnCard.length === 0 || diceSelectionOnCard.length === 0) {
+                        return true;
+                    } else {
+                        const totalEffortOnCard = diceOnCard.reduce((sum, a) => sum + Number(a['location_arg']), 0);
+                        const selectedEffortOnCard = diceSelectionOnCard.length * diceSelectionOnCard[0].location_arg;
+                        console.log(totalEffortOnCard + ' - ' + selectedEffortOnCard)
+                        return selectedEffortOnCard > totalEffortOnCard;
                     }
                 },
 
-                removeServantDieFromCard(cardId, servantId) {
-                    const indexOf = this.currentSelection[cardId].servantDice.indexOf(servantId);
-                    if (indexOf > -1) {
-                        this.currentSelection[cardId].servantDice.splice(indexOf, 1)
-                        if (this.currentSelection[cardId].servantDice.length === 0) {
-                            this.currentSelection[cardId].value = 1;
-                        }
-                    }
+                isCurrentSelectionValid() {
+                    return this.cardDisplay.getAllItems()
+                        .map(id => id.replace('treasure-card-', ''))
+                        .every(id => this.isValidSelection(id));
+                },
+
+                getCurrentSelection() {
+                    return this.cardDisplay.getAllItems()
+                        .map(id => id.replace('treasure-card-', ''))
+                        .filter(id => this.game.servantManager.getServantDieForTreasureCardSelection(id).length > 0)
+                        .map(id => (
+                            {
+                                id: id,
+                                value: this.game.servantManager.getServantDieForTreasureCardSelection(id)[0].location_arg,
+                                servantDice: this.game.servantManager.getServantDieForTreasureCardSelection(id)
+                                    .map(die => die.id)
+                            }
+                        ))
                 },
 
                 // Click Handlers
-                onDisplayCardClicked(event) {
-                    console.log("DisplayManager#onDisplayCardClicked")
-                    if (this.game.gamedatas.gamestate.name === this.game.gameStates.claimTreasureStep1) {
-                        this.selectCard(event.currentTarget.dataset.id)
+                onDecreaseDiceClicked(event) {
+                    if (this.claimTreasureMode) {
+                        console.log("DisplayManager#onDecreaseDiceClicked")
+                        const cardId = event.currentTarget.dataset.id;
+                        event.preventDefault();
+                        event.stopPropagation();
 
-                        this.game.setClientState(this.game.gameStates.claimTreasureStep2, {
-                            descriptionmyturn: _("${you} must select servant dice to use for this treasure")
-                        })
-                        this.game.servantManager.showSelectableServants();
-                    } else if (this.game.gamedatas.gamestate.name === this.game.gameStates.claimTreasureStep2) {
-                        this.selectCard(event.currentTarget.dataset.id)
+                        const servantDieAlreadyInSelection = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
+                        if (servantDieAlreadyInSelection.length > 0 && servantDieAlreadyInSelection[0].location_arg > 1) {
+                            const newValue = servantDieAlreadyInSelection[0].location_arg - 1;
+                            servantDieAlreadyInSelection.forEach(die => this.game.servantManager.setServantDieValue(die.id, newValue))
+                            this.updateInvalid();
+                        }
                     }
                 },
 
                 onIncreaseDiceClicked(event) {
-                    console.log("DisplayManager#onIncreaseDiceClicked")
-                    event.preventDefault();
-                    event.stopPropagation();
+                    if (this.claimTreasureMode) {
+                        console.log("DisplayManager#onIncreaseDiceClicked")
+                        const cardId = event.currentTarget.dataset.id;
+                        event.preventDefault();
+                        event.stopPropagation();
 
-                    if (this.currentSelection[this.currentSelectedCard].servantDice.length > 0 &&
-                        this.currentSelection[this.currentSelectedCard].value < 6) {
-                        this.currentSelection[this.currentSelectedCard].value++
-                        this.currentSelection[this.currentSelectedCard].servantDice.forEach(dieId => this.game.servantManager.setServantDieValue(dieId, this.currentSelection[this.currentSelectedCard].value))
-                        console.log(this.currentSelection[this.currentSelectedCard]);
+                        const servantDieAlreadyInSelection = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
+                        console.log(servantDieAlreadyInSelection);
+                        if (servantDieAlreadyInSelection.length > 0 && servantDieAlreadyInSelection[0].location_arg < 6) {
+                            const newValue = servantDieAlreadyInSelection[0].location_arg + 1;
+                            servantDieAlreadyInSelection.forEach(die => this.game.servantManager.setServantDieValue(die.id, newValue))
+                            this.updateInvalid();
+                        }
                     }
-
                 },
 
-                onDecreaseDiceClicked(event) {
-                    console.log("DisplayManager#onDecreaseDiceClicked")
-                    event.preventDefault();
-                    event.stopPropagation();
+                onAddDiceClicked(event) {
+                    if (this.claimTreasureMode) {
+                        console.log("DisplayManager#onAddDiceClicked")
+                        const cardId = event.currentTarget.dataset.id;
+                        event.preventDefault();
+                        event.stopPropagation();
 
-                    if (this.currentSelection[this.currentSelectedCard].servantDice.length > 0 &&
-                        this.currentSelection[this.currentSelectedCard].value > 1) {
-                        this.currentSelection[this.currentSelectedCard].value--
-                        this.currentSelection[this.currentSelectedCard].servantDice.forEach(dieId => this.game.servantManager.setServantDieValue(dieId, this.currentSelection[this.currentSelectedCard].value))
-                        console.log(this.currentSelection[this.currentSelectedCard]);
+                        const diceStillInPlayerArea = this.game.servantManager.getServantDieInPlayerArea(this.game.player_id);
+                        if (diceStillInPlayerArea.length > 0) {
+                            this.addServantDieToCard(diceStillInPlayerArea[0].id, cardId);
+                        } else {
+                            const servantDieAlreadyInSelection = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
+                            const diceForPlacement = this.availableServants.filter(id => !servantDieAlreadyInSelection.some(die => die.id === id))
+                            if (diceForPlacement.length > 0) {
+                                this.availableServantsIndex = (this.availableServantsIndex + 1) % diceForPlacement.length
+
+                                this.addServantDieToCard(diceForPlacement[this.availableServantsIndex], cardId);
+                            } else {
+                                this.game.showMessage( _('No available servants left'), 'error');
+                            }
+                        }
                     }
                 },
             });

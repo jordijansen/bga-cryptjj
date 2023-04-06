@@ -15,7 +15,7 @@
  * id -> servant die id
  * type -> player id
  * type_arg -> player / die color
- * location -> current die location possible values: player_area, treasure_card_<card-id>
+ * location -> current die location possible values: player_area, exhausted, treasure_card_<card-id>
  * location_arg -> current die value
  */
 class CryptServantDice extends APP_DbObject
@@ -47,8 +47,16 @@ class CryptServantDice extends APP_DbObject
         return $this->game->servant_dice->getCardsOfTypeInLocation($playerId, null, 'player_area', null);
     }
 
+    public function getServantDiceOnTreasureCard($treasureCardId) {
+        return $this->game->servant_dice->getCardsInLocation('treasure_card_' .$treasureCardId);
+    }
+
     public function moveServantDiceToTreasureCardWithValue($id, $treasureCardId, $dieValue) {
         $this->game->servant_dice->moveCard($id, 'treasure_card_' .$treasureCardId, $dieValue);
         return $this->game->servant_dice->getCard($id);
+    }
+
+    public function exhaustServantDice($dieIds) {
+        $this->game->servant_dice->moveCards($dieIds, 'exhausted', 1);
     }
 }

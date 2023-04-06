@@ -51,3 +51,6 @@ CREATE TABLE IF NOT EXISTS `servant_dice` (
   `card_location_arg` int(11) NOT NULL,
   PRIMARY KEY (`card_id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+ALTER TABLE `player` ADD `has_torch_card_leader` tinyint(1) NOT NULL default 0;
+ALTER TABLE `player` ADD `has_torch_card_lights_out` tinyint(1) NOT NULL default 0;

@@ -19,6 +19,8 @@ define(["dojo",
         "dojo/_base/declare",
         "ebg/core/gamegui",
         "ebg/counter",
+        "ebg/stock",
+        "ebg/zone",
 
         g_gamethemeurl + 'modules/js/oversurface.js',
         g_gamethemeurl + 'modules/js/ActionManager.js',
@@ -32,6 +34,9 @@ function (dojo, declare) {
         constructor: function(){
             console.log('cryptjj constructor');
 
+            this.cardWidth = 178;
+            this.cardHeight = 261;
+
             this.actionManager = new crypt.ActionManager(this);
             this.deckManager = new crypt.DeckManager(this);
             this.displayManager = new crypt.DisplayManager(this);
@@ -43,8 +48,7 @@ function (dojo, declare) {
 
             this.gameStates = {
                 playerTurn: 'playerTurn',
-                claimTreasureStep1: 'claimTreasureStep1',
-                claimTreasureStep2: 'claimTreasureStep2',
+                claimTreasure: 'claimTreasure' // Client Side only state
             }
 
             this.gameActions = {
@@ -164,12 +168,9 @@ function (dojo, declare) {
                     case this.gameStates.playerTurn:
                         this.addActionButton( 'claim_treasure_button', _('Claim Treasure'), 'enterClaimTreasureMode' );
                         break;
-                    case this.gameStates.claimTreasureStep1:
-                        this.addActionButton( 'undo_claim_treasure_state_step1', _('Undo'), 'undoClaimTreasure');
-                        break;
-                    case this.gameStates.claimTreasureStep2:
-                        this.addActionButton( 'confirm_claim_treasure_state_step2', _('Confirm'), 'confirmClaimTreasure');
-                        this.addActionButton( 'undo_claim_treasure_state_step2', _('Undo'), 'undoClaimTreasure');
+                    case this.gameStates.claimTreasure:
+                        this.addActionButton( 'confirm_claim_treasure_state', _('Confirm'), 'confirmClaimTreasure');
+                        this.addActionButton( 'undo_claim_treasure_state', _('Undo'), 'undoClaimTreasure');
                         break;
                 }
             }
@@ -244,13 +245,15 @@ function (dojo, declare) {
             if( ! this.checkAction( this.gameActions.claimTreasure ) )
             {   return; }
 
-            this.servantManager.g
+            if (this.servantManager.getServantDieInPlayerArea(this.player_id).length > 0) {
+                this.setClientState(this.gameStates.claimTreasure, {
+                    descriptionmyturn: _("${you} must claim treasure using your servants and choose their effort value")
+                })
 
-            this.setClientState(this.gameStates.claimTreasureStep1, {
-                descriptionmyturn: _("${you} must select a treasure card")
-            })
-
-            this.displayManager.enterClaimTreasureMode();
+                this.displayManager.enterClaimTreasureMode(false);
+            } else {
+                this.showMessage( _('You have no servant dice available, recover servants first'), 'error');
+            }
         },
 
 
@@ -261,7 +264,7 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            this.displayManager.exitClaimTreasureMode();
+            this.displayManager.exitClaimTreasureMode(true);
             this.restoreServerGameState();
         },
 
@@ -272,10 +275,12 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            this.actionManager.claimTreasure(this.displayManager.currentSelection)
-
-            this.displayManager.exitClaimTreasureMode();
-            this.servantManager.hideSelectableServants();
+            if (this.displayManager.isCurrentSelectionValid()) {
+                this.actionManager.claimTreasure(this.displayManager.getCurrentSelection())
+                this.displayManager.exitClaimTreasureMode();
+            } else {
+                this.showMessage( _('Servant(s) effort too low'), 'error');
+            }
         },
 
         ///////////////////////////////////////////////////
@@ -297,6 +302,7 @@ function (dojo, declare) {
             // TODO: here, associate your game notifications with local methods
 
             dojo.subscribe('treasureCardClaimed', this, 'notif_treasureCardClaimed');
+            dojo.subscribe('treasureCardBumped', this, 'notif_treasureCardBumped');
 
 
             // Example 1: standard notification handling
@@ -327,7 +333,7 @@ function (dojo, declare) {
         
         */
 
-        notif_treasureCardClaimed: function( notif = {args: {servantDice: [{id: 1, location_arg: 3}], treasureCard: {id: 1}}} )
+        notif_treasureCardClaimed: function( notif = {args: {servantDice: [{id: 1, location: '', location_arg: 3}], bumpedServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} )
         {
             console.log( 'notif_treasureCardClaimed' );
 
@@ -335,6 +341,16 @@ function (dojo, declare) {
             console.log( treasureCardClaimed );
 
             treasureCardClaimed.servantDice.forEach(servantDie => this.servantManager.moveServantDieToTreasureCard(servantDie.id, treasureCardClaimed.treasureCard.id, servantDie.location_arg))
+        },
+
+        notif_treasureCardBumped: function( notif = {args: {bumpedServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} )
+        {
+            console.log( 'notif_treasureCardBumped' );
+
+            const treasureCardBumped = notif['args'];
+            console.log( treasureCardBumped );
+
+            Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToExhaustedArea(servantDie.id, servantDie.location_arg))
         },
     });
 });
