@@ -1,3 +1,4 @@
 /img/*.png
+/high-res-img/*.png
 /.idea/
 .DS_Store
