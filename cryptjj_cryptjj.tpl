@@ -25,20 +25,22 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="oversurface"></div>
-
 <div class="ui-row">
     <div id="collector-cards" class="whiteblock"><h2>Collectors</h2></div>
 </div>
 <div class="ui-row">
     <div id="treasure-cards-deck" class="whiteblock"><h2>Deck</h2></div>
-    <div class="whiteblock">
+    <div id="exhausted-servants-wrapper" class="whiteblock">
         <h2>Exhausted Servants</h2>
         <div id="exhausted-servants">
 
         </div>
     </div>
-    <div id="treasure-cards-discard" class="whiteblock"><h2>Discard</h2></div>
+    <div class="whiteblock"><h2>Discard</h2>
+        <div id="treasure-cards-discard">
+
+        </div>
+    </div>
 </div>
 <div class="whiteblock">
     <div id="treasure-cards-display"></div>
@@ -54,8 +56,18 @@
 // Javascript HTML templates
 var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}" style="color: #${color}" id="player-area-${color}">\
     <h2>${name}</h2>\
-    <div class="card player-card-${color}-male">\
-        <div class="dice-placement-area lower">\
+    <div style="display: flex;">\
+        <div class="card player-card-${color}-male">\
+            <div class="dice-placement-area lower">\
+            </div>\
+        </div>\
+        <div class="player-treasure-areas">\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-tapestry"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-idol"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-remains"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-pottery"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-jewelery"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-manuscript"></div></div>\
         </div>\
     </div>\
 </div>';

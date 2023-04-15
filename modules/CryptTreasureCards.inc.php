@@ -12,6 +12,12 @@
  *
  * Handles the treasure cards deck, locations and states
  *
+ * id -> card id
+ * type -> jewelery, manuscript, remains, etc.
+ * type_arg -> value of the card
+ * location -> deck, display, discard, player_area_<player_id>
+ * location_arg -> order within the location
+ * card_face_up -> whether the card has been face-up, if it is the front of the card is public info.
  */
 
 class CryptTreasureCards extends APP_DbObject
@@ -64,31 +70,57 @@ class CryptTreasureCards extends APP_DbObject
         for ($i = 0; $i < $faceUpCards; $i++) {
             $this->game->treasure_cards->pickCardsForLocation(1, 'deck', 'display', $i);
         }
-        $this->flipCardsFaceUp($this->getTreasureCardsInDisplay());
+        $this->flipCardsFaceUp($this->getAllTreasureCardsInDisplay());
         for ($i = $faceUpCards; $i < $faceUpCards + $faceDownCards; $i++) {
             $this->game->treasure_cards->pickCardsForLocation(1, 'deck', 'display', $i);
         }
     }
 
     public function flipCardsFaceUp($cards) {
-        self::debug('before');
         $ids = join(", ", array_map(function($card) { return $card['id'];}, $cards));
-        self::debug($ids);
         self::DbQuery("UPDATE treasure_cards SET card_face_up=1 WHERE card_id in (".$ids.")");
     }
 
-    public function getTreasureCardsInDisplay() {
+    public function getAllTreasureCardsInPlay() {
         $sql = "SELECT card_id as id,
                        card_type as type,
                        CASE
                         WHEN card_face_up = 1 THEN card_type_arg
                         ELSE 'back'
-                       END as value
+                       END as value,
+                       card_location as location
                 FROM treasure_cards
-                WHERE card_location = 'display' 
+                WHERE card_location != 'deck'
                 ORDER BY card_location_arg ASC";
 
         return self::getObjectListFromDB($sql);
+    }
+
+    public function getAllTreasureCardsInDisplay() {
+        $sql = "SELECT card_id as id,
+                       card_type as type,
+                       CASE
+                        WHEN card_face_up = 1 THEN card_type_arg
+                        ELSE 'back'
+                       END as value,
+                       card_location as location
+                FROM treasure_cards
+                WHERE card_location = 'display'
+                ORDER BY card_location_arg ASC";
+
+        return self::getObjectListFromDB($sql);
+    }
+
+    public function discardTreasureCard($treasureCardId) {
+        $this->game->treasure_cards->moveCard($treasureCardId, 'discard');
+    }
+
+    public function collectTreasureCard($playerId, $treasureCardId) {
+        $this->game->treasure_cards->moveCard($treasureCardId, 'player_area_' .$playerId);
+    }
+
+    public function countCardsInDeck() {
+        return $this->game->treasure_cards->countCardInLocation('deck');
     }
 
     function determineNumberOfFaceUpTreasureCards($playerCount) {

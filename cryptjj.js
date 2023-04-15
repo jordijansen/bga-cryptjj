@@ -22,10 +22,9 @@ define(["dojo",
         "ebg/stock",
         "ebg/zone",
 
-        g_gamethemeurl + 'modules/js/oversurface.js',
         g_gamethemeurl + 'modules/js/ActionManager.js',
         g_gamethemeurl + 'modules/js/DeckManager.js',
-        g_gamethemeurl + 'modules/js/DisplayManager.js',
+        g_gamethemeurl + 'modules/js/TreasureCardManager.js',
         g_gamethemeurl + 'modules/js/PlayerManager.js',
         g_gamethemeurl + 'modules/js/ServantManager.js',
     ],
@@ -38,9 +37,9 @@ function (dojo, declare) {
             this.cardHeight = 261;
 
             this.actionManager = new crypt.ActionManager(this);
-            this.deckManager = new crypt.DeckManager(this);
-            this.displayManager = new crypt.DisplayManager(this);
             this.playerManager = new crypt.PlayerManager(this);
+            this.deckManager = new crypt.DeckManager(this);
+            this.treasureCardManager = new crypt.TreasureCardManager(this);
             this.servantManager = new crypt.ServantManager(this);
             // Here, you can init the global variables of your user interface
             // Example:
@@ -76,8 +75,8 @@ function (dojo, declare) {
             console.dir(gameData);
 
             this.deckManager.setup(gameData);
-            this.displayManager.setup(gameData);
             this.playerManager.setup(gameData);
+            this.treasureCardManager.setup(gameData);
             this.servantManager.setup(gameData);
  
             // Setup game notifications to handle (see "setupNotifications" method below)
@@ -250,7 +249,7 @@ function (dojo, declare) {
                     descriptionmyturn: _("${you} must claim treasure using your servants and choose their effort value")
                 })
 
-                this.displayManager.enterClaimTreasureMode(false);
+                this.treasureCardManager.enterClaimTreasureMode(false);
             } else {
                 this.showMessage( _('You have no servant dice available, recover servants first'), 'error');
             }
@@ -264,7 +263,7 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            this.displayManager.exitClaimTreasureMode(true);
+            this.treasureCardManager.exitClaimTreasureMode(true);
             this.restoreServerGameState();
         },
 
@@ -275,9 +274,9 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent( evt );
 
-            if (this.displayManager.isCurrentSelectionValid()) {
-                this.actionManager.claimTreasure(this.displayManager.getCurrentSelection())
-                this.displayManager.exitClaimTreasureMode();
+            if (this.treasureCardManager.isCurrentSelectionValid()) {
+                this.actionManager.claimTreasure(this.treasureCardManager.getCurrentSelection())
+                this.treasureCardManager.exitClaimTreasureMode();
             } else {
                 this.showMessage( _('Servant(s) effort too low'), 'error');
             }
@@ -303,6 +302,15 @@ function (dojo, declare) {
 
             dojo.subscribe('treasureCardClaimed', this, 'notif_treasureCardClaimed');
             dojo.subscribe('treasureCardBumped', this, 'notif_treasureCardBumped');
+            dojo.subscribe('servantDiceRecovered', this, 'notif_servantDiceRecovered');
+            dojo.subscribe('treasureCardDiscarded', this, 'notif_treasureCardDiscarded');
+            dojo.subscribe('treasureCardCollected', this, 'notif_treasureCardCollected');
+            dojo.subscribe('treasureCardDisplayUpdated', this, 'notif_treasureCardDisplayUpdated');
+
+            this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
+            this.notifqueue.setSynchronous( 'treasureCardDiscarded', 1000 );
+            this.notifqueue.setSynchronous( 'treasureCardCollected', 1000 );
+            this.notifqueue.setSynchronous( 'treasureCardDisplayUpdated', 1000 );
 
 
             // Example 1: standard notification handling
@@ -350,7 +358,59 @@ function (dojo, declare) {
             const treasureCardBumped = notif['args'];
             console.log( treasureCardBumped );
 
-            Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToExhaustedArea(servantDie.id, servantDie.location_arg))
+            Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
         },
+
+        notif_servantDiceRecovered: function( notif = {args: {recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
+            console.log( 'notif_servantDiceRecovered' );
+
+            const servantDiceRecovered = notif['args'];
+            console.log( servantDiceRecovered );
+
+            Object.values(servantDiceRecovered.recoveredServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
+        },
+
+        notif_treasureCardDiscarded: function( notif = {args: {treasureCard: {id: 1}}} ) {
+            console.log( 'notif_treasureCardDiscarded' );
+
+            const treasureCardDiscarded = notif['args'];
+            console.log( treasureCardDiscarded );
+
+            this.treasureCardManager.moveTreasureCardToDiscard(treasureCardDiscarded.treasureCard.id);
+        },
+
+        notif_treasureCardCollected: function( notif = {args: {playerId: 1, rolledServantDice: [{effort: 1, rolledValue: 2, die: {id: 1}}], treasureCard: {id: 1}}} ) {
+            console.log( 'notif_treasureCardCollected' );
+
+            const treasureCardCollected = notif['args'];
+            console.log( treasureCardCollected );
+
+            this.treasureCardManager.moveTreasureCardToPlayerArea(treasureCardCollected.treasureCard, treasureCardCollected.playerId);
+            this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice.map(rolledServanDie => rolledServanDie.die));
+        },
+
+        notif_treasureCardDisplayUpdated: function( notif = {args: {treasureCards: []}} ) {
+            console.log( 'notif_treasureCardDisplayUpdated' );
+
+            const treasureCardDisplayUpdated = notif['args'];
+            console.log( treasureCardDisplayUpdated );
+
+            this.treasureCardManager.createCardsAndAddToZones(treasureCardDisplayUpdated.treasureCards);
+            this.servantManager.setupDisplayZones(treasureCardDisplayUpdated.treasureCards);
+        }
+
+//         'type' => 'treasureCardCollected',
+//         'message' => clienttranslate( '${playerName} collects ${treasureCard.type}'),
+//         'args' => array(
+//         'playerId' => $playerId,
+//         'playerName' => $players[$playerId]['player_name'],
+//         'treasureCard' => $treasureCard,
+//         'rolledServantDice' => $rolledServantDice
+// )
+
+        // 'effort' => $effort,
+        // 'rolledValue' => $rolledValue,
+        // 'die' => $servantDie,
+        // 'exhausted' => $exhausted
     });
 });

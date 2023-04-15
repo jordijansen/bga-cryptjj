@@ -37,9 +37,10 @@ CREATE TABLE IF NOT EXISTS `treasure_cards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `card_type` varchar(16) NOT NULL,
   `card_type_arg` int(11) NOT NULL,
-  `card_location` varchar(16) NOT NULL,
+  `card_location` varchar(100) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   `card_face_up` tinyint(1) NOT NULL default 0,
+  `card_flipped` tinyint(1) NOT NULL default 0,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -47,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `servant_dice` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `card_type` varchar(16) NOT NULL,
   `card_type_arg` varchar(25) NOT NULL,
-  `card_location` varchar(16) NOT NULL,
+  `card_location` varchar(100) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   PRIMARY KEY (`card_id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

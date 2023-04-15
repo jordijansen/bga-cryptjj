@@ -8,8 +8,6 @@
  * -----
  */
 
-const blankCurrentSelection = { servantDice: [], value: 1, valid: true };
-
 define(
     [
         'dojo',
@@ -18,38 +16,67 @@ define(
     ],
     (dojo, declare) => {
         return declare(
-            'crypt.DisplayManager',
+            'crypt.TreasureCardManager',
             null, {
                 game: null,
-                cardDisplay: null,
                 availableServants: [],
                 availableServantsIndex: -1,
                 claimTreasureMode: false,
+                cardDisplay: null,
+                playerAreas: {},
 
                 constructor(game) {
                     this.game = game;
                 },
 
                 setup() {
-                    console.log("DisplayManager#setup")
+                    console.log("TreasureCardManager#setup")
 
                     // Set-up treasure display
                     this.cardDisplay = new ebg.zone();
                     this.cardDisplay.create(this.game, $('treasure-cards-display'), this.game.cardWidth, this.game.cardHeight);
-                    this.cardDisplay.item_margin = 20;
+                    this.cardDisplay.item_margin = 5;
 
-                    const { cards } = this.game.gamedatas.treasureDisplay;
-                    this.createCardAndAddToDisplay(cards);
+                    this.cardDiscard = new ebg.zone();
+                    this.cardDiscard.create(this.game, $('treasure-cards-discard'), this.game.cardWidth, this.game.cardHeight);
+                    this.cardDiscard.setPattern('diagonal');
+                    this.cardDiscard.item_margin = 0;
+
+                    // Set-up players treasure area
+                    Object.entries(this.game.gamedatas.players).forEach(([playerId, player]) => {
+                        this.playerAreas[playerId] = {
+                            tapestry: new ebg.zone(),
+                            idol: new ebg.zone(),
+                            remains: new ebg.zone(),
+                            pottery: new ebg.zone(),
+                            jewelery: new ebg.zone(),
+                            manuscript: new ebg.zone(),
+                        }
+                        Object.entries(this.playerAreas[playerId]).forEach(([type, zone]) => {
+                            zone.create(this.game, $(`player-${playerId}-treasure-${type}`), this.game.cardWidth, this.game.cardHeight);
+                            zone.setPattern('verticalfit')
+                        });
+                    });
+
+                    this.createCardsAndAddToZones(this.game.gamedatas.treasureCards);
                 },
 
-                createCardAndAddToDisplay(cards) {
+                createCardsAndAddToZones(cards) {
                     for (const card of cards) {
                         const treasureCard = this.game.format_block('jstpl_treasure_card', card);
                         dojo.place(treasureCard, 'treasure-cards-display')
-                        this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
-                        dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
-                        dojo.connect($(`dice-selection-area-${card.id}`), 'onclick', this, 'onAddDiceClicked')
-                        dojo.connect($(`decrease-dice-${card.id}`), 'onclick', this, 'onDecreaseDiceClicked')
+                        if (card.location === 'display') {
+                            this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
+                            dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
+                            dojo.connect($(`dice-selection-area-${card.id}`), 'onclick', this, 'onAddDiceClicked')
+                            dojo.connect($(`decrease-dice-${card.id}`), 'onclick', this, 'onDecreaseDiceClicked')
+                        } else if (card.location === 'discard') {
+                            this.cardDiscard.placeInZone(`treasure-card-${card.id}`)
+                        } else if (card.location.startsWith('player_area_')) {
+                            const playerId = card.location.replace('player_area_', '');
+                            this.moveTreasureCardToPlayerArea(card, playerId);
+                        }
+
                     }
                 },
 
@@ -77,7 +104,7 @@ define(
                 },
 
                 toggleSelectableCards(show) {
-                    console.log("DisplayManager#showSelectableCards")
+                    console.log("TreasureCardManager#showSelectableCards")
                     this.cardDisplay.getAllItems().forEach(id => {
                         if (show) {
                             dojo.addClass($(id), 'selectable')
@@ -88,7 +115,7 @@ define(
                 },
 
                 addServantDieToCard(servantId, targetCardId) {
-                    console.log("DisplayManager#addOrRemoveServantDieFromSelection")
+                    console.log("TreasureCardManager#addOrRemoveServantDieFromSelection")
                     console.log(servantId + '-' + targetCardId)
 
                     // Retrieve the servant dice already there
@@ -167,10 +194,29 @@ define(
                         ))
                 },
 
+                moveTreasureCardToDiscard(cardId) {
+                    this.removeTreasureCardFromZones(cardId);
+                    this.cardDiscard.placeInZone(`treasure-card-${cardId}`)
+                },
+
+                moveTreasureCardToPlayerArea(card, playerId) {
+                    this.removeTreasureCardFromZones(card.id);
+                    const newZoneHeight = (this.game.cardHeight + (this.playerAreas[playerId][card.type].getItemNumber() * 75));
+                    dojo.style(`player-${playerId}-treasure-${card.type}`, 'min-height', newZoneHeight + 'px');
+                    dojo.style(`player-${playerId}-treasure-${card.type}`, 'display', 'block');
+                    this.playerAreas[playerId][card.type].placeInZone(`treasure-card-${card.id}`)
+                },
+
+                removeTreasureCardFromZones(cardId) {
+                    const id = `treasure-card-${cardId}`;
+                    this.cardDisplay.removeFromZone(id, false);
+                    Object.values(this.playerAreas).forEach(playerArea => Object.values(playerArea).forEach(zone => zone.removeFromZone(id, false)));
+                },
+
                 // Click Handlers
                 onDecreaseDiceClicked(event) {
                     if (this.claimTreasureMode) {
-                        console.log("DisplayManager#onDecreaseDiceClicked")
+                        console.log("TreasureCardManager#onDecreaseDiceClicked")
                         const cardId = event.currentTarget.dataset.id;
                         event.preventDefault();
                         event.stopPropagation();
@@ -186,7 +232,7 @@ define(
 
                 onIncreaseDiceClicked(event) {
                     if (this.claimTreasureMode) {
-                        console.log("DisplayManager#onIncreaseDiceClicked")
+                        console.log("TreasureCardManager#onIncreaseDiceClicked")
                         const cardId = event.currentTarget.dataset.id;
                         event.preventDefault();
                         event.stopPropagation();
@@ -203,7 +249,7 @@ define(
 
                 onAddDiceClicked(event) {
                     if (this.claimTreasureMode) {
-                        console.log("DisplayManager#onAddDiceClicked")
+                        console.log("TreasureCardManager#onAddDiceClicked")
                         const cardId = event.currentTarget.dataset.id;
                         event.preventDefault();
                         event.stopPropagation();

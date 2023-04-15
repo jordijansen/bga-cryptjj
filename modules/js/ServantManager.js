@@ -1,7 +1,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * Villagersnew implementation : © Sandra Kuipers sandra@skuipers.com
+ * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -35,14 +35,7 @@ define(
                     this.exhaustedArea = new ebg.zone();
                     this.exhaustedArea.create(this.game, $('exhausted-servants'), this.servantSize, 48);
 
-                    const { cards } = this.game.gamedatas.treasureDisplay;
-                    cards.forEach(card => {
-                        this.displayTreasureCardSelectionAreas[card.id] = new ebg.zone();
-                        this.displayTreasureCardSelectionAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-selection-area`)[0], this.servantSize, this.servantSize);
-
-                        this.displayTreasureCardAreas[card.id] = new ebg.zone();
-                        this.displayTreasureCardAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
-                    })
+                    this.setupDisplayZones(this.game.gamedatas.treasureCards.filter(card => card.location === 'display'));
 
                     Object.values(this.game.gamedatas.players).forEach(player => {
                         this.playerAreas[player.id] = new ebg.zone();
@@ -60,6 +53,19 @@ define(
                     })
 
                     this.moveServantDiceToLocations(this.game.gamedatas.servantDice);
+                },
+
+                setupDisplayZones(cards) {
+                    this.displayTreasureCardSelectionAreas = {};
+                    this.displayTreasureCardAreas = {};
+
+                    cards.forEach(card => {
+                        this.displayTreasureCardSelectionAreas[card.id] = new ebg.zone();
+                        this.displayTreasureCardSelectionAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-selection-area`)[0], this.servantSize, this.servantSize);
+
+                        this.displayTreasureCardAreas[card.id] = new ebg.zone();
+                        this.displayTreasureCardAreas[card.id].create(this.game, dojo.query(`#treasure-card-${card.id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
+                    })
                 },
 
                 setServantDieValue(dieId, value) {
@@ -139,11 +145,8 @@ define(
                         this.playerAreas[player.id].removeFromZone(id, false);
                     })
 
-                    const { cards } = this.game.gamedatas.treasureDisplay;
-                    cards.forEach(card => {
-                        this.displayTreasureCardSelectionAreas[card.id].removeFromZone(id, false);
-                        this.displayTreasureCardAreas[card.id].removeFromZone(id, false);
-                    })
+                    Object.values(this.displayTreasureCardSelectionAreas).forEach(zone => zone.removeFromZone(id, false))
+                    Object.values(this.displayTreasureCardAreas).forEach(zone => zone.removeFromZone(id, false))
                 },
     });
     }

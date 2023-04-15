@@ -119,6 +119,21 @@
     top: 180px;
 }
 
+.player-area .player-treasure-areas {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.player-area .player-treasure-areas .player-treasure-area {
+    width: 180px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+.player-treasure-area:not(:has(.card)) {
+    display: none !important;
+}
+
 .dice-selection-area {
     position: relative;
     height: 50px;
@@ -153,9 +168,14 @@
     flex-grow: 1;
 }
 
-.ui-row #exhausted-servants {
+.ui-row #exhausted-servants-wrapper {
+    color: white;
     flex-grow: 1;
     text-align: center;
+    background-image: url('img/exhausted-servants.png');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .ui-row #treasure-cards-discard {

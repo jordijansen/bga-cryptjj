@@ -44,13 +44,11 @@ const TBP = {
       size: 0,
       topCardType: 'empty'
     },
-    treasureDisplay: {
-      cards: [{
+    treasureCards: [{
         id: 1,
         type: 'idol',
         value: 4
-      }]
-    },
+    }],
     players: {
       1: {
         id: 1,

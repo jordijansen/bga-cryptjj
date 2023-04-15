@@ -147,9 +147,9 @@ class CryptJj extends Table
                 $result['servantDice'][] = $servantDie;
             }
         }
-        $result['treasureDeck']['size'] = $this->treasure_cards->countCardInLocation('deck');
+        $result['treasureDeck']['size'] = $this->treasureCardsManager->countCardsInDeck();
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
-        $result['treasureDisplay']['cards'] = $this->treasureCardsManager->getTreasureCardsInDisplay();
+        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay();
 
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -237,7 +237,7 @@ class CryptJj extends Table
 
         self::trace(json_encode($claimTreasureSelection));
 
-        $cardsInDisplay = $this->treasureCardsManager->getTreasureCardsInDisplay();
+        $cardsInDisplay = $this->treasureCardsManager->getAllTreasureCardsInPlay();
 
         self::trace(json_encode($cardsInDisplay));
 
@@ -275,7 +275,7 @@ class CryptJj extends Table
                         throw new BgaUserException("Servant dice effort for card " .$treasureCardSelection['id']. " too low! ");
                     }
                     // Bump the other servants of the card
-                    $this->servantDiceManager->exhaustServantDice(array_column($servantDiceOnTreasureCard, 'id'));
+                    $this->servantDiceManager->recoverServantDice(array_column($servantDiceOnTreasureCard, 'id'));
 
                     $notifications[] = array(
                         'type' => 'treasureCardBumped',
@@ -302,8 +302,7 @@ class CryptJj extends Table
                         'playerId' => self::getActivePlayerId(),
                         'playerName' => self::getActivePlayerName(),
                         'treasureCard' => $treasureCard,
-                        'servantDice' => $servantDice,
-                        'bumpedServantDice' => $servantDiceOnTreasureCard
+                        'servantDice' => $servantDice
                     )
                 );
             }
@@ -384,8 +383,88 @@ class CryptJj extends Table
     function stCollectTreasure() {
         self::debug("stCollectTreasure");
 
-        // TODO If deck is not empty
-        if (true) {
+        $notifications = array();
+        // 1. If a player has no servants on Treasure Cards, reclaim all servants
+        $players = $this->loadPlayersBasicInfos();
+        foreach( $players as $player_id => $player )
+        {
+            $servantDiceOnTreasureCard = $this->servantDiceManager->getServantDiceOnTreasureCards($player_id);
+            $exhaustedServantDiceForPlayer = $this->servantDiceManager->getServantDiceInExhaustedArea($player_id);
+            if (sizeof($servantDiceOnTreasureCard) === 0 && sizeof($exhaustedServantDiceForPlayer) > 0) {
+                $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDiceForPlayer, 'id'));
+                $notifications[] = array(
+                    'type' => 'servantDiceRecovered',
+                    'message' => clienttranslate( '${playerName} recovers servant dice'),
+                    'args' => array(
+                        'playerId' => $player_id,
+                        'playerName' => $player['player_name'],
+                        'recoveredServantDice' => $exhaustedServantDiceForPlayer
+                    )
+                );
+            }
+        }
+
+        // 2. For Each Servant Card
+        $treasureCardsInDisplay = $this->treasureCardsManager->getAllTreasureCardsInDisplay();
+        foreach ($treasureCardsInDisplay as $treasureCard) {
+            $servantDiceOnTreasureCard = $this->servantDiceManager->getServantDiceOnTreasureCard($treasureCard['id']);
+            // 2.1 if No Servants on Card, discard card
+            if (sizeof($servantDiceOnTreasureCard) === 0) {
+                $this->treasureCardsManager->discardTreasureCard($treasureCard['id']);
+                $notifications[] = array(
+                    'type' => 'treasureCardDiscarded',
+                    'message' => clienttranslate( '${treasureCard.type} is discarded'),
+                    'args' => array(
+                        'treasureCard' => $treasureCard
+                    )
+                );
+            } else {
+                // 2.2 if Servants on Card, Roll each Servant.
+                // If less than effort  > exhaust.
+                // If equal or higher than effort > return to player
+                $playerId = null;
+                $rolledServantDice = array();
+
+                foreach ($servantDiceOnTreasureCard as $servantDie) {
+                    $playerId = $servantDie['type'];
+                    $effort = $servantDie['location_arg'];
+                    $rolledValue = bga_rand(1, 6);
+                    self::debug($servantDie['id'] .' => '. $rolledValue);
+                    if ($rolledValue < $effort) {
+                        $this->servantDiceManager->exhaustServantDie($servantDie['id'], $rolledValue);
+                    } else {
+                        $this->servantDiceManager->recoverServantDice(array($servantDie['id']));
+                    }
+
+                    $rolledServantDice[] = array(
+                        'effort' => $effort,
+                        'rolledValue' => $rolledValue,
+                        'die' => $this->servantDiceManager->getServantDie($servantDie['id']),
+                    );
+                }
+
+                $this->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
+
+                $notifications[] = array(
+                    'type' => 'treasureCardCollected',
+                    'message' => clienttranslate( '${playerName} collects ${treasureCard.type}'),
+                    'args' => array(
+                        'playerId' => $playerId,
+                        'playerName' => $players[$playerId]['player_name'],
+                        'treasureCard' => $treasureCard,
+                        'rolledServantDice' => $rolledServantDice
+                    )
+                );
+            }
+        }
+
+        self::trace(json_encode($notifications));
+        foreach( $notifications as $notification )
+        {
+            self::notifyAllPlayers( $notification['type'], $notification['message'], $notification['args']);
+        }
+
+        if ($this->treasureCardsManager->countCardsInDeck() > 0) {
             $this->gamestate->nextState(STATE_PASS_TORCH_CARDS);
         } else  {
             $this->gamestate->nextState(STATE_GAME_END);
@@ -400,6 +479,13 @@ class CryptJj extends Table
 
     function stNextRound() {
         self::debug("stNextRound");
+        $players = $this->loadPlayersBasicInfos();
+        $this->treasureCardsManager->drawTreasureCardsForDisplay($players);
+
+        self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display refilled with new treasure cards'), array(
+            'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
+        ));
+
         // TODO ACTIVE NEW PLAYER BASED ON TORCH CARD DISTRIBUTION
         $this->activeNextPlayer();
         $this->gamestate->nextState(STATE_PLAYER_TURN);
