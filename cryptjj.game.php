@@ -321,6 +321,17 @@ class CryptJj extends Table
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
     }
 
+    function recoverServants() {
+        // Check if this is a valid action
+        self::checkAction(ACTION_RECOVER_SERVANTS);
+
+        $exhaustedServantDice = $this->servantDiceManager->getServantDiceInExhaustedArea(self::getActivePlayerId());
+        $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDice, 'id'));
+        $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), self::getActivePlayerName(), $exhaustedServantDice);
+
+        $this->gamestate->nextState(STATE_NEXT_PLAYER);
+    }
+
     
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments

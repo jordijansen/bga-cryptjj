@@ -46,6 +46,15 @@ class action_cryptjj extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function recoverServants()
+    {
+        self::debug("recoverServants");
+        self::setAjaxMode();
+        $this->game->recoverServants();
+        self::ajaxResponse();
+    }
+
+
     // TODO: defines your action entry points there
 
 

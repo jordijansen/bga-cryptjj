@@ -30,7 +30,7 @@ define(["dojo",
     ],
 function (dojo, declare) {
     return declare("bgagame.cryptjj", ebg.core.gamegui, {
-        constructor: function(){
+        constructor: function () {
             console.log('cryptjj constructor');
 
             this.cardWidth = 178;
@@ -51,11 +51,12 @@ function (dojo, declare) {
             }
 
             this.gameActions = {
-                claimTreasure: 'claimTreasure'
+                claimTreasure: 'claimTreasure',
+                recoverServants: 'recoverServants'
             }
 
         },
-        
+
         /*
             setup:
             
@@ -68,117 +69,110 @@ function (dojo, declare) {
             
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
-        
-        setup: function( gameData )
-        {
-            console.log( "Starting game setup" );
+
+        setup: function (gameData) {
+            console.log("Starting game setup");
             console.dir(gameData);
 
             this.deckManager.setup(gameData);
             this.playerManager.setup(gameData);
             this.treasureCardManager.setup(gameData);
             this.servantManager.setup(gameData);
- 
+
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
-            console.log( "Ending game setup" );
+            console.log("Ending game setup");
         },
-       
+
 
         ///////////////////////////////////////////////////
         //// Game & client states
-        
+
         // onEnteringState: this method is called each time we are entering into a new game state.
         //                  You can use this method to perform some user interface changes at this moment.
         //
-        onEnteringState: function( stateName, args )
-        {
-            console.log( 'Entering state: '+stateName );
+        onEnteringState: function (stateName, args) {
+            console.log('Entering state: ' + stateName);
             console.log(args)
 
-            switch( stateName )
-            {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
-           
-            case 'playerTurn':
-                this.playerManager.playedBeforeThisRound = args.args.playedBeforeThisRound;
-                break;
+            switch (stateName) {
+
+                /* Example:
+
+                case 'myGameState':
+
+                    // Show some HTML block at this game state
+                    dojo.style( 'my_html_block_id', 'display', 'block' );
+
+                    break;
+               */
+
+                case 'playerTurn':
+                    this.playerManager.playedBeforeThisRound = args.args.playedBeforeThisRound;
+                    break;
             }
         },
 
         // onLeavingState: this method is called each time we are leaving a game state.
         //                 You can use this method to perform some user interface changes at this moment.
         //
-        onLeavingState: function( stateName )
-        {
-            console.log( 'Leaving state: '+stateName );
-            
-            switch( stateName )
-            {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                
-                break;
-           */
-           
-           
-            case 'dummmy':
-                break;
-            }               
-        }, 
+        onLeavingState: function (stateName) {
+            console.log('Leaving state: ' + stateName);
+
+            switch (stateName) {
+
+                /* Example:
+
+                case 'myGameState':
+
+                    // Hide the HTML block we are displaying only during this game state
+                    dojo.style( 'my_html_block_id', 'display', 'none' );
+
+                    break;
+               */
+
+
+                case 'dummmy':
+                    break;
+            }
+        },
 
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
         //                        action status bar (ie: the HTML links in the status bar).
         //        
-        onUpdateActionButtons: function( stateName, args )
-        {
-            console.log( 'onUpdateActionButtons: '+stateName );
-                      
-            if( this.isCurrentPlayerActive() )
-            {            
-                switch( stateName )
-                {
-/*               
-                 Example:
- 
-                 case 'myGameState':
-                    
-                    // Add 3 action buttons in the action status bar:
-                    
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
-                    break;
-*/
+        onUpdateActionButtons: function (stateName, args) {
+            console.log('onUpdateActionButtons: ' + stateName);
+
+            if (this.isCurrentPlayerActive()) {
+                switch (stateName) {
+                    /*
+                                     Example:
+
+                                     case 'myGameState':
+
+                                        // Add 3 action buttons in the action status bar:
+
+                                        this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
+                                        this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
+                                        this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
+                                        break;
+                    */
                     case this.gameStates.playerTurn:
-                        this.addActionButton( 'claim_treasure_button', _('Claim Treasure'), 'enterClaimTreasureMode' );
+                        this.addActionButton('claim_treasure_button', _('Claim Treasure'), 'enterClaimTreasureMode');
+                        this.addActionButton('recover_servants_button', _('Recover Servants'), 'recoverServants');
                         break;
                     case this.gameStates.claimTreasure:
-                        this.addActionButton( 'confirm_claim_treasure_state', _('Confirm'), 'confirmClaimTreasure');
-                        this.addActionButton( 'undo_claim_treasure_state', _('Undo'), 'undoClaimTreasure');
+                        this.addActionButton('confirm_claim_treasure_state', _('Confirm'), 'confirmClaimTreasure');
+                        this.addActionButton('undo_claim_treasure_state', _('Undo'), 'undoClaimTreasure');
                         break;
                 }
             }
-        },        
+        },
 
         ///////////////////////////////////////////////////
         //// Utility methods
-        
+
         /*
         
             Here, you can defines some utility methods that you can use everywhere in your javascript
@@ -189,7 +183,7 @@ function (dojo, declare) {
 
         ///////////////////////////////////////////////////
         //// Player's action
-        
+
         /*
         
             Here, you are defining methods to handle player's action (ex: results of mouse click on 
@@ -200,7 +194,7 @@ function (dojo, declare) {
             _ make a call to the game server
         
         */
-        
+
         /* Example:
         
         onMyMethodToCall1: function( evt )
@@ -235,15 +229,15 @@ function (dojo, declare) {
         
         */
 
-        enterClaimTreasureMode: function( evt )
-        {
-            console.log( 'enterClaimTreasureMode' );
+        enterClaimTreasureMode: function (evt) {
+            console.log('enterClaimTreasureMode');
 
             // Preventing default browser reaction
-            dojo.stopEvent( evt );
+            dojo.stopEvent(evt);
 
-            if( ! this.checkAction( this.gameActions.claimTreasure ) )
-            {   return; }
+            if (!this.checkAction(this.gameActions.claimTreasure)) {
+                return;
+            }
 
             if (this.servantManager.getServantDieInPlayerArea(this.player_id).length > 0) {
                 this.setClientState(this.gameStates.claimTreasure, {
@@ -252,35 +246,45 @@ function (dojo, declare) {
 
                 this.treasureCardManager.enterClaimTreasureMode(false);
             } else {
-                this.showMessage( _('You have no servant dice available, recover servants first'), 'error');
+                this.showMessage(_('You have no servant dice available, recover servants first'), 'error');
             }
         },
 
 
-        undoClaimTreasure: function( evt )
-        {
-            console.log( 'undoClaimTreasure' );
+        undoClaimTreasure: function (evt) {
+            console.log('undoClaimTreasure');
 
             // Preventing default browser reaction
-            dojo.stopEvent( evt );
+            dojo.stopEvent(evt);
 
             this.treasureCardManager.exitClaimTreasureMode(true);
             this.restoreServerGameState();
         },
 
-        confirmClaimTreasure: function( evt )
-        {
-            console.log( 'confirmClaimTreasure' );
+        confirmClaimTreasure: function (evt) {
+            console.log('confirmClaimTreasure');
 
             // Preventing default browser reaction
-            dojo.stopEvent( evt );
+            dojo.stopEvent(evt);
 
             if (this.treasureCardManager.isCurrentSelectionValid()) {
                 this.actionManager.claimTreasure(this.treasureCardManager.getCurrentSelection())
                 this.treasureCardManager.exitClaimTreasureMode();
             } else {
-                this.showMessage( _('Servant(s) effort too low'), 'error');
+                this.showMessage(_('Servant(s) effort too low'), 'error');
             }
+        },
+
+        recoverServants: function (evt)
+        {
+            console.log('recoverServants');
+
+            this.confirmationDialog(
+                _("Recovering Servants ends your turn"),
+                () => {
+                    this.actionManager.recoverServants();
+                }
+            );
         },
 
         ///////////////////////////////////////////////////

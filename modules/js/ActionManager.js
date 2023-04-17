@@ -33,6 +33,10 @@ define(
                     this._performAction('claimTreasure', args)
                 },
 
+                recoverServants() {
+                    this._performAction('recoverServants')
+                },
+
                 _performAction(action, args, handler) {
                     if (!args) {
                         args = {};

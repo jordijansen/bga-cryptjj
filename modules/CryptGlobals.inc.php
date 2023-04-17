@@ -11,7 +11,7 @@
 
 // Actions
 const ACTION_CLAIM_TREASURE = "claimTreasure";
-const ACTION_RECOVER = "recover";
+const ACTION_RECOVER_SERVANTS = "recoverServants";
 
 // States
 const STATE_SET_UP = "gameSetup";
