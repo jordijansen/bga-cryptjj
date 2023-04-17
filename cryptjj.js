@@ -108,8 +108,11 @@ function (dojo, declare) {
                     break;
                */
 
-                case 'playerTurn':
+                case this.gameStates.playerTurn:
                     this.playerManager.playedBeforeThisRound = args.args.playedBeforeThisRound;
+                    break;
+                case this.gameStates.claimTreasure:
+                    this.treasureCardManager.enterClaimTreasureMode();
                     break;
             }
         },
@@ -133,7 +136,8 @@ function (dojo, declare) {
                */
 
 
-                case 'dummmy':
+                case this.gameStates.claimTreasure:
+                    this.treasureCardManager.exitClaimTreasureMode(false);
                     break;
             }
         },
@@ -244,7 +248,6 @@ function (dojo, declare) {
                     descriptionmyturn: _("${you} must claim treasure using your servants and choose their effort value")
                 })
 
-                this.treasureCardManager.enterClaimTreasureMode(false);
             } else {
                 this.showMessage(_('You have no servant dice available, recover servants first'), 'error');
             }
@@ -267,12 +270,8 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent(evt);
 
-            if (this.treasureCardManager.isCurrentSelectionValid()) {
-                this.actionManager.claimTreasure(this.treasureCardManager.getCurrentSelection())
-                this.treasureCardManager.exitClaimTreasureMode();
-            } else {
-                this.showMessage(_('Servant(s) effort too low'), 'error');
-            }
+            const currentSelection = this.treasureCardManager.getCurrentSelection();
+            this.actionManager.claimTreasure(currentSelection)
         },
 
         recoverServants: function (evt)

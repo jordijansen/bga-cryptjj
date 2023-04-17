@@ -178,22 +178,15 @@ define(
                 isValidSelection(cardId) {
                     const diceOnCard = this.game.servantManager.getServantDieForTreasureCard(cardId);
                     const diceSelectionOnCard = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
-                    console.log(diceOnCard);
+
                     // If no dice already on card, or no dice selection assigned to it always true
                     if (diceOnCard.length === 0 || diceSelectionOnCard.length === 0) {
                         return true;
                     } else {
                         const totalEffortOnCard = diceOnCard.reduce((sum, a) => sum + Number(a['location_arg']), 0);
                         const selectedEffortOnCard = diceSelectionOnCard.length * diceSelectionOnCard[0].location_arg;
-                        console.log(totalEffortOnCard + ' - ' + selectedEffortOnCard)
                         return selectedEffortOnCard > totalEffortOnCard;
                     }
-                },
-
-                isCurrentSelectionValid() {
-                    return this.cardDisplay.getAllItems()
-                        .map(id => id.replace('treasure-card-', ''))
-                        .every(id => this.isValidSelection(id));
                 },
 
                 getCurrentSelection() {

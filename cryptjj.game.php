@@ -265,6 +265,10 @@ class CryptJj extends Table
 
         self::trace(json_encode($cardsInDisplay));
 
+        if (sizeof($claimTreasureSelection) === 0) {
+            throw new BgaUserException("You need to claim at least one treasure card");
+        }
+
         if (sizeof($claimTreasureSelection) > 1) {
             if ($this->torchCardsManager->hasBothCards(self::getActivePlayerId())) {
                 if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
@@ -284,13 +288,13 @@ class CryptJj extends Table
                 // Check if the provided treasure card is in the treasure card display
                 $treasureCard = self::findById($cardsInDisplay, $treasureCardSelection['id']);
                 if ($treasureCard == null) {
-                    throw new BgaUserException("Card " . $treasureCardSelection['id'] . " not in treasure card display!");
+                    throw new BgaUserException("Card not in treasure card display!");
                 }
 
                 // Check if the provided servant dice are in the player area
                 foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
                     if ($servantDice[$servantDieId] == null) {
-                        throw new BgaUserException("Servant die " . $servantDieId . " not owned by active player!");
+                        throw new BgaUserException("Servant die not owned by active player!");
                     }
                 }
 
@@ -301,7 +305,7 @@ class CryptJj extends Table
                     $treasureCardEffort = array_sum(array_column($servantDiceOnTreasureCard, 'location_arg'));
                     // The effort value needs to be higher
                     if ($treasureCardEffort >= $treasureCardSelectionEffort) {
-                        throw new BgaUserException("Servant dice effort for card " .$treasureCardSelection['id']. " too low! ");
+                        throw new BgaUserException("Servant(s) effort too low");
                     }
                     // Bump the other servants of the card
                     $this->servantDiceManager->recoverServantDice(array_column($servantDiceOnTreasureCard, 'id'));
