@@ -107,7 +107,7 @@ class CryptJj extends Table
         $this->treasureCardsManager->createInitialTreasureCardsDeck($players);
 
         // 2. Fill the Treasure Card display with Cards
-        $this->treasureCardsManager->drawTreasureCardsForDisplay($players);
+        $this->treasureCardsManager->drawTreasureCardsForDisplay(sizeof($players));
 
         // 3. Create Servant Dice and place in player_area
         $this->servantDiceManager->createServantDice();
@@ -171,9 +171,14 @@ class CryptJj extends Table
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
+        $playerCount = $this->getPlayerCount();
+        $totalNumberOfCardsInDisplayEachRound = $this->treasureCardsManager->determineNumberOfFaceUpTreasureCards($playerCount) + $this->treasureCardsManager->determineNumberOfFaceDownTreasureCards($playerCount);
 
-        return 0;
+        $totalNumberOfRounds = $this->treasureCardsManager->countCards() / $totalNumberOfCardsInDisplayEachRound;
+        $numberOfRoundsLeft = $this->treasureCardsManager->countCardsInDeck() / $totalNumberOfCardsInDisplayEachRound;
+
+        $percentageLeft = ($numberOfRoundsLeft / $totalNumberOfRounds) * 100;
+        return 100 - $percentageLeft;
     }
 
 
@@ -194,7 +199,7 @@ class CryptJj extends Table
         return null;
     }
 
-    public function getPlayer($playerId) // used by VilDraft
+    public function getPlayer($playerId) // used by CryptNotifications
     {
         $players = self::loadPlayersBasicInfos();
 
@@ -204,6 +209,11 @@ class CryptJj extends Table
             }
         }
         return null;
+    }
+
+    public function getPlayerCount() {
+        $players = self::loadPlayersBasicInfos();
+        return sizeof($players);
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -462,8 +472,7 @@ class CryptJj extends Table
 
     function stNextRound() {
         self::debug("stNextRound");
-        $players = $this->loadPlayersBasicInfos();
-        $this->treasureCardsManager->drawTreasureCardsForDisplay($players);
+        $this->treasureCardsManager->drawTreasureCardsForDisplay($this->getPlayerCount());
 
         self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display refilled with new treasure cards'), array(
             'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()

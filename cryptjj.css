@@ -174,13 +174,24 @@
 }
 
 .ui-row #exhausted-servants-wrapper {
-    color: white;
     flex-grow: 1;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#exhausted-servants-wrapper #exhausted-servants-background {
     background-image: url('img/exhausted-servants.png');
-    background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
+    min-height: 261px;
+    max-width: 517px;
+    flex: 1;
+}
+
+#exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
+    margin: 55px;
 }
 
 .ui-row #treasure-cards-discard {

@@ -29,14 +29,15 @@
     <div id="collector-cards" class="whiteblock"><h2>Collectors</h2></div>
 </div>
 <div class="ui-row">
-    <div id="treasure-cards-deck" class="whiteblock"><h2>Deck</h2></div>
+    <div id="treasure-cards-deck" class="whiteblock"></div>
     <div id="exhausted-servants-wrapper" class="whiteblock">
-        <h2>Exhausted Servants</h2>
-        <div id="exhausted-servants">
+        <div id="exhausted-servants-background">
+            <div id="exhausted-servants">
 
+            </div>
         </div>
     </div>
-    <div class="whiteblock"><h2>Discard</h2>
+    <div class="whiteblock">
         <div id="treasure-cards-discard">
 
         </div>
@@ -97,6 +98,12 @@ ${text}\
 var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die servant-die die-${color}"></div>';
 var jstpl_torch_card_leader='<div id="leader-card" class="card small torch-card-leader"></div>';
 var jstpl_torch_card_lights_out='<div id="lights-out-card" class="card small torch-card-lights-out"></div>';
+
+var jstpl_torch_card_tooltip='<div class="torch-card-tooltip">\
+<div class="card large torch-card-${type}"></div>\
+<hr/>\
+${text}\
+<div>';
 
 </script>
 

@@ -60,12 +60,12 @@ class CryptTreasureCards extends APP_DbObject
         $this->game->treasure_cards->shuffle( 'deck' );
     }
 
-    public function drawTreasureCardsForDisplay($players)
+    public function drawTreasureCardsForDisplay($playerCount)
     {
         // Fill the treasure card display with cards.
         // Afterwards the display is filled with a number of face-up and face-down treasure cards based on the player count
-        $faceUpCards = self::determineNumberOfFaceUpTreasureCards(sizeof($players));
-        $faceDownCards = self::determineNumberOfFaceDownTreasureCards(sizeof($players));
+        $faceUpCards = self::determineNumberOfFaceUpTreasureCards($playerCount);
+        $faceDownCards = self::determineNumberOfFaceDownTreasureCards($playerCount);
 
         for ($i = 0; $i < $faceUpCards; $i++) {
             $this->game->treasure_cards->pickCardsForLocation(1, 'deck', 'display', $i);
@@ -139,6 +139,10 @@ class CryptTreasureCards extends APP_DbObject
 
     public function countCardsInDeck() {
         return $this->game->treasure_cards->countCardInLocation('deck');
+    }
+
+    public function countCards() {
+        return self::getUniqueValueFromDB("SELECT count(1) FROM treasure_cards");
     }
 
     function determineNumberOfFaceUpTreasureCards($playerCount) {
