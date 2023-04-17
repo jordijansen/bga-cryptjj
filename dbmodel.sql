@@ -55,3 +55,5 @@ CREATE TABLE IF NOT EXISTS `servant_dice` (
 
 ALTER TABLE `player` ADD `has_torch_card_leader` tinyint(1) NOT NULL default 0;
 ALTER TABLE `player` ADD `has_torch_card_lights_out` tinyint(1) NOT NULL default 0;
+-- For two player games the leader also has the lights out card so we need to make sure this is the players second turn before progressing to next round
+ALTER TABLE `player` ADD `has_played_before_this_round` tinyint(1) NOT NULL default 0;

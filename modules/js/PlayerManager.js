@@ -19,6 +19,9 @@ define(
             'crypt.PlayerManager',
             null, {
                 game: null,
+                playedBeforeThisRound: false,
+                leaderPlayer: null,
+                lightsOutPlayer: null,
 
                 constructor(game) {
                     this.game = game;
@@ -41,12 +44,11 @@ define(
                             otherPlayerAreas.push(playerArea);
                         }
 
-                        const player_board_div = $('player_board_' + playerId);
-                        if (this.hasLeaderCard(playerId)) {
-                            dojo.place(this.game.format_block('jstpl_torch_card_leader'), player_board_div);
+                        if (this.game.gamedatas.players[playerId].has_torch_card_leader === '1') {
+                            this.setLeaderCard(playerId);
                         }
-                        if (this.hasLightsOutCard(playerId)) {
-                            dojo.place(this.game.format_block('jstpl_torch_card_lights_out'), player_board_div);
+                        if (this.game.gamedatas.players[playerId].has_torch_card_lights_out === '1') {
+                            this.setLightsOutCard(playerId);
                         }
                     })
 
@@ -54,13 +56,35 @@ define(
                     otherPlayerAreas.forEach(playerArea => dojo.place(playerArea, "player-areas-row"))
                 },
 
+                getPlayerCount() {
+                    return Object.keys(this.game.gamedatas.players).length;
+                },
+
+                setLeaderCard(playerId) {
+                    const player_board_div = $('player_board_' + playerId);
+                    const card = this.game.format_block('jstpl_torch_card_leader');
+                    dojo.destroy('leader-card');
+                    dojo.place(card, player_board_div);
+                },
+
+                setLightsOutCard(playerId) {
+                    const player_board_div = $('player_board_' + playerId);
+                    const card = this.game.format_block('jstpl_torch_card_lights_out');
+                    dojo.destroy('lights-out-card');
+                    dojo.place(card, player_board_div);
+                },
+
                 hasLightsOutCard(playerId) {
-                    return this.game.gamedatas.players[playerId].has_torch_card_lights_out === '1';
+                    return this.lightsOutPlayer === playerId;
                 },
 
                 hasLeaderCard(playerId) {
-                    return this.game.gamedatas.players[playerId].has_torch_card_leader === '1';
-                }
+                    return this.leaderPlayer === playerId;
+                },
+
+                hasPlayedBeforeThisRound() {
+                    return this.hasPlayedBeforeThisRound === true;
+                },
             });
     }
 );

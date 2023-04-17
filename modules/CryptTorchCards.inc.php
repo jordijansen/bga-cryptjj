@@ -44,13 +44,22 @@ class CryptTorchCards extends APP_DbObject
         return self::getUniqueValueFromDB("SELECT has_torch_card_lights_out FROM player WHERE player_id = " .$playerId) == 1;
     }
 
+    public function hasBothCards($playerId) {
+        return $this->hasLeaderCard($playerId) && $this->hasLightsOutCard($playerId);
+    }
+
+    public function getLeaderPlayerId() {
+        return self::getUniqueValueFromDB("SELECT player_id FROM player WHERE has_torch_card_leader = 1");
+    }
+
     public function passTorchCards($players) {
         $currentLeaderPlayerNo = self::getUniqueValueFromDB("SELECT player_no FROM player WHERE has_torch_card_leader = 1");
         $currentLightsOutPlayerNo = self::getUniqueValueFromDB("SELECT player_no FROM player WHERE has_torch_card_lights_out = 1");
 
-        $leaderPlayerNo = $currentLeaderPlayerNo === sizeof($players) ? 1 : $currentLeaderPlayerNo + 1;
-        $lightsOutPlayerNo = $currentLightsOutPlayerNo === sizeof($players) ? 1 : $currentLightsOutPlayerNo + 1;
+        $leaderPlayerNo = $currentLeaderPlayerNo == sizeof($players) ? 1 : $currentLeaderPlayerNo + 1;
+        $lightsOutPlayerNo = $currentLightsOutPlayerNo == sizeof($players) ? 1 : $currentLightsOutPlayerNo + 1;
 
+        self::DbQuery("UPDATE player SET has_played_before_this_round=0, has_torch_card_leader=0, has_torch_card_lights_out=0");
         self::DbQuery("UPDATE player SET has_torch_card_leader=1 WHERE player_no = ".$leaderPlayerNo);
         self::DbQuery("UPDATE player SET has_torch_card_lights_out=1 WHERE player_no = ".$lightsOutPlayerNo);
     }

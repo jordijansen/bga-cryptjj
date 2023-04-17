@@ -78,6 +78,11 @@
     z-index: 1;
 }
 
+.card.large {
+    width:267px;
+    height:392px;
+}
+
 .card.small {
     width:71px;
     height:104px;

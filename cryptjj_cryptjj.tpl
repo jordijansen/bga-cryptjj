@@ -88,9 +88,15 @@ var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="ca
     </div>\
 <div>';
 
+var jstpl_treasure_card_tooltip='<div class="treasure-card-tooltip">\
+<div class="card treasure-card large treasure-card-${type}-${value}"></div>\
+<hr/>\
+${text}\
+<div>';
+
 var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die servant-die die-${color}"></div>';
-var jstpl_torch_card_leader='<div class="card small torch-card-leader"></div>';
-var jstpl_torch_card_lights_out='<div class="card small torch-card-lights-out"></div>';
+var jstpl_torch_card_leader='<div id="leader-card" class="card small torch-card-leader"></div>';
+var jstpl_torch_card_lights_out='<div id="lights-out-card" class="card small torch-card-lights-out"></div>';
 
 </script>
 

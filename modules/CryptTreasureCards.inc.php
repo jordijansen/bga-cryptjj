@@ -81,19 +81,37 @@ class CryptTreasureCards extends APP_DbObject
         self::DbQuery("UPDATE treasure_cards SET card_face_up=1 WHERE card_id in (".$ids.")");
     }
 
-    public function getAllTreasureCardsInPlay() {
+    public function getAllTreasureCardsInPlay($playerId) {
         $sql = "SELECT card_id as id,
                        card_type as type,
                        CASE
-                        WHEN card_face_up = 1 THEN card_type_arg
+                        WHEN card_face_up = 1 OR card_location = 'player_area_".$playerId."' THEN card_type_arg
                         ELSE 'back'
                        END as value,
-                       card_location as location
+                       card_location as location,
+                       card_face_up as face_up,
+                       card_flipped as flipped
                 FROM treasure_cards
                 WHERE card_location != 'deck'
                 ORDER BY card_location_arg ASC";
 
         return self::getObjectListFromDB($sql);
+    }
+
+    public function getTreasureCard($cardId, $playerId) {
+        $sql = "SELECT card_id as id,
+                       card_type as type,
+                       CASE
+                        WHEN card_face_up = 1 OR card_location = 'player_area_".$playerId."' THEN card_type_arg
+                        ELSE 'back'
+                       END as value,
+                       card_location as location,
+                       card_face_up as face_up,
+                       card_flipped as flipped
+                FROM treasure_cards
+                WHERE card_id = " .$cardId;
+
+        return self::getObjectFromDB($sql);
     }
 
     public function getAllTreasureCardsInDisplay() {

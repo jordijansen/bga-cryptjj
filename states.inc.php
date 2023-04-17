@@ -65,6 +65,7 @@ $machinestates = array(
     		"name" => STATE_PLAYER_TURN,
     		"description" => clienttranslate('${actplayer} must claim treasure card(s) or recover servant dice'),
     		"descriptionmyturn" => clienttranslate('${you} must claim treasure card(s) or recover servant dice'),
+            "args" => "argStatePlayerTurn",
     		"type" => "activeplayer",
     		"possibleactions" => array( ACTION_CLAIM_TREASURE, ACTION_RECOVER ),
     		"transitions" => array( STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID )

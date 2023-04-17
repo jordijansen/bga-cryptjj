@@ -95,7 +95,8 @@ function (dojo, declare) {
         onEnteringState: function( stateName, args )
         {
             console.log( 'Entering state: '+stateName );
-            
+            console.log(args)
+
             switch( stateName )
             {
             
@@ -109,8 +110,8 @@ function (dojo, declare) {
                 break;
            */
            
-           
-            case 'dummmy':
+            case 'playerTurn':
+                this.playerManager.playedBeforeThisRound = args.args.playedBeforeThisRound;
                 break;
             }
         },
@@ -306,6 +307,8 @@ function (dojo, declare) {
             dojo.subscribe('treasureCardDiscarded', this, 'notif_treasureCardDiscarded');
             dojo.subscribe('treasureCardCollected', this, 'notif_treasureCardCollected');
             dojo.subscribe('treasureCardDisplayUpdated', this, 'notif_treasureCardDisplayUpdated');
+            dojo.subscribe('leaderCardPassed', this, 'notif_leaderCardPassed');
+            dojo.subscribe('lightsOutCardPassed', this, 'notif_lightsOutCardPassed');
 
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardDiscarded', 1000 );
@@ -385,8 +388,8 @@ function (dojo, declare) {
             const treasureCardCollected = notif['args'];
             console.log( treasureCardCollected );
 
-            this.treasureCardManager.moveTreasureCardToPlayerArea(treasureCardCollected.treasureCard, treasureCardCollected.playerId);
             this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice.map(rolledServanDie => rolledServanDie.die));
+            this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
         },
 
         notif_treasureCardDisplayUpdated: function( notif = {args: {treasureCards: []}} ) {
@@ -395,9 +398,27 @@ function (dojo, declare) {
             const treasureCardDisplayUpdated = notif['args'];
             console.log( treasureCardDisplayUpdated );
 
-            this.treasureCardManager.createCardsAndAddToZones(treasureCardDisplayUpdated.treasureCards);
+            this.treasureCardManager.renderCardsAndMoveToZone(treasureCardDisplayUpdated.treasureCards);
             this.servantManager.setupDisplayZones(treasureCardDisplayUpdated.treasureCards);
-        }
+        },
+
+        notif_leaderCardPassed: function( notif = {args: {player_id: 1}} ) {
+            console.log( 'notif_leaderCardPassed' );
+
+            const leaderCardPassed = notif['args'];
+            console.log( leaderCardPassed );
+
+            this.playerManager.setLeaderCard(leaderCardPassed.player_id)
+        },
+
+        notif_lightsOutCardPassed: function( notif = {args: {player_id: 1}} ) {
+            console.log( 'notif_lightsOutCardPassed' );
+
+            const lightsOutCardPassed = notif['args'];
+            console.log( lightsOutCardPassed );
+
+            this.playerManager.setLightsOutCard(lightsOutCardPassed.player_id)
+        },
 
 //         'type' => 'treasureCardCollected',
 //         'message' => clienttranslate( '${playerName} collects ${treasureCard.type}'),

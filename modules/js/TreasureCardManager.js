@@ -35,7 +35,7 @@ define(
                     // Set-up treasure display
                     this.cardDisplay = new ebg.zone();
                     this.cardDisplay.create(this.game, $('treasure-cards-display'), this.game.cardWidth, this.game.cardHeight);
-                    this.cardDisplay.item_margin = 5;
+                    this.cardDisplay.item_margin = 10;
 
                     this.cardDiscard = new ebg.zone();
                     this.cardDiscard.create(this.game, $('treasure-cards-discard'), this.game.cardWidth, this.game.cardHeight);
@@ -58,13 +58,20 @@ define(
                         });
                     });
 
-                    this.createCardsAndAddToZones(this.game.gamedatas.treasureCards);
+                    this.renderCardsAndMoveToZone(this.game.gamedatas.treasureCards);
                 },
 
-                createCardsAndAddToZones(cards) {
+                renderCardsAndMoveToZone(cards, replace = false) {
                     for (const card of cards) {
-                        const treasureCard = this.game.format_block('jstpl_treasure_card', card);
-                        dojo.place(treasureCard, 'treasure-cards-display')
+                        const treasureCard = this.createTreasureCard(card);
+                        if (replace) {
+                            const originalStyle = dojo.attr( `treasure-card-${card.id}`, 'style' );
+                            dojo.place(treasureCard, `treasure-card-${card.id}`, 'replace')
+                            dojo.attr(`treasure-card-${card.id}`, 'style', originalStyle)
+                        } else {
+                            dojo.place(treasureCard, 'treasure-cards-display')
+                        }
+
                         if (card.location === 'display') {
                             this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
                             dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
@@ -77,6 +84,7 @@ define(
                             this.moveTreasureCardToPlayerArea(card, playerId);
                         }
 
+                        this.game.addTooltipHtml(`treasure-card-${card.id}`, this.renderTooltip(card), 800);
                     }
                 },
 
@@ -126,7 +134,15 @@ define(
                     if (servantDieAlreadyInSelection.length > 0) {
                         valueToUse = servantDieAlreadyInSelection[0].location_arg;
                     } else if (servantDieAlreadyInSelection.length === 0) {
-                        if (this.game.playerManager.hasLightsOutCard(this.game.player_id)) {
+                        if (this.game.playerManager.getPlayerCount() === 2
+                            && this.game.playerManager.hasLightsOutCard(this.game.player_id)
+                            && this.game.playerManager.hasLeaderCard(this.game.player_id)
+                            && this.game.playerManager.hasPlayedBeforeThisRound()) {
+                            console.log(this.game.playerManager.hasPlayedBeforeThisRound());
+                            console.log('Yo two player')
+                            this.toggleSelectableCards(false);
+                        } else if (this.game.playerManager.getPlayerCount() > 2
+                            && this.game.playerManager.hasLightsOutCard(this.game.player_id)) {
                             this.toggleSelectableCards(false);
                         }
                     }
@@ -211,6 +227,34 @@ define(
                     const id = `treasure-card-${cardId}`;
                     this.cardDisplay.removeFromZone(id, false);
                     Object.values(this.playerAreas).forEach(playerArea => Object.values(playerArea).forEach(zone => zone.removeFromZone(id, false)));
+                },
+
+                renderTooltip(card) {
+                    const info = [];
+                    const valueDisplay = card.value === 'back' ? '?' : card.value;
+                    info.push('<small>'+_('Type: ')+'</small><em>'+_(card.type)+'</em>');
+                    info.push('<small>'+_('Value: ')+'</small><em>' + valueDisplay + '</em>');
+
+                    if (card.location.startsWith("player_area_")) {
+                        if (card.location.endsWith(this.game.player_id)) {
+                            const faceUpDisplay = card['face_up'] === '1' ? _('Yes') : _('No')
+                            info.push('<small>'+_('Value publicly known: ')+'</small><em>' + faceUpDisplay + '</em>');
+                        }
+                        const flippedDisplay = card.flipped === '1' ? _('Yes') : _('No')
+                        info.push('<small>'+_('Flipped: ')+'</small><em>' + flippedDisplay + '</em>');
+                    }
+
+                    return this.game.format_block('jstpl_treasure_card_tooltip', {
+                        ...card,
+                        text: info.join("<br />")
+                    });
+                },
+
+                createTreasureCard(card) {
+                    return this.game.format_block('jstpl_treasure_card', {
+                        ...card,
+                        value: card.location.startsWith('player_area_') && card.flipped === '0' ? 'back' : card.value
+                    });
                 },
 
                 // Click Handlers

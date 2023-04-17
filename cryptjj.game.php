@@ -23,6 +23,7 @@ require_once("modules/CryptGlobals.inc.php");
 require_once("modules/CryptTreasureCards.inc.php");
 require_once("modules/CryptServantDice.inc.php");
 require_once("modules/CryptTorchCards.inc.php");
+require_once("modules/CryptNotifications.inc.php");
 
 class CryptJj extends Table
 {
@@ -54,6 +55,7 @@ class CryptJj extends Table
         $this->treasureCardsManager = new CryptTreasureCards($this);
         $this->servantDiceManager = new CryptServantDice($this);
         $this->torchCardsManager = new CryptTorchCards($this);
+        $this->notificationsManager = new CryptNotifications($this);
 	}
 	
     protected function getGameName( )
@@ -136,7 +138,7 @@ class CryptJj extends Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, has_torch_card_leader, has_torch_card_lights_out FROM player ";
+        $sql = "SELECT player_id id, has_torch_card_leader, has_torch_card_lights_out, has_played_before_this_round FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
         $players = self::loadPlayersBasicInfos();
@@ -149,7 +151,7 @@ class CryptJj extends Table
         }
         $result['treasureDeck']['size'] = $this->treasureCardsManager->countCardsInDeck();
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
-        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay();
+        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id);
 
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -183,10 +185,22 @@ class CryptJj extends Table
         In this space, you can put any utility methods useful for your game logic
     */
 
-    function findById($array, $id) {
+    public function findById($array, $id) {
         foreach ($array as $item) {
             if ($item['id'] == $id) {
                 return $item;
+            }
+        }
+        return null;
+    }
+
+    public function getPlayer($playerId) // used by VilDraft
+    {
+        $players = self::loadPlayersBasicInfos();
+
+        foreach ($players as $id => $player) {
+            if ($id == $playerId) {
+                return $player;
             }
         }
         return null;
@@ -237,13 +251,18 @@ class CryptJj extends Table
 
         self::trace(json_encode($claimTreasureSelection));
 
-        $cardsInDisplay = $this->treasureCardsManager->getAllTreasureCardsInPlay();
+        $cardsInDisplay = $this->treasureCardsManager->getAllTreasureCardsInDisplay();
 
         self::trace(json_encode($cardsInDisplay));
 
-        $notifications = array();
-        if (sizeof($claimTreasureSelection) > 1 && $this->torchCardsManager->hasLightsOutCard(self::getActivePlayerId())) {
-            throw new BgaUserException("You can only claim one card if you have the Lights Out card");
+        if (sizeof($claimTreasureSelection) > 1) {
+            if ($this->torchCardsManager->hasBothCards(self::getActivePlayerId())) {
+                if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
+                    throw new BgaUserException("You can only claim one card if you have the Lights Out card");
+                }
+            } else if ($this->torchCardsManager->hasLightsOutCard(self::getActivePlayerId())) {
+                throw new BgaUserException("You can only claim one card if you have the Lights Out card");
+            }
         }
 
         foreach($claimTreasureSelection as $treasureCardSelection)
@@ -276,17 +295,7 @@ class CryptJj extends Table
                     }
                     // Bump the other servants of the card
                     $this->servantDiceManager->recoverServantDice(array_column($servantDiceOnTreasureCard, 'id'));
-
-                    $notifications[] = array(
-                        'type' => 'treasureCardBumped',
-                        'message' => clienttranslate( '${playerName} bumps from ${treasureCard.type}'),
-                        'args' => array(
-                            'playerId' => self::getActivePlayerId(),
-                            'playerName' => self::getActivePlayerName(),
-                            'treasureCard' => $treasureCard,
-                            'bumpedServantDice' => $servantDiceOnTreasureCard
-                        )
-                    );
+                    $this->notificationsManager->notifyTreasureCardBumped(self::getActivePlayerId(), $treasureCard, $servantDiceOnTreasureCard);
                 }
 
                 // Move the servant dice to the treasure cards and update their value
@@ -295,24 +304,8 @@ class CryptJj extends Table
                     $servantDice[] = $this->servantDiceManager->moveServantDiceToTreasureCardWithValue($servantDieId, $treasureCardSelection['id'], $treasureCardSelection['value']);
                 }
 
-                $notifications[] = array(
-                    'type' => "treasureCardClaimed",
-                    'message' => clienttranslate( '${playerName} claims ${treasureCard.type}'),
-                    'args' => array(
-                        'playerId' => self::getActivePlayerId(),
-                        'playerName' => self::getActivePlayerName(),
-                        'treasureCard' => $treasureCard,
-                        'servantDice' => $servantDice
-                    )
-                );
+                $this->notificationsManager->notifyTreasureCardClaimed(self::getActivePlayerId(), $treasureCard, $servantDice);
             }
-
-        }
-
-        // Notify all players
-        foreach( $notifications as $notification )
-        {
-            self::notifyAllPlayers( $notification['type'], $notification['message'], $notification['args']);
         }
 
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
@@ -346,6 +339,13 @@ class CryptJj extends Table
     }    
     */
 
+    function argStatePlayerTurn()
+    {
+        return array(
+          'playedBeforeThisRound' => self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1
+        );
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
 ////////////
@@ -370,37 +370,39 @@ class CryptJj extends Table
 
     function stNextPlayer() {
         self::debug("stNextPlayer");
-        self::debug($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId()));
-        // If the current player has the LightsOutCard we move into the Collect Treasure State
-        if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId())) {
-            $this->gamestate->nextState(STATE_COLLECT_TREASURE);
+        // Two Player Only, one player has both cards
+        if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId()) && $this->torchCardsManager->hasLeaderCard($this->getActivePlayerId())) {
+            if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
+                $this->gamestate->nextState(STATE_COLLECT_TREASURE);
+            } else {
+                self::DbQuery("UPDATE player SET has_played_before_this_round=1 WHERE player_id = " .$this->getActivePlayerId());
+                $this->activeNextPlayer();
+                $this->gamestate->nextState(STATE_PLAYER_TURN);
+            }
         } else {
-            $this->activeNextPlayer();
-            $this->gamestate->nextState(STATE_PLAYER_TURN);
+            // If the current player has the LightsOutCard we move into the Collect Treasure State
+            if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId())) {
+                $this->gamestate->nextState(STATE_COLLECT_TREASURE);
+            } else {
+                $this->activeNextPlayer();
+                $this->gamestate->nextState(STATE_PLAYER_TURN);
+            }
         }
+
     }
 
     function stCollectTreasure() {
         self::debug("stCollectTreasure");
 
-        $notifications = array();
         // 1. If a player has no servants on Treasure Cards, reclaim all servants
         $players = $this->loadPlayersBasicInfos();
-        foreach( $players as $player_id => $player )
+        foreach( $players as $playerId => $player )
         {
-            $servantDiceOnTreasureCard = $this->servantDiceManager->getServantDiceOnTreasureCards($player_id);
-            $exhaustedServantDiceForPlayer = $this->servantDiceManager->getServantDiceInExhaustedArea($player_id);
+            $servantDiceOnTreasureCard = $this->servantDiceManager->getServantDiceOnTreasureCards($playerId);
+            $exhaustedServantDiceForPlayer = $this->servantDiceManager->getServantDiceInExhaustedArea($playerId);
             if (sizeof($servantDiceOnTreasureCard) === 0 && sizeof($exhaustedServantDiceForPlayer) > 0) {
                 $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDiceForPlayer, 'id'));
-                $notifications[] = array(
-                    'type' => 'servantDiceRecovered',
-                    'message' => clienttranslate( '${playerName} recovers servant dice'),
-                    'args' => array(
-                        'playerId' => $player_id,
-                        'playerName' => $player['player_name'],
-                        'recoveredServantDice' => $exhaustedServantDiceForPlayer
-                    )
-                );
+                $this->notificationsManager->notifyServantDiceRecovered($playerId, $player['player_name'], $exhaustedServantDiceForPlayer);
             }
         }
 
@@ -411,13 +413,7 @@ class CryptJj extends Table
             // 2.1 if No Servants on Card, discard card
             if (sizeof($servantDiceOnTreasureCard) === 0) {
                 $this->treasureCardsManager->discardTreasureCard($treasureCard['id']);
-                $notifications[] = array(
-                    'type' => 'treasureCardDiscarded',
-                    'message' => clienttranslate( '${treasureCard.type} is discarded'),
-                    'args' => array(
-                        'treasureCard' => $treasureCard
-                    )
-                );
+                $this->notificationsManager->notifyTreasureCardDiscarded($treasureCard);
             } else {
                 // 2.2 if Servants on Card, Roll each Servant.
                 // If less than effort  > exhaust.
@@ -444,24 +440,8 @@ class CryptJj extends Table
                 }
 
                 $this->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
-
-                $notifications[] = array(
-                    'type' => 'treasureCardCollected',
-                    'message' => clienttranslate( '${playerName} collects ${treasureCard.type}'),
-                    'args' => array(
-                        'playerId' => $playerId,
-                        'playerName' => $players[$playerId]['player_name'],
-                        'treasureCard' => $treasureCard,
-                        'rolledServantDice' => $rolledServantDice
-                    )
-                );
+                $this->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], $rolledServantDice);
             }
-        }
-
-        self::trace(json_encode($notifications));
-        foreach( $notifications as $notification )
-        {
-            self::notifyAllPlayers( $notification['type'], $notification['message'], $notification['args']);
         }
 
         if ($this->treasureCardsManager->countCardsInDeck() > 0) {
@@ -474,6 +454,9 @@ class CryptJj extends Table
     function stPassTorchCards() {
         self::debug("stPassTorchCards");
 
+        $players = $this->loadPlayersBasicInfos();
+        $this->torchCardsManager->passTorchCards($players);
+        $this->notificationsManager->notifyTorchCardsPassed();
         $this->gamestate->nextState(STATE_NEXT_ROUND);
     }
 
@@ -486,8 +469,7 @@ class CryptJj extends Table
             'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
         ));
 
-        // TODO ACTIVE NEW PLAYER BASED ON TORCH CARD DISTRIBUTION
-        $this->activeNextPlayer();
+        $this->gamestate->changeActivePlayer($this->torchCardsManager->getLeaderPlayerId());
         $this->gamestate->nextState(STATE_PLAYER_TURN);
     }
 
