@@ -50,7 +50,7 @@ class action_cryptjj extends APP_GameAction
     {
         self::debug("recoverServants");
         self::setAjaxMode();
-        $this->game->recoverServants();
+        $this->game->recoverServants(true);
         self::ajaxResponse();
     }
 

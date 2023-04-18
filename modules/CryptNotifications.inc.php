@@ -53,8 +53,9 @@ class CryptNotifications extends APP_DbObject
         ));
     }
 
-    public function notifyServantDiceRecovered($playerId, $playerName, $recoveredServantDice) {
-        $this->game->notifyAllPlayers('servantDiceRecovered', clienttranslate( '${player_name} recovers servant dice'), array(
+    public function notifyServantDiceRecovered($playerId, $playerName, $recoveredServantDice, $isPlayerInitiated) {
+        $message = $isPlayerInitiated ? clienttranslate( '${player_name} recovers servant dice') : clienttranslate('${player_name} has no servant dice remaining, recovering servant dice');
+        $this->game->notifyAllPlayers('servantDiceRecovered', $message, array(
             'playerId' => $playerId,
             'player_name' => $playerName,
             'recoveredServantDice' => $recoveredServantDice

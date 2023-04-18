@@ -212,6 +212,7 @@
 
 .ui-row #treasure-cards-display {
     width: 100%;
+    min-height: 261px;
 }
 
 .ui-row #treasure-cards-display .treasure-card {

@@ -325,13 +325,15 @@ class CryptJj extends Table
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
     }
 
-    function recoverServants() {
+    function recoverServants($isPlayerInitiated) {
         // Check if this is a valid action
-        self::checkAction(ACTION_RECOVER_SERVANTS);
+        if ($isPlayerInitiated) {
+            self::checkAction(ACTION_RECOVER_SERVANTS);
+        }
 
         $exhaustedServantDice = $this->servantDiceManager->getServantDiceInExhaustedArea(self::getActivePlayerId());
         $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDice, 'id'));
-        $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), self::getActivePlayerName(), $exhaustedServantDice);
+        $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), self::getActivePlayerName(), $exhaustedServantDice, $isPlayerInitiated);
 
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
     }
@@ -402,7 +404,12 @@ class CryptJj extends Table
             } else {
                 self::DbQuery("UPDATE player SET has_played_before_this_round=1 WHERE player_id = " .$this->getActivePlayerId());
                 $this->activeNextPlayer();
-                $this->gamestate->nextState(STATE_PLAYER_TURN);
+                if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
+                    // If the player has no servant dice in their player area we automatically perform the recover servants action
+                    $this->recoverServants(false);
+                } else {
+                    $this->gamestate->nextState(STATE_PLAYER_TURN);
+                }
             }
         } else {
             // If the current player has the LightsOutCard we move into the Collect Treasure State
@@ -410,7 +417,12 @@ class CryptJj extends Table
                 $this->gamestate->nextState(STATE_COLLECT_TREASURE);
             } else {
                 $this->activeNextPlayer();
-                $this->gamestate->nextState(STATE_PLAYER_TURN);
+                if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
+                    // If the player has no servant dice in their player area we automatically perform the recover servants action
+                    $this->recoverServants(false);
+                } else {
+                    $this->gamestate->nextState(STATE_PLAYER_TURN);
+                }
             }
         }
 
@@ -494,7 +506,12 @@ class CryptJj extends Table
         ));
 
         $this->gamestate->changeActivePlayer($this->torchCardsManager->getLeaderPlayerId());
-        $this->gamestate->nextState(STATE_PLAYER_TURN);
+        if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
+            // If the player has no servant dice in their player area we automatically perform the recover servants action
+            $this->recoverServants(false);
+        } else {
+            $this->gamestate->nextState(STATE_PLAYER_TURN);
+        }
     }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -125,6 +125,12 @@ define(
                         .map(id => this.game.gamedatas.servantDice.find(die => die.id === id));
                 },
 
+                getServantDieInExhaustedArea(playerId) {
+                    return this.exhaustedArea.getAllItems()
+                        .map(id => id.replace('servant-die-', ''))
+                        .map(id => this.game.gamedatas.servantDice.find(die => die.id === id));
+                },
+
                 moveServantDiceToLocations(servantDice) {
                     servantDice.forEach(servantDie => {
                         if (servantDie.location === 'player_area') {

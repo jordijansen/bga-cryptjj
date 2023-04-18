@@ -77,7 +77,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stNextPlayer",
         "updateGameProgression" => false,
-        "transitions" => array( STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID, STATE_COLLECT_TREASURE => STATE_COLLECT_TREASURE_ID )
+        "transitions" => array(STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID, STATE_COLLECT_TREASURE => STATE_COLLECT_TREASURE_ID )
     ),
 
     STATE_COLLECT_TREASURE_ID => array(
@@ -104,7 +104,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stNextRound",
         "updateGameProgression" => false,
-        "transitions" => array( STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
+        "transitions" => array( STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
     ),
 
 

@@ -278,8 +278,11 @@ function (dojo, declare) {
         {
             console.log('recoverServants');
 
+            const nrOfServantDiceToRecover = this.servantManager.getServantDieInExhaustedArea(this.player_id).length;
+            const confirmMessage = dojo.string.substitute( _('You will recover ${nrOfServantDiceToRecover} Servant(s). Recovering Servants ends your turn'), { nrOfServantDiceToRecover });
+
             this.confirmationDialog(
-                _("Recovering Servants ends your turn"),
+                confirmMessage,
                 () => {
                     this.actionManager.recoverServants();
                 }
@@ -313,6 +316,7 @@ function (dojo, declare) {
             dojo.subscribe('leaderCardPassed', this, 'notif_leaderCardPassed');
             dojo.subscribe('lightsOutCardPassed', this, 'notif_lightsOutCardPassed');
 
+            this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardDiscarded', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardCollected', 1000 );
