@@ -1,7 +1,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * Villagersnew implementation : © Sandra Kuipers sandra@skuipers.com
+ * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -83,8 +83,9 @@ define(
                             const playerId = card.location.replace('player_area_', '');
                             this.moveTreasureCardToPlayerArea(card, playerId);
                         }
-
-                        this.game.addTooltipHtml(`treasure-card-${card.id}`, this.renderTooltip(card), 800);
+                        if (card.location !== 'display') {
+                            this.game.addTooltipHtml(`treasure-card-${card.id}`, this.renderTooltip(card), 800);
+                        }
                     }
                 },
 

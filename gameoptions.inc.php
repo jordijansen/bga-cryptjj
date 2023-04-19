@@ -1,5 +1,7 @@
 <?php
 
+require_once("modules/CryptGlobals.inc.php");
+
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -53,6 +55,33 @@ $game_options = array(
 
     */
 
+    OPTION_COLLECTORS => array(
+        'name' => totranslate('Collector Cards'),
+        'values' => array(
+            OPTION_COLLECTORS_A => array(
+                'name' => totranslate('A side'),
+                'description' => totranslate('Use the A side of the Collector Cards'),
+                'tmdisplay' => totranslate('[A Collectors]'),
+                'firstgameonly' => false,
+                'nobeginner' => false
+            ),
+            OPTION_COLLECTORS_RANDOM => array(
+                'name' => totranslate('A or B side (random)'),
+                'description' => totranslate('Use the A or B side of the Collector Cards, chosen randomly'),
+                'tmdisplay' => totranslate('[A or B Collectors]'),
+                'firstgameonly' => false,
+                'nobeginner' => true
+            ),
+            OPTION_COLLECTORS_B => array(
+                'name' => totranslate('B side'),
+                'description' => totranslate('Use the B side of the Collector Cards'),
+                'tmdisplay' => totranslate('[B Collectors]'),
+                'firstgameonly' => false,
+                'nobeginner' => true
+            ),
+        ),
+        'default' => 1
+    )
 );
 
 

@@ -9,6 +9,18 @@
  * -----
  */
 
+// Options
+const OPTION_COLLECTORS = 100;
+const OPTION_COLLECTORS_A = 1;
+const OPTION_COLLECTORS_RANDOM = 2;
+const OPTION_COLLECTORS_B = 3;
+
+// Collector Types
+const COLLECTOR_COLLECT_PHASE = 'COLLECT_PHASE';
+const COLLECTOR_END_GAME = 'END_GAME';
+const COLLECTOR_ANY_TIME = 'ANY_TIME';
+const COLLECTOR_BEFORE_CLAIM_PHASE = 'BEFORE_CLAIM_PHASE';
+
 // Actions
 const ACTION_CLAIM_TREASURE = "claimTreasure";
 const ACTION_RECOVER_SERVANTS = "recoverServants";

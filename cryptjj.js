@@ -27,6 +27,7 @@ define(["dojo",
         g_gamethemeurl + 'modules/js/TreasureCardManager.js',
         g_gamethemeurl + 'modules/js/PlayerManager.js',
         g_gamethemeurl + 'modules/js/ServantManager.js',
+        g_gamethemeurl + 'modules/js/CollectorCardManager.js',
     ],
 function (dojo, declare) {
     return declare("bgagame.cryptjj", ebg.core.gamegui, {
@@ -41,6 +42,7 @@ function (dojo, declare) {
             this.deckManager = new crypt.DeckManager(this);
             this.treasureCardManager = new crypt.TreasureCardManager(this);
             this.servantManager = new crypt.ServantManager(this);
+            this.collectorCardManager = new crypt.CollectorCardManager(this);
             // Here, you can init the global variables of your user interface
             // Example:
             // this.myGlobalValue = 0;
@@ -78,6 +80,7 @@ function (dojo, declare) {
             this.playerManager.setup(gameData);
             this.treasureCardManager.setup(gameData);
             this.servantManager.setup(gameData);
+            this.collectorCardManager.setup(gameData);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();

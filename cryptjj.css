@@ -266,91 +266,18 @@
 .treasure-card-tapestry-4 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 75% 0;}
 .treasure-card-tapestry-back {background-image: url("img/treasure-cards-tapestry.png"); background-position: 100% 0;}
 
-
-.collector-card-idol-a
-{
-    background:url('img/collector-cards.png') 0px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-idol-b
-{
-    background:url('img/collector-cards.png') -497px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-jewelery-a
-{
-    background:url('img/collector-cards.png') -994px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-jewelery-b
-{
-    background:url('img/collector-cards.png') -1491px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-manuscript-a
-{
-    background:url('img/collector-cards.png') -1988px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-manuscript-b
-{
-    background:url('img/collector-cards.png') -2485px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-pottery-a
-{
-    background:url('img/collector-cards.png') -2982px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-pottery-b
-{
-    background:url('img/collector-cards.png') -3479px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-remains-a
-{
-    background:url('img/collector-cards.png') -3976px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-remains-b
-{
-    background:url('img/collector-cards.png') -4473px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-tapestry-a
-{
-    background:url('img/collector-cards.png') -4970px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
-.collector-card-tapestry-b
-{
-    background:url('img/collector-cards.png') -5467px -0px;
-    width:497px;height:733px;
-    display:inline-block;
-}
-
+.collector-card-idol-A {background-image: url("img/collector-cards.png"); background-position: 0 0;}
+.collector-card-idol-B {background-image: url("img/collector-cards.png"); background-position: 9.09090909091% 0;}
+.collector-card-jewelery-A {background-image: url("img/collector-cards.png"); background-position: 18.1818181818% 0;}
+.collector-card-jewelery-B {background-image: url("img/collector-cards.png"); background-position: 27.2727272727% 0;}
+.collector-card-manuscript-A {background-image: url("img/collector-cards.png"); background-position: 36.3636363636% 0;}
+.collector-card-manuscript-B {background-image: url("img/collector-cards.png"); background-position: 45.4545454545% 0;}
+.collector-card-pottery-A {background-image: url("img/collector-cards.png"); background-position: 54.5454545455% 0;}
+.collector-card-pottery-B {background-image: url("img/collector-cards.png"); background-position: 63.6363636364% 0;}
+.collector-card-remains-A {background-image: url("img/collector-cards.png"); background-position: 72.7272727273% 0;}
+.collector-card-remains-B {background-image: url("img/collector-cards.png"); background-position: 81.8181818182% 0;}
+.collector-card-tapestry-A {background-image: url("img/collector-cards.png"); background-position: 90.9090909091% 0;}
+.collector-card-tapestry-B {background-image: url("img/collector-cards.png"); background-position: 100% 0;}
 
 .die {
     display: grid;

@@ -24,6 +24,7 @@ require_once("modules/CryptTreasureCards.inc.php");
 require_once("modules/CryptServantDice.inc.php");
 require_once("modules/CryptTorchCards.inc.php");
 require_once("modules/CryptNotifications.inc.php");
+require_once("modules/CryptCollectorCards.inc.php");
 
 class CryptJj extends Table
 {
@@ -56,6 +57,7 @@ class CryptJj extends Table
         $this->servantDiceManager = new CryptServantDice($this);
         $this->torchCardsManager = new CryptTorchCards($this);
         $this->notificationsManager = new CryptNotifications($this);
+        $this->collectorCardsManager = new CryptCollectorCards($this);
 	}
 	
     protected function getGameName( )
@@ -78,7 +80,7 @@ class CryptJj extends Table
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
         $gameinfos = self::getGameinfos();
         $default_colors = $gameinfos['player_colors'];
- 
+
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
         $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
@@ -103,16 +105,19 @@ class CryptJj extends Table
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // 1. Create Treasure Deck
+        // 1. Create Collector Cards
+        $this->collectorCardsManager->createCollectorCards($options);
+
+        // 2. Create Treasure Deck
         $this->treasureCardsManager->createInitialTreasureCardsDeck($players);
 
-        // 2. Fill the Treasure Card display with Cards
+        // 3. Fill the Treasure Card display with Cards
         $this->treasureCardsManager->drawTreasureCardsForDisplay(sizeof($players));
 
-        // 3. Create Servant Dice and place in player_area
+        // 4. Create Servant Dice and place in player_area
         $this->servantDiceManager->createServantDice();
 
-        // 4. Distribute torch & last light cards to players
+        // 5. Distribute torch & last light cards to players
         $this->torchCardsManager->distributeInitialTorchCards($players);
 
         // Activate first player (which is in general a good idea :) )
@@ -136,6 +141,7 @@ class CryptJj extends Table
 
         $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
 
+        $result['collectors'] = $this->collectorCardsManager->getCollectors();
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, has_torch_card_leader, has_torch_card_lights_out, has_played_before_this_round FROM player ";

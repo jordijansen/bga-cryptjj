@@ -25,8 +25,8 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div class="ui-row">
-    <div id="collector-cards" class="whiteblock"><h2>Collectors</h2></div>
+<div class="whiteblock">
+    <div id="collector-cards"></div>
 </div>
 <div class="ui-row">
     <div id="treasure-cards-deck" class="whiteblock"></div>
@@ -63,12 +63,12 @@ var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}
             </div>\
         </div>\
         <div class="player-treasure-areas">\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-tapestry"></div></div>\
             <div class="player-treasure-area"><div id="player-${id}-treasure-idol"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-remains"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-pottery"></div></div>\
             <div class="player-treasure-area"><div id="player-${id}-treasure-jewelery"></div></div>\
             <div class="player-treasure-area"><div id="player-${id}-treasure-manuscript"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-pottery"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-remains"></div></div>\
+            <div class="player-treasure-area"><div id="player-${id}-treasure-tapestry"></div></div>\
         </div>\
     </div>\
 </div>';
@@ -90,7 +90,7 @@ var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="ca
 <div>';
 
 var jstpl_treasure_card_tooltip='<div class="treasure-card-tooltip">\
-<div class="card treasure-card large treasure-card-${type}-${value}"></div>\
+<div class="card treasure-card treasure-card-${type}-${value}"></div>\
 <hr/>\
 ${text}\
 <div>';
@@ -100,10 +100,12 @@ var jstpl_torch_card_leader='<div id="leader-card" class="card small torch-card-
 var jstpl_torch_card_lights_out='<div id="lights-out-card" class="card small torch-card-lights-out"></div>';
 
 var jstpl_torch_card_tooltip='<div class="torch-card-tooltip">\
-<div class="card large torch-card-${type}"></div>\
+<div class="card torch-card-${type}"></div>\
 <hr/>\
 ${text}\
 <div>';
+
+var jstpl_collector_card='<div data-id="${id}" id="collector-card-${id}" class="card collector-card collector-card-${id}"><div>';
 
 </script>
 
