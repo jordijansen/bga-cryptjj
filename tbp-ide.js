@@ -49,7 +49,7 @@ const TBP = {
         type: 'idol',
         value: 4
     }],
-    collectors: [{id: 'idol-A', treasure_type: 'idol', side: 'A', ability_type: 'COLLECT_PHASE', description_translated: 'text'}],
+    collectors: [{id: 'idol-A', name_translated: 'Idol Collector', treasure_type: 'idol', side: 'A', ability_type: 'COLLECT_PHASE', description_translated: 'text', nr_of_cards_to_flip: 2}],
     players: {
       1: {
         id: 1,

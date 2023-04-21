@@ -157,7 +157,7 @@ class CryptJj extends Table
         }
         $result['treasureDeck']['size'] = $this->treasureCardsManager->countCardsInDeck();
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
-        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id);
+        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id, $this->collectorCardsManager->hasUsedManuscriptBThisRound($current_player_id));
 
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -339,9 +339,42 @@ class CryptJj extends Table
 
         $exhaustedServantDice = $this->servantDiceManager->getServantDiceInExhaustedArea(self::getActivePlayerId());
         $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDice, 'id'));
-        $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), self::getActivePlayerName(), $exhaustedServantDice, $isPlayerInitiated);
+        $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), $exhaustedServantDice, $isPlayerInitiated);
 
         $this->gamestate->nextState(STATE_NEXT_PLAYER);
+    }
+
+    function activateCollector($activateCollector)
+    {
+        self::trace(json_encode($activateCollector));
+
+        $collector = $this->collectorCardsManager->getCollector($activateCollector['collectorId']);
+        $treasureCards = [];
+        foreach ($activateCollector['treasureCardIds'] as $treasureCardId) {
+            $treasureCards[] = $this->treasureCardsManager->getTreasureCard($treasureCardId, self::getCurrentPlayerId());
+        }
+
+        if (isset($collector)) {
+            if ($this->isCollectorAllowed($collector)) {
+                if (sizeof($treasureCards) == $collector['nr_of_cards_to_flip']) {
+                    $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCards);
+                } else {
+                    throw new BgaUserException("Wrong number of cards provided");
+                }
+            } else {
+                throw new BgaUserException("Collector with ability type " .$collector['ability_type']. " not allowed at the moment");
+            }
+        } else {
+            throw new BgaUserException("Unknown collector!");
+        }
+
+    }
+
+    function isCollectorAllowed($collector) {
+        if ($collector['ability_type'] === 'ANY_TIME') {
+            return true;
+        }
+        return false;
     }
 
     
@@ -375,7 +408,8 @@ class CryptJj extends Table
     function argStatePlayerTurn()
     {
         return array(
-          'playedBeforeThisRound' => self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1
+          'playedBeforeThisRound' => self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1,
+          'usedManuscriptBThisRound' => self::getUniqueValueFromDB("SELECT has_used_manuscript_b_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1
         );
     }
 
@@ -445,7 +479,7 @@ class CryptJj extends Table
             $exhaustedServantDiceForPlayer = $this->servantDiceManager->getServantDiceInExhaustedArea($playerId);
             if (sizeof($servantDiceOnTreasureCard) === 0 && sizeof($exhaustedServantDiceForPlayer) > 0) {
                 $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDiceForPlayer, 'id'));
-                $this->notificationsManager->notifyServantDiceRecovered($playerId, $player['player_name'], $exhaustedServantDiceForPlayer);
+                $this->notificationsManager->notifyServantDiceRecovered($playerId, $exhaustedServantDiceForPlayer);
             }
         }
 

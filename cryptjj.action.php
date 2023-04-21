@@ -54,10 +54,15 @@ class action_cryptjj extends APP_GameAction
         self::ajaxResponse();
     }
 
-
-    // TODO: defines your action entry points there
-
-
+    public function activateCollector()
+    {
+        self::debug("activateCollector");
+        self::setAjaxMode();
+        $args = self::getArg('actionArgs', AT_json, true);
+        $this->validateJSonAlphaNum($args, 'actionArgs');
+        $this->game->activateCollector($args);
+        self::ajaxResponse();
+    }
 
     public function validateJSonAlphaNum($value, $argName = 'unknown')
     {

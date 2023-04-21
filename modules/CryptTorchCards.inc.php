@@ -59,7 +59,7 @@ class CryptTorchCards extends APP_DbObject
         $leaderPlayerNo = $currentLeaderPlayerNo == sizeof($players) ? 1 : $currentLeaderPlayerNo + 1;
         $lightsOutPlayerNo = $currentLightsOutPlayerNo == sizeof($players) ? 1 : $currentLightsOutPlayerNo + 1;
 
-        self::DbQuery("UPDATE player SET has_played_before_this_round=0, has_torch_card_leader=0, has_torch_card_lights_out=0");
+        self::DbQuery("UPDATE player SET has_played_before_this_round=0, has_torch_card_leader=0, has_torch_card_lights_out=0, has_used_manuscript_b_this_round=0");
         self::DbQuery("UPDATE player SET has_torch_card_leader=1 WHERE player_no = ".$leaderPlayerNo);
         self::DbQuery("UPDATE player SET has_torch_card_lights_out=1 WHERE player_no = ".$lightsOutPlayerNo);
     }

@@ -49,12 +49,14 @@ function (dojo, declare) {
 
             this.gameStates = {
                 playerTurn: 'playerTurn',
-                claimTreasure: 'claimTreasure' // Client Side only state
+                claimTreasure: 'claimTreasure', // Client Side only state
+                activateCollector: 'activateCollector' // Client Side only state
             }
 
             this.gameActions = {
                 claimTreasure: 'claimTreasure',
-                recoverServants: 'recoverServants'
+                recoverServants: 'recoverServants',
+                activateCollector: 'activateCollector'
             }
 
         },
@@ -113,9 +115,13 @@ function (dojo, declare) {
 
                 case this.gameStates.playerTurn:
                     this.playerManager.playedBeforeThisRound = args.args.playedBeforeThisRound;
+                    this.playerManager.usedManuscriptBThisRound = args.args.usedManuscriptBThisRound;
                     break;
                 case this.gameStates.claimTreasure:
                     this.treasureCardManager.enterClaimTreasureMode();
+                    break;
+                case this.gameStates.activateCollector:
+                    this.collectorCardManager.enterActivateCollectorMode(args.args.abilityType);
                     break;
             }
         },
@@ -141,6 +147,10 @@ function (dojo, declare) {
 
                 case this.gameStates.claimTreasure:
                     this.treasureCardManager.exitClaimTreasureMode(false);
+                    break;
+                case this.gameStates.activateCollector:
+                    this.treasureCardManager.exitSelectTreasureMode();
+                    this.collectorCardManager.exitActivateCollectorMode();
                     break;
             }
         },
@@ -171,7 +181,22 @@ function (dojo, declare) {
                         break;
                     case this.gameStates.claimTreasure:
                         this.addActionButton('confirm_claim_treasure_state', _('Confirm'), 'confirmClaimTreasure');
-                        this.addActionButton('undo_claim_treasure_state', _('Undo'), 'undoClaimTreasure');
+                        this.addActionButton('undo_claim_treasure_state', _('Cancel'), 'undoClaimTreasure', null, false, 'gray');
+                        break;
+                }
+            }
+
+            // Any Time Actions
+            if (!this.isSpectator) {
+                switch (stateName) {
+                    case this.gameStates.playerTurn:
+                        if (this.collectorCardManager.getPossibleCollectorWithAbilityType('ANY_TIME').length > 0) {
+                            this.addActionButton('activate_collector', _('Activate Collector'), (evt)=> this.enterActivateCollectorMode(evt,'ANY_TIME'), null, false, 'red');
+                        }
+                        break;
+                    case this.gameStates.activateCollector:
+                        this.addActionButton('confirm_activate_collector', _('Confirm'), 'confirmActivateCollector');
+                        this.addActionButton('undo_activate_collector', _('Cancel'), 'undoActivateCollector', null, false, 'gray');
                         break;
                 }
             }
@@ -250,7 +275,6 @@ function (dojo, declare) {
                 this.setClientState(this.gameStates.claimTreasure, {
                     descriptionmyturn: _("${you} must claim treasure using your servants and choose their effort value")
                 })
-
             } else {
                 this.showMessage(_('You have no servant dice available, recover servants first'), 'error');
             }
@@ -281,6 +305,9 @@ function (dojo, declare) {
         {
             console.log('recoverServants');
 
+            // Preventing default browser reaction
+            dojo.stopEvent(evt);
+
             const nrOfServantDiceToRecover = this.servantManager.getServantDieInExhaustedArea(this.player_id).length;
             const confirmMessage = dojo.string.substitute( _('You will recover ${nrOfServantDiceToRecover} Servant(s). Recovering Servants ends your turn'), { nrOfServantDiceToRecover });
 
@@ -290,6 +317,47 @@ function (dojo, declare) {
                     this.actionManager.recoverServants();
                 }
             );
+        },
+
+        enterActivateCollectorMode: function (evt, abilityType)
+        {
+            console.log('enterActivateCollectorMode=' + abilityType)
+
+            // Preventing default browser reaction
+            dojo.stopEvent(evt);
+
+            this.setClientState(this.gameStates.activateCollector, {
+                args: {abilityType},
+                description: _("Select a collector to activate"),
+                descriptionmyturn: _("Select a collector to activate")
+            })
+        },
+
+        confirmActivateCollector: function (evt)
+        {
+            console.log('confirmActivateCollector')
+
+            const collectorId = this.collectorCardManager.getSelectedCollector();
+            if (collectorId) {
+                const treasureCardIds = this.treasureCardManager.getSelectedTreasureCards();
+                if (treasureCardIds.length > 0) {
+                    this.actionManager.activateCollector(collectorId, treasureCardIds);
+                } else {
+                    this.showMessage( _('You need to select treasure card(s) to flip'), 'error');
+                }
+            } else {
+                this.showMessage( _('You need to select a collector to activate'), 'error');
+            }
+        },
+
+        undoActivateCollector: function (evt)
+        {
+            console.log('undoActivateCollector')
+
+            // Preventing default browser reaction
+            dojo.stopEvent(evt);
+
+            this.restoreServerGameState();
         },
 
         ///////////////////////////////////////////////////
@@ -308,8 +376,6 @@ function (dojo, declare) {
         {
             console.log( 'notifications subscriptions setup' );
             
-            // TODO: here, associate your game notifications with local methods
-
             dojo.subscribe('treasureCardClaimed', this, 'notif_treasureCardClaimed');
             dojo.subscribe('treasureCardBumped', this, 'notif_treasureCardBumped');
             dojo.subscribe('servantDiceRecovered', this, 'notif_servantDiceRecovered');
@@ -318,12 +384,16 @@ function (dojo, declare) {
             dojo.subscribe('treasureCardDisplayUpdated', this, 'notif_treasureCardDisplayUpdated');
             dojo.subscribe('leaderCardPassed', this, 'notif_leaderCardPassed');
             dojo.subscribe('lightsOutCardPassed', this, 'notif_lightsOutCardPassed');
+            dojo.subscribe('collectorUsed', this, 'notif_collectorUsed');
+            dojo.subscribe('faceDownDisplayCardsRevealed', this, 'notif_faceDownDisplayCardsRevealed');
 
             this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardDiscarded', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardCollected', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardDisplayUpdated', 1000 );
+            this.notifqueue.setSynchronous( 'collectorUsed', 1000 );
+            this.notifqueue.setSynchronous( 'faceDownDisplayCardsRevealed', 1000 );
 
 
             // Example 1: standard notification handling
@@ -428,6 +498,30 @@ function (dojo, declare) {
             console.log( lightsOutCardPassed );
 
             this.playerManager.setLightsOutCard(lightsOutCardPassed.player_id)
+        },
+
+        notif_collectorUsed: function( notif = {args: {playerId: '1', collector: {}, flippedTreasureCards: []}} ) {
+            console.log( 'notif_collectorUsed' );
+
+            const collectorUsed = notif['args'];
+            console.log( collectorUsed );
+
+            this.treasureCardManager.renderCardsAndMoveToZone(collectorUsed.flippedTreasureCards, true);
+
+            if (Number(collectorUsed.playerId) === this.player_id) {
+                this.restoreServerGameState();
+            }
+        },
+
+        notif_faceDownDisplayCardsRevealed: function( notif = {args: {playerId: '1', treasureCards: []}} ) {
+            console.log( 'notif_faceDownDisplayCardsRevealed' );
+
+            const faceDownDisplayCardsRevealed = notif['args'];
+            console.log( faceDownDisplayCardsRevealed );
+
+            if (faceDownDisplayCardsRevealed.treasureCards) {
+                this.treasureCardManager.renderCardsAndMoveToZone(faceDownDisplayCardsRevealed.treasureCards, true);
+            }
         },
 
 //         'type' => 'treasureCardCollected',

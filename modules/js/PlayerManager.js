@@ -20,6 +20,7 @@ define(
             null, {
                 game: null,
                 playedBeforeThisRound: false,
+                usedManuscriptBThisRound: false,
                 leaderPlayer: null,
                 lightsOutPlayer: null,
 
@@ -66,6 +67,7 @@ define(
                     dojo.destroy('leader-card');
                     dojo.place(card, player_board_div);
                     this.game.addTooltipHtml('leader-card', this.renderTorchCardTooltip('leader'), 800);
+                    this.leaderPlayer = playerId;
                 },
 
                 setLightsOutCard(playerId) {
@@ -74,27 +76,29 @@ define(
                     dojo.destroy('lights-out-card');
                     dojo.place(card, player_board_div);
                     this.game.addTooltipHtml('lights-out-card', this.renderTorchCardTooltip('lights-out'), 800);
+                    this.lightsOutPlayer = playerId;
                 },
 
                 hasLightsOutCard(playerId) {
-                    return this.lightsOutPlayer === playerId;
+                    return this.lightsOutPlayer === playerId + '';
                 },
 
                 hasLeaderCard(playerId) {
-                    return this.leaderPlayer === playerId;
+                    return this.leaderPlayer === playerId + '';
                 },
 
                 hasPlayedBeforeThisRound() {
-                    return this.hasPlayedBeforeThisRound === true;
+                    return this.playedBeforeThisRound === true;
+                },
+
+                hasUsedManuscriptBThisRound() {
+                    return this.usedManuscriptBThisRound === true;
                 },
 
                 renderTorchCardTooltip(type) {
-                    let text;
-                    if (type === 'leader') {
-                        text = _('Starting with the Leader, each player gets one turn to claim Treasure cards by placing Servant dice on them or recover their Servant dice. In a 2-player game, the Leader also has the Lights Out card and therefore gets a second turn to claim or recover.');
-                    } else {
-                        text = _('The player with the Lights Out card will have the last turn. On the last turn, this player can only place Servants on one Treasure card. In a 2-player game, the Leader also has the Lights Out card and therefore gets a second turn to claim or recover.');
-                    }
+                    const text = type === 'leader' ?
+                        _('Starting with the Leader, each player gets one turn to claim Treasure cards by placing Servant dice on them or recover their Servant dice. In a 2-player game, the Leader also has the Lights Out card and therefore gets a second turn to claim or recover.') :
+                        _('The player with the Lights Out card will have the last turn. On the last turn, this player can only place Servants on one Treasure card. In a 2-player game, the Leader also has the Lights Out card and therefore gets a second turn to claim or recover.');
                     return this.game.format_block('jstpl_torch_card_tooltip', {type, text});
                 },
             });

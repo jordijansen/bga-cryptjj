@@ -96,21 +96,27 @@
 .card.selectable {
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
     animation: pulse 2s infinite;
+    outline: 4px rgba(80, 200, 255, 0.75) solid;
+    cursor: pointer;
 }
 
-.treasure-card.selected .row .bgabutton {
+.card.selected {
+    outline: 4px rgba(124, 252, 0, 0.75) solid !important;
+    cursor: pointer;
+}
+
+.card.invalid {
+    outline: 4px rgba(255, 0, 0, 0.75) solid !important;
+}
+
+#treasure-cards-display .treasure-card.selected .row .bgabutton {
     visibility: visible;
 }
 
-.treasure-card.selected {
-    border: 4px rgba(80, 200, 255, 0.75) solid;
-}
-
-.treasure-card.selectable .dice-selection-area,
-.treasure-card.selected .dice-selection-area,
+#treasure-cards-display .treasure-card.selectable .dice-selection-area,
+#treasure-cards-display .treasure-card.selected .dice-selection-area,
 .dice-selection-area:has(.servant-die){
     visibility: visible;
-    cursor: pointer;
 }
 
 .treasure-card .row .bgabutton {
@@ -145,10 +151,6 @@
     width: 150px;
     margin-left: 13px;
     visibility: hidden;
-}
-
-.invalid {
-    border: 4px rgba(255, 0, 0, 0.75) solid !important;
 }
 
 .dice-placement-area {

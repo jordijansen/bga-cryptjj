@@ -37,6 +37,11 @@ define(
                     this._performAction('recoverServants')
                 },
 
+                activateCollector(collectorId, treasureCardIds = []) {
+                    const args = {actionArgs: JSON.stringify({collectorId, treasureCardIds})}
+                    this._performActionWithoutCheckAction('activateCollector', args)
+                },
+
                 _performAction(action, args, handler) {
                     if (!args) {
                         args = {};
@@ -46,6 +51,15 @@ define(
                     if (this.game.checkAction(action)) {
                         this.game.ajaxcall("/" + this.game.game_name + "/" + this.game.game_name + "/" + action + ".html", args, this, (result) => console.log(`Succesfully performed ${action}`), handler);
                     }
+                },
+
+                _performActionWithoutCheckAction(action, args, handler) {
+                    if (!args) {
+                        args = {};
+                    }
+                    args.lock = true;
+
+                    this.game.ajaxcall("/" + this.game.game_name + "/" + this.game.game_name + "/" + action + ".html", args, this, (result) => console.log(`Succesfully performed ${action}`), handler);
                 },
             });
     }

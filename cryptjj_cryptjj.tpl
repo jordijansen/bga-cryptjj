@@ -73,7 +73,7 @@ var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}
     </div>\
 </div>';
 var jstpl_treasure_deck='<div class="card treasure-card-${topCardType}-back"><h2 class="deck-count">${size}</h2></div>';
-var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="card treasure-card treasure-card-${type}-${value}">\
+var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="will-be-set-by-code">\
     <div class="button-container" style="padding-top: 70px;"> \
         <div class="row"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
         <div class="row">\

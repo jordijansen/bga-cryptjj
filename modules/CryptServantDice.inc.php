@@ -79,4 +79,8 @@ class CryptServantDice extends APP_DbObject
     public function recoverServantDice($dieIds) {
         $this->game->servant_dice->moveCards($dieIds, 'player_area', 1);
     }
+
+    public function recoverServantDie($dieId) {
+        $this->game->servant_dice->moveCard($dieId, 'player_area', 1);
+    }
 }

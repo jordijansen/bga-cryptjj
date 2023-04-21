@@ -53,11 +53,12 @@ class CryptNotifications extends APP_DbObject
         ));
     }
 
-    public function notifyServantDiceRecovered($playerId, $playerName, $recoveredServantDice, $isPlayerInitiated) {
+    public function notifyServantDiceRecovered($playerId, $recoveredServantDice, $isPlayerInitiated) {
+        $player = $this->game->getPlayer($playerId);
         $message = $isPlayerInitiated ? clienttranslate( '${player_name} recovers servant dice') : clienttranslate('${player_name} has no servant dice remaining, recovering servant dice');
         $this->game->notifyAllPlayers('servantDiceRecovered', $message, array(
             'playerId' => $playerId,
-            'player_name' => $playerName,
+            'player_name' => $player['player_name'],
             'recoveredServantDice' => $recoveredServantDice
         ));
     }
@@ -69,23 +70,31 @@ class CryptNotifications extends APP_DbObject
     }
 
     public function notifyTreasureCardCollected($playerId, $treasureCardId, $rolledServantDice) {
-        $this->game->notifyPlayer($playerId, 'treasureCardCollected', clienttranslate( 'You collect ${treasureCard.type}'), array(
-            'playerId' => $playerId,
-            'treasureCard' => $this->game->treasureCardsManager->getTreasureCard($treasureCardId, $playerId),
-            'rolledServantDice' => $rolledServantDice
-        ));
+        $playerPerformingAction = $this->game->getPlayer($playerId);
 
         $players = $this->game->loadPlayersBasicInfos();
         foreach( $players as $id => $player )
         {
-            if ($id != $playerId) {
-                $this->game->notifyPlayer($id, 'treasureCardCollected', clienttranslate( '${player_name} collects ${treasureCard.type}'), array(
-                    'playerId' => $playerId,
-                    'player_name' => $player['player_name'],
-                    'treasureCard' => $this->game->treasureCardsManager->getTreasureCard($treasureCardId, $id),
-                    'rolledServantDice' => $rolledServantDice
-                ));
-            }
+            $this->game->notifyPlayer($id, 'treasureCardCollected', $id == $playerId ? clienttranslate( 'You collect ${treasureCard.type}') : clienttranslate( '${player_name} collects ${treasureCard.type}'), array(
+                'playerId' => $playerPerformingAction['player_id'],
+                'player_name' => $playerPerformingAction['player_name'],
+                'treasureCard' => $this->game->treasureCardsManager->getTreasureCard($treasureCardId, $id),
+                'rolledServantDice' => $rolledServantDice
+            ));
+        }
+    }
+
+    public function notifyFaceDownDisplayCardsRevealed($playerId, $treasureCardsInDisplay) {
+        $playerPerformingAction = $this->game->getPlayer($playerId);
+
+        $players = $this->game->loadPlayersBasicInfos();
+        foreach( $players as $id => $player )
+        {
+            $this->game->notifyPlayer($id, 'faceDownDisplayCardsRevealed', $id == $playerId ? clienttranslate( 'You reveal face down treasure cards') : clienttranslate( '${player_name} looks at face down treasure cards in display'), array(
+                'playerId' => $playerPerformingAction['player_id'],
+                'player_name' => $playerPerformingAction['player_name'],
+                'treasureCards' => $id == $playerId ? $treasureCardsInDisplay : null
+            ));
         }
     }
 
@@ -106,5 +115,16 @@ class CryptNotifications extends APP_DbObject
                 ));
             }
         }
+    }
+
+    public function notifyCollectorUsed($playerId, $collector, $flippedTreasureCards) {
+        $player = $this->game->getPlayer($playerId);
+
+        $this->game->notifyAllPlayers('collectorUsed', clienttranslate( '${player_name} activates ${collector.name_translated}'), array(
+            'playerId' => $playerId,
+            'player_name' => $player['player_name'],
+            'collector' => $collector,
+            'flippedTreasureCards' => $flippedTreasureCards
+        ));
     }
 }
