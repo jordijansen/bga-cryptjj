@@ -96,9 +96,9 @@ ${text}\
 <div>';
 
 var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die servant-die die-${color}"></div>';
-var jstpl_torch_card_leader='<div id="leader-card" class="card small torch-card-leader"></div>';
-var jstpl_torch_card_lights_out='<div id="lights-out-card" class="card small torch-card-lights-out"></div>';
 
+var jstpl_torch_card_container='<div id="torch-cards-${playerId}"></div>';
+var jstpl_torch_card='<div id="${type}-card" class="card small torch-card-${type}"></div>';
 var jstpl_torch_card_tooltip='<div class="torch-card-tooltip">\
 <div class="card torch-card-${type}"></div>\
 <hr/>\

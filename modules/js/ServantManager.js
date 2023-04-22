@@ -128,7 +128,8 @@ define(
                 getServantDieInExhaustedArea(playerId) {
                     return this.exhaustedArea.getAllItems()
                         .map(id => id.replace('servant-die-', ''))
-                        .map(id => this.game.gamedatas.servantDice.find(die => die.type === playerId && die.id === id));
+                        .map(id => this.game.gamedatas.servantDice.find(die => die.id === id))
+                        .filter(die => die.type === playerId);
                 },
 
                 moveServantDiceToLocations(servantDice) {

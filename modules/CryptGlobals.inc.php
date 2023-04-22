@@ -24,25 +24,35 @@ const COLLECTOR_BEFORE_CLAIM_PHASE = 'BEFORE_CLAIM_PHASE';
 // Actions
 const ACTION_CLAIM_TREASURE = "claimTreasure";
 const ACTION_RECOVER_SERVANTS = "recoverServants";
+const ACTION_ACTIVATE_COLLECTOR = "activateCollector";
 
 // States
 const STATE_SET_UP = "gameSetup";
 const STATE_SET_UP_ID = 1;
 
-const STATE_PLAYER_TURN = "playerTurn";
-const STATE_PLAYER_TURN_ID = 10;
+const STATE_REVEAL_TREASURE = "revealTreasure";
+const STATE_REVEAL_TREASURE_ID = 10;
 
-const STATE_NEXT_PLAYER = "nextPlayer";
-const STATE_NEXT_PLAYER_ID = 11;
+const STATE_BEFORE_CLAIM_PHASE = "beforeClaimPhase";
+const STATE_BEFORE_CLAIM_PHASE_ID = 20;
+
+const STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS = "beforeClaimPhaseActivateCollectors";
+const STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID = 21;
+
+const STATE_BEFORE_PLAYER_TURN = "beforePlayerTurn";
+const STATE_BEFORE_PLAYER_TURN_ID = 30;
+
+const STATE_PLAYER_TURN = "playerTurn";
+const STATE_PLAYER_TURN_ID = 31;
+
+const STATE_AFTER_PLAYER_TURN = "afterPlayerTurn";
+const STATE_AFTER_PLAYER_TURN_ID = 32;
 
 CONST STATE_COLLECT_TREASURE = "collectTreasure";
-const STATE_COLLECT_TREASURE_ID = 12;
+const STATE_COLLECT_TREASURE_ID = 40;
 
 CONST STATE_PASS_TORCH_CARDS = "passTorchCards";
-const STATE_PASS_TORCH_CARDS_ID = 13;
-
-CONST STATE_NEXT_ROUND = "nextRound";
-const STATE_NEXT_ROUND_ID = 14;
+const STATE_PASS_TORCH_CARDS_ID = 50;
 
 const STATE_GAME_END = "gameEnd";
 const STATE_GAME_END_ID = 99;

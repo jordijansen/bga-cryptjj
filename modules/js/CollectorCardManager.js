@@ -51,10 +51,10 @@ define(
                         if (card.ability_type === abilityType) {
                             const flippableTreasureCardIds = this.game.treasureCardManager.getTreasureCardsInPlayerAreaOfType(this.game.player_id, card.treasure_type)
                                 .filter(id => this.game.treasureCardManager.isTreasureCardFaceDown(id, card.treasure_type));
-                            console.log(flippableTreasureCardIds);
-                            if (flippableTreasureCardIds >= card.nr_of_cards_to_flip) {
+                            if (flippableTreasureCardIds.length >= card.nr_of_cards_to_flip) {
                                 if (card.id === 'remains-A') {
                                     // remains-A lets you recover a servant die, useless if you have no exhausted servant dice
+                                    console.log(this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id));
                                     if (this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id).length > 0) {
                                         result.push(card);
                                     }

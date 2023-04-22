@@ -36,6 +36,8 @@ function (dojo, declare) {
 
             this.cardWidth = 178;
             this.cardHeight = 261;
+            this.cardSmallWidth = 71;
+            this.cardSmallHeight = 104;
 
             this.actionManager = new crypt.ActionManager(this);
             this.playerManager = new crypt.PlayerManager(this);

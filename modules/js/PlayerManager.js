@@ -21,6 +21,7 @@ define(
                 game: null,
                 playedBeforeThisRound: false,
                 usedManuscriptBThisRound: false,
+                playerTorchCardAreas: {},
                 leaderPlayer: null,
                 lightsOutPlayer: null,
 
@@ -34,6 +35,24 @@ define(
                     let thisPlayerArea;
                     const otherPlayerAreas = [];
                     Object.entries(this.game.gamedatas.players).forEach(([playerId, player]) => {
+                        this.playerTorchCardAreas[playerId] = new ebg.zone();
+
+                        const playerBoardDiv = $(`player_board_${playerId}`);
+                        const torchCardsElement = this.game.format_block('jstpl_torch_card_container', {playerId});
+                        dojo.place(torchCardsElement, playerBoardDiv);
+
+                        const torchCardContainerId = $(`torch-cards-${playerId}`);
+                        this.playerTorchCardAreas[playerId].create(this.game, torchCardContainerId, this.game.cardSmallWidth, this.game.cardSmallHeight);
+
+                        if (this.game.gamedatas.players[playerId].has_torch_card_leader === '1') {
+                            this.createCard(playerId, 'leader');
+                            this.setLeaderCard(playerId);
+                        }
+                        if (this.game.gamedatas.players[playerId].has_torch_card_lights_out === '1') {
+                            this.createCard(playerId, 'lights-out');
+                            this.setLightsOutCard(playerId);
+                        }
+
                         const playerArea = this.game.format_block('jstpl_player_area', {
                             "id": player.id,
                             "color": player.color,
@@ -45,12 +64,7 @@ define(
                             otherPlayerAreas.push(playerArea);
                         }
 
-                        if (this.game.gamedatas.players[playerId].has_torch_card_leader === '1') {
-                            this.setLeaderCard(playerId);
-                        }
-                        if (this.game.gamedatas.players[playerId].has_torch_card_lights_out === '1') {
-                            this.setLightsOutCard(playerId);
-                        }
+
                     })
 
                     dojo.place(thisPlayerArea, "player-areas-row")
@@ -61,30 +75,38 @@ define(
                     return Object.keys(this.game.gamedatas.players).length;
                 },
 
+                createCard(playerId, type) {
+                    const torchCardContainerId = $(`torch-cards-${playerId}`);
+                    const card = this.game.format_block('jstpl_torch_card', {type});
+                    dojo.place(card, torchCardContainerId);
+                },
+
                 setLeaderCard(playerId) {
-                    const player_board_div = $('player_board_' + playerId);
-                    const card = this.game.format_block('jstpl_torch_card_leader');
-                    dojo.destroy('leader-card');
-                    dojo.place(card, player_board_div);
+                    this.removeCardFromZones('leader-card');
+                    this.playerTorchCardAreas[playerId].placeInZone('leader-card');
+
                     this.game.addTooltipHtml('leader-card', this.renderTorchCardTooltip('leader'), 800);
-                    this.leaderPlayer = playerId;
                 },
 
                 setLightsOutCard(playerId) {
-                    const player_board_div = $('player_board_' + playerId);
-                    const card = this.game.format_block('jstpl_torch_card_lights_out');
-                    dojo.destroy('lights-out-card');
-                    dojo.place(card, player_board_div);
+                    this.removeCardFromZones('lights-out-card');
+                    this.playerTorchCardAreas[playerId].placeInZone('lights-out-card');
+
                     this.game.addTooltipHtml('lights-out-card', this.renderTorchCardTooltip('lights-out'), 800);
-                    this.lightsOutPlayer = playerId;
+                },
+
+                removeCardFromZones(cardId) {
+                    Object.values(this.playerTorchCardAreas).forEach((zone) => {
+                       zone.removeFromZone(cardId, false)
+                    });
                 },
 
                 hasLightsOutCard(playerId) {
-                    return this.lightsOutPlayer === playerId + '';
+                    return this.playerTorchCardAreas[playerId].getAllItems().includes('lights-out-card');
                 },
 
                 hasLeaderCard(playerId) {
-                    return this.leaderPlayer === playerId + '';
+                    return this.playerTorchCardAreas[playerId].getAllItems().includes('leader-card');
                 },
 
                 hasPlayedBeforeThisRound() {

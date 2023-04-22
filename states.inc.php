@@ -58,26 +58,63 @@ $machinestates = array(
         "description" => "",
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => array( "" => STATE_PLAYER_TURN_ID )
+        "transitions" => array( "" => STATE_REVEAL_TREASURE_ID )
+    ),
+
+    STATE_REVEAL_TREASURE_ID => array(
+        "name" => STATE_REVEAL_TREASURE,
+        "description" => clienttranslate('Revealing Treasure Cards...'),
+        "type" => "game",
+        "action" => "stRevealTreasure",
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_BEFORE_CLAIM_PHASE => STATE_BEFORE_CLAIM_PHASE_ID)
+    ),
+
+    STATE_BEFORE_CLAIM_PHASE_ID => array(
+        "name" => STATE_BEFORE_CLAIM_PHASE,
+        "description" => '',
+        "type" => "game",
+        "action" => "stBeforeClaimPhase",
+        "updateGameProgression" => false,
+        "transitions" => array(STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS => STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID, STATE_BEFORE_PLAYER_TURN => STATE_BEFORE_PLAYER_TURN_ID)
+    ),
+
+    STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID => array(
+        "name" => STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS,
+        "description" => clienttranslate('${actplayer} may activate collectors'),
+        "descriptionmyturn" => clienttranslate('${you} may activate collectors'),
+        "type" => "activeplayer",
+        "updateGameProgression" => false,
+        "possibleactions" => array( ACTION_ACTIVATE_COLLECTOR ),
+        "transitions" => array( STATE_BEFORE_CLAIM_PHASE => STATE_BEFORE_CLAIM_PHASE_ID )
+    ),
+
+    STATE_BEFORE_PLAYER_TURN_ID => array(
+        "name" => STATE_BEFORE_PLAYER_TURN,
+        "description" => '',
+        "type" => "game",
+        "action" => "stBeforePlayerTurn",
+        "updateGameProgression" => false,
+        "transitions" => array(STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID, STATE_AFTER_PLAYER_TURN => STATE_AFTER_PLAYER_TURN_ID)
     ),
 
     STATE_PLAYER_TURN_ID => array(
-    		"name" => STATE_PLAYER_TURN,
-    		"description" => clienttranslate('${actplayer} must claim treasure card(s) or recover servant dice'),
-    		"descriptionmyturn" => clienttranslate('${you} must claim treasure card(s) or recover servant dice'),
-            "args" => "argStatePlayerTurn",
-    		"type" => "activeplayer",
-    		"possibleactions" => array( ACTION_CLAIM_TREASURE, ACTION_RECOVER_SERVANTS ),
-    		"transitions" => array( STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID )
+        "name" => STATE_PLAYER_TURN,
+        "description" => clienttranslate('${actplayer} must claim treasure card(s) or recover servant dice'),
+        "descriptionmyturn" => clienttranslate('${you} must claim treasure card(s) or recover servant dice'),
+        "args" => "argStatePlayerTurn",
+        "type" => "activeplayer",
+        "possibleactions" => array( ACTION_CLAIM_TREASURE, ACTION_RECOVER_SERVANTS ),
+        "transitions" => array( STATE_AFTER_PLAYER_TURN => STATE_AFTER_PLAYER_TURN_ID )
     ),
 
-    STATE_NEXT_PLAYER_ID => array(
-        "name" => STATE_NEXT_PLAYER,
+    STATE_AFTER_PLAYER_TURN_ID => array(
+        "name" => STATE_AFTER_PLAYER_TURN,
         "description" => '',
         "type" => "game",
-        "action" => "stNextPlayer",
+        "action" => "stAfterPlayerTurn",
         "updateGameProgression" => false,
-        "transitions" => array(STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID, STATE_COLLECT_TREASURE => STATE_COLLECT_TREASURE_ID )
+        "transitions" => array(STATE_BEFORE_PLAYER_TURN => STATE_BEFORE_PLAYER_TURN_ID, STATE_COLLECT_TREASURE => STATE_COLLECT_TREASURE_ID)
     ),
 
     STATE_COLLECT_TREASURE_ID => array(
@@ -95,21 +132,9 @@ $machinestates = array(
         "type" => "game",
         "action" => "stPassTorchCards",
         "updateGameProgression" => false,
-        "transitions" => array( STATE_NEXT_ROUND => STATE_NEXT_ROUND_ID )
+        "transitions" => array( STATE_REVEAL_TREASURE => STATE_REVEAL_TREASURE_ID )
     ),
 
-    STATE_NEXT_ROUND_ID => array(
-        "name" => STATE_NEXT_ROUND,
-        "description" => '',
-        "type" => "game",
-        "action" => "stNextRound",
-        "updateGameProgression" => false,
-        "transitions" => array( STATE_NEXT_PLAYER => STATE_NEXT_PLAYER_ID, STATE_PLAYER_TURN => STATE_PLAYER_TURN_ID )
-    ),
-
-
-
-    
 /*
     Examples:
     

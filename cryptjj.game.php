@@ -111,17 +111,11 @@ class CryptJj extends Table
         // 2. Create Treasure Deck
         $this->treasureCardsManager->createInitialTreasureCardsDeck($players);
 
-        // 3. Fill the Treasure Card display with Cards
-        $this->treasureCardsManager->drawTreasureCardsForDisplay(sizeof($players));
-
-        // 4. Create Servant Dice and place in player_area
+        // 3. Create Servant Dice and place in player_area
         $this->servantDiceManager->createServantDice();
 
-        // 5. Distribute torch & last light cards to players
+        // 4. Distribute torch & last light cards to players
         $this->torchCardsManager->distributeInitialTorchCards($players);
-
-        // Activate first player (which is in general a good idea :) )
-        $this->activeNextPlayer();
 
         /************ End of the game initialization *****/
     }
@@ -328,7 +322,7 @@ class CryptJj extends Table
             }
         }
 
-        $this->gamestate->nextState(STATE_NEXT_PLAYER);
+        $this->gamestate->nextState(STATE_AFTER_PLAYER_TURN);
     }
 
     function recoverServants($isPlayerInitiated) {
@@ -341,7 +335,7 @@ class CryptJj extends Table
         $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDice, 'id'));
         $this->notificationsManager->notifyServantDiceRecovered(self::getActivePlayerId(), $exhaustedServantDice, $isPlayerInitiated);
 
-        $this->gamestate->nextState(STATE_NEXT_PLAYER);
+        $this->gamestate->nextState(STATE_AFTER_PLAYER_TURN);
     }
 
     function activateCollector($activateCollector)
@@ -435,8 +429,35 @@ class CryptJj extends Table
     }    
     */
 
-    function stNextPlayer() {
-        self::debug("stNextPlayer");
+    function stRevealTreasure() {
+        self::debug("stRevealTreasure");
+        $this->treasureCardsManager->drawTreasureCardsForDisplay($this->getPlayerCount());
+
+        self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display filled with treasure cards'), array(
+            'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
+        ));
+
+        $this->gamestate->nextState(STATE_BEFORE_CLAIM_PHASE);
+    }
+
+    function stBeforeClaimPhase() {
+        // TODO HANDLE BEFORE CLAIM PHASE THINGS
+        $this->gamestate->changeActivePlayer($this->torchCardsManager->getLeaderPlayerId());
+        $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
+    }
+
+    function stBeforePlayerTurn() {
+        self::debug("stBeforePlayerTurn");
+        if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) > 0) {
+            $this->gamestate->nextState(STATE_PLAYER_TURN);
+        } else {
+            // If the player has no servant dice in their player area we automatically perform the recover servants action
+            $this->recoverServants(false);
+        }
+    }
+
+    function stAfterPlayerTurn() {
+        self::debug("stAfterPlayerTurn");
         // Two Player Only, one player has both cards
         if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId()) && $this->torchCardsManager->hasLeaderCard($this->getActivePlayerId())) {
             if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
@@ -444,12 +465,7 @@ class CryptJj extends Table
             } else {
                 self::DbQuery("UPDATE player SET has_played_before_this_round=1 WHERE player_id = " .$this->getActivePlayerId());
                 $this->activeNextPlayer();
-                if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
-                    // If the player has no servant dice in their player area we automatically perform the recover servants action
-                    $this->recoverServants(false);
-                } else {
-                    $this->gamestate->nextState(STATE_PLAYER_TURN);
-                }
+                $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
             }
         } else {
             // If the current player has the LightsOutCard we move into the Collect Treasure State
@@ -457,12 +473,7 @@ class CryptJj extends Table
                 $this->gamestate->nextState(STATE_COLLECT_TREASURE);
             } else {
                 $this->activeNextPlayer();
-                if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
-                    // If the player has no servant dice in their player area we automatically perform the recover servants action
-                    $this->recoverServants(false);
-                } else {
-                    $this->gamestate->nextState(STATE_PLAYER_TURN);
-                }
+                $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
             }
         }
 
@@ -534,24 +545,7 @@ class CryptJj extends Table
         $players = $this->loadPlayersBasicInfos();
         $this->torchCardsManager->passTorchCards($players);
         $this->notificationsManager->notifyTorchCardsPassed();
-        $this->gamestate->nextState(STATE_NEXT_ROUND);
-    }
-
-    function stNextRound() {
-        self::debug("stNextRound");
-        $this->treasureCardsManager->drawTreasureCardsForDisplay($this->getPlayerCount());
-
-        self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display refilled with new treasure cards'), array(
-            'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
-        ));
-
-        $this->gamestate->changeActivePlayer($this->torchCardsManager->getLeaderPlayerId());
-        if (sizeof($this->servantDiceManager->getServantDiceInPlayerArea($this->getActivePlayerId())) === 0) {
-            // If the player has no servant dice in their player area we automatically perform the recover servants action
-            $this->recoverServants(false);
-        } else {
-            $this->gamestate->nextState(STATE_PLAYER_TURN);
-        }
+        $this->gamestate->nextState(STATE_REVEAL_TREASURE);
     }
 
 //////////////////////////////////////////////////////////////////////////////
