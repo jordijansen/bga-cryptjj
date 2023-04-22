@@ -22,7 +22,7 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 require_once("modules/CryptGlobals.inc.php");
 require_once("modules/CryptTreasureCards.inc.php");
 require_once("modules/CryptServantDice.inc.php");
-require_once("modules/CryptTorchCards.inc.php");
+require_once("modules/CryptPlayerManager.inc.php");
 require_once("modules/CryptNotifications.inc.php");
 require_once("modules/CryptCollectorCards.inc.php");
 
@@ -55,7 +55,7 @@ class CryptJj extends Table
 
         $this->treasureCardsManager = new CryptTreasureCards($this);
         $this->servantDiceManager = new CryptServantDice($this);
-        $this->torchCardsManager = new CryptTorchCards($this);
+        $this->playerManager = new CryptPlayerManager($this);
         $this->notificationsManager = new CryptNotifications($this);
         $this->collectorCardsManager = new CryptCollectorCards($this);
 	}
@@ -115,7 +115,7 @@ class CryptJj extends Table
         $this->servantDiceManager->createServantDice();
 
         // 4. Distribute torch & last light cards to players
-        $this->torchCardsManager->distributeInitialTorchCards($players);
+        $this->playerManager->distributeInitialTorchCards($players);
 
         /************ End of the game initialization *****/
     }
@@ -136,10 +136,7 @@ class CryptJj extends Table
         $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
 
         $result['collectors'] = $this->collectorCardsManager->getCollectors();
-        // Get information about players
-        // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, has_torch_card_leader, has_torch_card_lights_out, has_played_before_this_round FROM player ";
-        $result['players'] = self::getCollectionFromDb( $sql );
+        $result['players'] = $this->playerManager->getPlayersInTurnOrder();
 
         $players = self::loadPlayersBasicInfos();
         $result['servantDice'] = array();
@@ -198,7 +195,7 @@ class CryptJj extends Table
         }
         return null;
     }
-
+ 
     public function getPlayer($playerId) // used by CryptNotifications
     {
         $players = self::loadPlayersBasicInfos();
@@ -270,11 +267,11 @@ class CryptJj extends Table
         }
 
         if (sizeof($claimTreasureSelection) > 1) {
-            if ($this->torchCardsManager->hasBothCards(self::getActivePlayerId())) {
+            if ($this->playerManager->hasBothCards(self::getActivePlayerId())) {
                 if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
                     throw new BgaUserException("You can only claim one card if you have the Lights Out card");
                 }
-            } else if ($this->torchCardsManager->hasLightsOutCard(self::getActivePlayerId())) {
+            } else if ($this->playerManager->hasLightsOutCard(self::getActivePlayerId())) {
                 throw new BgaUserException("You can only claim one card if you have the Lights Out card");
             }
         }
@@ -442,7 +439,7 @@ class CryptJj extends Table
 
     function stBeforeClaimPhase() {
         // TODO HANDLE BEFORE CLAIM PHASE THINGS
-        $this->gamestate->changeActivePlayer($this->torchCardsManager->getLeaderPlayerId());
+        $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
         $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
     }
 
@@ -459,7 +456,7 @@ class CryptJj extends Table
     function stAfterPlayerTurn() {
         self::debug("stAfterPlayerTurn");
         // Two Player Only, one player has both cards
-        if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId()) && $this->torchCardsManager->hasLeaderCard($this->getActivePlayerId())) {
+        if ($this->playerManager->hasLightsOutCard($this->getActivePlayerId()) && $this->playerManager->hasLeaderCard($this->getActivePlayerId())) {
             if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
                 $this->gamestate->nextState(STATE_COLLECT_TREASURE);
             } else {
@@ -469,7 +466,7 @@ class CryptJj extends Table
             }
         } else {
             // If the current player has the LightsOutCard we move into the Collect Treasure State
-            if ($this->torchCardsManager->hasLightsOutCard($this->getActivePlayerId())) {
+            if ($this->playerManager->hasLightsOutCard($this->getActivePlayerId())) {
                 $this->gamestate->nextState(STATE_COLLECT_TREASURE);
             } else {
                 $this->activeNextPlayer();
@@ -543,7 +540,7 @@ class CryptJj extends Table
         self::debug("stPassTorchCards");
 
         $players = $this->loadPlayersBasicInfos();
-        $this->torchCardsManager->passTorchCards($players);
+        $this->playerManager->passTorchCards($players);
         $this->notificationsManager->notifyTorchCardsPassed();
         $this->gamestate->nextState(STATE_REVEAL_TREASURE);
     }

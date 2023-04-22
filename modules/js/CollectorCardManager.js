@@ -53,6 +53,7 @@ define(
                                 .filter(id => this.game.treasureCardManager.isTreasureCardFaceDown(id, card.treasure_type));
                             if (flippableTreasureCardIds.length >= card.nr_of_cards_to_flip) {
                                 if (card.id === 'remains-A') {
+                                    console.log('remains-A');
                                     // remains-A lets you recover a servant die, useless if you have no exhausted servant dice
                                     console.log(this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id));
                                     if (this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id).length > 0) {

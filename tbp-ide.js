@@ -55,8 +55,7 @@ const TBP = {
         id: 1,
         color: "be252e",
         name: "player 1",
-        has_torch_card_leader: 0,
-        has_torch_card_lights_out: 0
+        custom_order: 1
       }
     },
     servantDice: {

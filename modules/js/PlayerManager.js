@@ -44,11 +44,12 @@ define(
                         const torchCardContainerId = $(`torch-cards-${playerId}`);
                         this.playerTorchCardAreas[playerId].create(this.game, torchCardContainerId, this.game.cardSmallWidth, this.game.cardSmallHeight);
 
-                        if (this.game.gamedatas.players[playerId].has_torch_card_leader === '1') {
+                        if (Number(this.game.gamedatas.players[playerId].custom_order) === 1) {
                             this.createCard(playerId, 'leader');
                             this.setLeaderCard(playerId);
                         }
-                        if (this.game.gamedatas.players[playerId].has_torch_card_lights_out === '1') {
+                        const lightsOutPlayerNo = Object.keys(this.game.gamedatas.players).length === 2 ? 1 : Object.keys(this.game.gamedatas.players).length;
+                        if (Number(this.game.gamedatas.players[playerId].custom_order) === lightsOutPlayerNo) {
                             this.createCard(playerId, 'lights-out');
                             this.setLightsOutCard(playerId);
                         }

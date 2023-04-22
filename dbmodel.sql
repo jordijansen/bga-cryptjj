@@ -62,8 +62,7 @@ CREATE TABLE IF NOT EXISTS `collectors` (
                                             PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE `player` ADD `has_torch_card_leader` tinyint(1) NOT NULL default 0;
-ALTER TABLE `player` ADD `has_torch_card_lights_out` tinyint(1) NOT NULL default 0;
+ALTER TABLE `player` ADD `custom_order` tinyint(1) NOT NULL default 0;
 -- For two player games the leader also has the lights out card so we need to make sure this is the players second turn before progressing to next round
 ALTER TABLE `player` ADD `has_played_before_this_round` tinyint(1) NOT NULL default 0;
 -- The Manuscript B collector lets you view face-down cards in the display

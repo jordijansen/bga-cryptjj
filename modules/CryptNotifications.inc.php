@@ -102,13 +102,13 @@ class CryptNotifications extends APP_DbObject
         $players = $this->game->loadPlayersBasicInfos();
         foreach( $players as $id => $player )
         {
-            if ($this->game->torchCardsManager->hasLeaderCard($id)) {
+            if ($this->game->playerManager->hasLeaderCard($id)) {
                 $this->game->notifyAllPlayers('leaderCardPassed', clienttranslate( '${player_name} gains the leader card'), array(
                     'player_id' => $id,
                     'player_name' => $player['player_name'],
                 ));
             }
-            if ($this->game->torchCardsManager->hasLightsOutCard($id)) {
+            if ($this->game->playerManager->hasLightsOutCard($id)) {
                 $this->game->notifyAllPlayers('lightsOutCardPassed', clienttranslate( '${player_name} gains the lights out card'), array(
                     'player_id' => $id,
                     'player_name' => $player['player_name'],
