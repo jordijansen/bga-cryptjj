@@ -64,6 +64,14 @@ class action_cryptjj extends APP_GameAction
         self::ajaxResponse();
     }
 
+    public function endTurn()
+    {
+        self::debug("endTurn");
+        self::setAjaxMode();
+        $this->game->endTurn();
+        self::ajaxResponse();
+    }
+
     public function validateJSonAlphaNum($value, $argName = 'unknown')
     {
         if (is_array($value)) {

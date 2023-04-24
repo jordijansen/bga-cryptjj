@@ -63,7 +63,7 @@ $machinestates = array(
 
     STATE_REVEAL_TREASURE_ID => array(
         "name" => STATE_REVEAL_TREASURE,
-        "description" => clienttranslate('Revealing Treasure Cards...'),
+        "description" => clienttranslate('Reveal: revealing treasure cards...'),
         "type" => "game",
         "action" => "stRevealTreasure",
         "updateGameProgression" => false,
@@ -76,7 +76,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stBeforeClaimPhase",
         "updateGameProgression" => false,
-        "transitions" => array(STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS => STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID, STATE_BEFORE_PLAYER_TURN => STATE_BEFORE_PLAYER_TURN_ID)
+        "transitions" => array(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS => STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID, STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS => STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID)
     ),
 
     STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID => array(
@@ -85,8 +85,17 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} may activate collectors'),
         "type" => "activeplayer",
         "updateGameProgression" => false,
-        "possibleactions" => array( ACTION_ACTIVATE_COLLECTOR ),
-        "transitions" => array( STATE_BEFORE_CLAIM_PHASE => STATE_BEFORE_CLAIM_PHASE_ID )
+        "possibleactions" => array( ACTION_ACTIVATE_COLLECTOR, ACTION_END_TURN ),
+        "transitions" => array( STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS => STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID )
+    ),
+
+    STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID => array(
+        "name" => STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS,
+        "description" => '',
+        "type" => "game",
+        "action" => "stEndBeforeClaimPhaseActivateCollectors",
+        "updateGameProgression" => false,
+        "transitions" => array(STATE_BEFORE_CLAIM_PHASE => STATE_BEFORE_CLAIM_PHASE_ID, STATE_BEFORE_PLAYER_TURN => STATE_BEFORE_PLAYER_TURN_ID)
     ),
 
     STATE_BEFORE_PLAYER_TURN_ID => array(
@@ -100,8 +109,8 @@ $machinestates = array(
 
     STATE_PLAYER_TURN_ID => array(
         "name" => STATE_PLAYER_TURN,
-        "description" => clienttranslate('${actplayer} must claim treasure card(s) or recover servant dice'),
-        "descriptionmyturn" => clienttranslate('${you} must claim treasure card(s) or recover servant dice'),
+        "description" => clienttranslate('Claim: ${actplayer} must claim treasure card(s) or recover servant dice'),
+        "descriptionmyturn" => clienttranslate('Claim: ${you} must claim treasure card(s) or recover servant dice'),
         "args" => "argStatePlayerTurn",
         "type" => "activeplayer",
         "possibleactions" => array( ACTION_CLAIM_TREASURE, ACTION_RECOVER_SERVANTS ),
@@ -119,7 +128,7 @@ $machinestates = array(
 
     STATE_COLLECT_TREASURE_ID => array(
         "name" => STATE_COLLECT_TREASURE,
-        "description" => '',
+        "description" => clienttranslate('Collect: distributing treasure card(s) to players...'),
         "type" => "game",
         "action" => "stCollectTreasure",
         "updateGameProgression" => false,
@@ -128,7 +137,7 @@ $machinestates = array(
 
     STATE_PASS_TORCH_CARDS_ID => array(
         "name" => STATE_PASS_TORCH_CARDS,
-        "description" => '',
+        "description" => 'Pass the Torch: passing torch cards...',
         "type" => "game",
         "action" => "stPassTorchCards",
         "updateGameProgression" => false,

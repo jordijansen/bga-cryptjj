@@ -51,6 +51,7 @@ function (dojo, declare) {
 
             this.gameStates = {
                 playerTurn: 'playerTurn',
+                beforeClaimPhaseActivateCollectors: 'beforeClaimPhaseActivateCollectors',
                 claimTreasure: 'claimTreasure', // Client Side only state
                 activateCollector: 'activateCollector' // Client Side only state
             }
@@ -100,9 +101,7 @@ function (dojo, declare) {
         //                  You can use this method to perform some user interface changes at this moment.
         //
         onEnteringState: function (stateName, args) {
-            console.log('Entering state: ' + stateName);
-            console.log(args)
-
+            console.log(args);
             switch (stateName) {
 
                 /* Example:
@@ -123,7 +122,7 @@ function (dojo, declare) {
                     this.treasureCardManager.enterClaimTreasureMode();
                     break;
                 case this.gameStates.activateCollector:
-                    this.collectorCardManager.enterActivateCollectorMode(args.args.abilityType);
+                    this.collectorCardManager.enterActivateCollectorMode(args.args.possibleCollectors);
                     break;
             }
         },
@@ -163,6 +162,23 @@ function (dojo, declare) {
         onUpdateActionButtons: function (stateName, args) {
             console.log('onUpdateActionButtons: ' + stateName);
 
+            // Any Time Actions
+            if (!this.isSpectator) {
+                switch (stateName) {
+                    case this.gameStates.playerTurn:
+                    case this.gameStates.beforeClaimPhaseActivateCollectors:
+                        const possibleCollectors = this.collectorCardManager.getPossibleCollectors(stateName);
+                        if (possibleCollectors.length > 0) {
+                            this.addActionButton('activate_collector', _('Activate Collectors'), (evt)=> this.enterActivateCollectorMode(evt,possibleCollectors), null, false, 'red');
+                        }
+                        break;
+                    case this.gameStates.activateCollector:
+                        this.addActionButton('confirm_activate_collector', _('Confirm'), 'confirmActivateCollector');
+                        this.addActionButton('undo_activate_collector', _('Cancel'), 'undoActivateCollector', null, false, 'gray');
+                        break;
+                }
+            }
+
             if (this.isCurrentPlayerActive()) {
                 switch (stateName) {
                     /*
@@ -185,20 +201,8 @@ function (dojo, declare) {
                         this.addActionButton('confirm_claim_treasure_state', _('Confirm'), 'confirmClaimTreasure');
                         this.addActionButton('undo_claim_treasure_state', _('Cancel'), 'undoClaimTreasure', null, false, 'gray');
                         break;
-                }
-            }
-
-            // Any Time Actions
-            if (!this.isSpectator) {
-                switch (stateName) {
-                    case this.gameStates.playerTurn:
-                        if (this.collectorCardManager.getPossibleCollectorWithAbilityType('ANY_TIME').length > 0) {
-                            this.addActionButton('activate_collector', _('Activate Collector'), (evt)=> this.enterActivateCollectorMode(evt,'ANY_TIME'), null, false, 'red');
-                        }
-                        break;
-                    case this.gameStates.activateCollector:
-                        this.addActionButton('confirm_activate_collector', _('Confirm'), 'confirmActivateCollector');
-                        this.addActionButton('undo_activate_collector', _('Cancel'), 'undoActivateCollector', null, false, 'gray');
+                    case this.gameStates.beforeClaimPhaseActivateCollectors:
+                        this.addActionButton('end_before_claim_phase_activate_collectors', _("End Turn"), 'endTurn');
                         break;
                 }
             }
@@ -321,15 +325,16 @@ function (dojo, declare) {
             );
         },
 
-        enterActivateCollectorMode: function (evt, abilityType)
+        enterActivateCollectorMode: function (evt, possibleCollectors)
         {
-            console.log('enterActivateCollectorMode=' + abilityType)
+            console.log('enterActivateCollectorMode=')
+            console.log(possibleCollectors)
 
             // Preventing default browser reaction
             dojo.stopEvent(evt);
 
             this.setClientState(this.gameStates.activateCollector, {
-                args: {abilityType},
+                args: {possibleCollectors},
                 description: _("Select a collector to activate"),
                 descriptionmyturn: _("Select a collector to activate")
             })
@@ -341,9 +346,10 @@ function (dojo, declare) {
 
             const collectorId = this.collectorCardManager.getSelectedCollector();
             if (collectorId) {
-                const treasureCardIds = this.treasureCardManager.getSelectedTreasureCards();
-                if (treasureCardIds.length > 0) {
-                    this.actionManager.activateCollector(collectorId, treasureCardIds);
+                const treasureCardIdsToFlip = this.treasureCardManager.getSelectedTreasureCardsInPlayerArea();
+                const treasureCardIdsSelected = this.treasureCardManager.getSelectedTreasureCardsInDisplay();
+                if (treasureCardIdsToFlip.length > 0) {
+                    this.actionManager.activateCollector(collectorId, treasureCardIdsToFlip, treasureCardIdsSelected);
                 } else {
                     this.showMessage( _('You need to select treasure card(s) to flip'), 'error');
                 }
@@ -360,6 +366,18 @@ function (dojo, declare) {
             dojo.stopEvent(evt);
 
             this.restoreServerGameState();
+        },
+
+        endTurn: function (evt)
+        {
+            console.log('undoActivateCollector')
+
+            // Preventing default browser reaction
+            if (evt) {
+                dojo.stopEvent(evt);
+            }
+
+            this.actionManager.endTurn();
         },
 
         ///////////////////////////////////////////////////

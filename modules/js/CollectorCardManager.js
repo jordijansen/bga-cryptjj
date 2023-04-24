@@ -45,41 +45,43 @@ define(
                     }
                 },
 
-                getPossibleCollectorWithAbilityType(abilityType) {
+                getPossibleCollectors(stateName) {
                     const result = [];
                     for (const card of this.game.gamedatas.collectors) {
-                        if (card.ability_type === abilityType) {
-                            const flippableTreasureCardIds = this.game.treasureCardManager.getTreasureCardsInPlayerAreaOfType(this.game.player_id, card.treasure_type)
-                                .filter(id => this.game.treasureCardManager.isTreasureCardFaceDown(id, card.treasure_type));
-                            if (flippableTreasureCardIds.length >= card.nr_of_cards_to_flip) {
+                        const flippableTreasureCardIds = this.game.treasureCardManager.getTreasureCardsInPlayerAreaOfType(this.game.player_id, card.treasure_type)
+                            .filter(id => this.game.treasureCardManager.isTreasureCardUnFlipped(id));
+                        if (flippableTreasureCardIds.length >= card.nr_of_cards_to_flip) {
+                            if (card.ability_type === 'ANY_TIME') {
                                 if (card.id === 'remains-A') {
-                                    console.log('remains-A');
                                     // remains-A lets you recover a servant die, useless if you have no exhausted servant dice
-                                    console.log(this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id));
                                     if (this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id).length > 0) {
                                         result.push(card);
                                     }
                                 } else if (card.id === 'manuscript-B') {
                                     // manuscript-B lets you view face down cards in the display, useless if you've already viewed those this round
-                                    if (!this.game.playerManager.hasUsedManuscriptBThisRound()) {
+                                    if (!this.game.playerManager.hasUsedManuscriptBThisRound() &&
+                                        this.game.treasureCardManager.getTreasureCardsInDisplay()
+                                            .filter(cardId => this.game.treasureCardManager.isTreasureCardFaceDown(cardId))
+                                            .length > 0) {
                                         result.push(card);
                                     }
-                                } else {
-                                    result.push(card);
                                 }
+                            } else if (card.ability_type === 'BEFORE_CLAIM_PHASE'
+                                && this.game.isCurrentPlayerActive()
+                                && stateName === this.game.gameStates.beforeClaimPhaseActivateCollectors) {
+                                result.push(card);
                             }
                         }
                     }
                     return result;
                 },
 
-                enterActivateCollectorMode(abilityType) {
+                enterActivateCollectorMode(possibleCollectors) {
                     this.activateCollectorMode = true;
 
-                    const cardsThatCanBeActivated = this.getPossibleCollectorWithAbilityType(abilityType);
-                    for (const card of cardsThatCanBeActivated) {
+                    for (const card of possibleCollectors) {
                         dojo.addClass($(`collector-card-${card.id}`), 'selectable')
-                        if (cardsThatCanBeActivated.length === 1) {
+                        if (possibleCollectors.length === 1) {
                             this.selectCollectorCard(card.id);
                         }
                     }
@@ -120,7 +122,10 @@ define(
                         dojo.addClass($(`collector-card-${selected.id}`), 'selected')
 
                         const collectorType = selected.id.replace('-A', '').replace('-B', '')
-                        this.game.treasureCardManager.enterSelectTreasureMode(collectorType, selected.nr_of_cards_to_flip)
+                        this.game.treasureCardManager.enterSelectTreasureModePlayerArea(collectorType, selected.nr_of_cards_to_flip)
+                        if (selected.id === 'pottery-B') {
+                            this.game.treasureCardManager.enterSelectTreasureModeDisplay(1);
+                        }
                         this.activateCollectorMode = false;
                         this.game.gamedatas.gamestate.descriptionmyturn = selected.name_translated + ': ' + dojo.string.substitute( _("flips ${i} ${type} treasure card(s)"), {i: Number(selected.nr_of_cards_to_flip), type: selected.treasure_type} );
                         this.game.gamedatas.gamestate.description = this.game.gamedatas.gamestate.descriptionmyturn;

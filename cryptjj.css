@@ -109,12 +109,11 @@
     outline: 4px rgba(255, 0, 0, 0.75) solid !important;
 }
 
-#treasure-cards-display .treasure-card.selected .row .bgabutton {
+#treasure-cards-display .treasure-card.selection.selected .row .bgabutton {
     visibility: visible;
 }
 
-#treasure-cards-display .treasure-card.selectable .dice-selection-area,
-#treasure-cards-display .treasure-card.selected .dice-selection-area,
+#treasure-cards-display .treasure-card.selection .dice-selection-area,
 .dice-selection-area:has(.servant-die){
     visibility: visible;
 }

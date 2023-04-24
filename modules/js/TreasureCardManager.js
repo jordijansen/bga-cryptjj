@@ -22,7 +22,8 @@ define(
                 availableServants: [],
                 availableServantsIndex: -1,
                 claimTreasureMode: false,
-                selectTreasureMode: {},
+                selectTreasureModePlayerArea: {},
+                selectTreasureModeDisplay: {},
                 cardDisplay: null,
                 playerAreas: {},
 
@@ -69,8 +70,9 @@ define(
                             const treasureCard = this.createTreasureCard(card);
                             dojo.place(treasureCard, 'treasure-cards-display')
                         }
+                        console.log(card);
                         const cardValue = card.location.startsWith('player_area_') && card.flipped === '0' ? 'back' : card.value;
-                        dojo.attr(elementId, 'class', `card treasure-card treasure-card-${card.type}-${cardValue}`)
+                        dojo.attr(elementId, 'class', `card treasure-card treasure-card-${card.type}-${cardValue} ${card.face_up === '0' ? 'face-down' : 'face-up'} ${card.flipped === '1' ? 'flipped' : 'un-flipped'}`)
                         if (card.location === 'display') {
                             this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
                             dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
@@ -94,12 +96,12 @@ define(
                     this.availableServants = this.game.servantManager.getServantDieInPlayerArea(this.game.player_id).map(die => die.id);
                     this.availableServantsIndex = -1;
 
-                    this.toggleSelectableDisplayCards(true);
+                    this.toggleClaimableDisplayCards(true);
                 },
 
                 exitClaimTreasureMode(resetServants) {
                     this.claimTreasureMode = false;
-                    this.toggleSelectableDisplayCards(false)
+                    this.toggleClaimableDisplayCards(false)
                     this.cardDisplay.getAllItems().forEach(id => {
                             if (resetServants) {
                                 this.game.servantManager.getServantDieForTreasureCardSelection(id.replace('treasure-card-', ''))
@@ -108,12 +110,14 @@ define(
                         });
                 },
 
-                toggleSelectableDisplayCards(show) {
+                toggleClaimableDisplayCards(show) {
                     console.log("TreasureCardManager#showSelectableCards")
                     this.cardDisplay.getAllItems().forEach(id => {
                         if (show) {
                             dojo.addClass($(id), 'selectable')
+                            dojo.addClass($(id), 'selection')
                         } else {
+                            dojo.removeClass($(id), 'selection')
                             dojo.removeClass($(id), 'selectable')
                             dojo.removeClass($(id), 'invalid')
                             dojo.removeClass($(id), 'selected')
@@ -121,8 +125,8 @@ define(
                     })
                 },
 
-                enterSelectTreasureMode(treasureType, nrOfCardsToSelect) {
-                    this.selectTreasureMode = { active: true, nrOfCardsToSelect, treasureType };
+                enterSelectTreasureModePlayerArea(treasureType, nrOfCardsToSelect) {
+                    this.selectTreasureModePlayerArea = { active: true, nrOfCardsToSelect, treasureType };
                     this.toggleSelectablePlayerAreaCards(treasureType, true);
                     const selectableCards = dojo.query('.player-treasure-area .treasure-card.selectable');
                     // Auto select cards if the number to select matches the available cards
@@ -133,18 +137,47 @@ define(
                     }
                 },
 
-                exitSelectTreasureMode() {
-                    if (this.selectTreasureMode.active) {
-                        this.toggleSelectablePlayerAreaCards(this.selectTreasureMode.treasureType, false);
+                enterSelectTreasureModeDisplay(nrOfCardsToSelect) {
+                    this.selectTreasureModeDisplay = { active: true, nrOfCardsToSelect };
+                    this.toggleSelectableDisplayCards(true);
+                    const selectableCards = dojo.query('#treasure-cards-display .treasure-card.selectable');
+                    // Auto select cards if the number to select matches the available cards
+                    if (selectableCards.length === Number(nrOfCardsToSelect)) {
+                        selectableCards.forEach(card => {
+                            dojo.addClass($(card.id), 'selected');
+                        })
+                    }
+                },
 
-                        this.selectTreasureMode = { active: false };
+                exitSelectTreasureMode() {
+                    if (this.selectTreasureModePlayerArea.active) {
+                        this.toggleSelectablePlayerAreaCards(this.selectTreasureModePlayerArea.treasureType, false);
+                        this.toggleSelectableDisplayCards(false);
+
+                        this.selectTreasureModePlayerArea = { active: false };
+                        this.selectTreasureModeDisplay = { active: false };
                     }
                 },
 
                 toggleSelectablePlayerAreaCards(type, show) {
                     console.log("TreasureCardManager#toggleSelectablePlayerAreaCards#" + type)
                     this.getTreasureCardsInPlayerAreaOfType(this.game.player_id, type).forEach(id => {
-                        if (show && this.isTreasureCardFaceDown(id, type)) {
+                        if (show && this.isTreasureCardUnFlipped(id)) {
+                            dojo.addClass($(id), 'selectable')
+                        } else {
+                            dojo.removeClass($(id), 'selectable')
+                            dojo.removeClass($(id), 'invalid')
+                            dojo.removeClass($(id), 'selected')
+                        }
+                    });
+                },
+
+                toggleSelectableDisplayCards(show) {
+                    console.log("TreasureCardManager#toggleSelectableDisplayCards")
+                    this.cardDisplay.getAllItems()
+                        .filter(id => dojo.hasClass($(id), 'face-down'))
+                        .forEach(id => {
+                        if (show) {
                             dojo.addClass($(id), 'selectable')
                         } else {
                             dojo.removeClass($(id), 'selectable')
@@ -158,8 +191,16 @@ define(
                     return this.playerAreas[playerId][type].getAllItems();
                 },
 
-                isTreasureCardFaceDown(id, type) {
-                    return dojo.hasClass($(id), `treasure-card-${type}-back`);
+                getTreasureCardsInDisplay() {
+                    return this.cardDisplay.getAllItems();
+                },
+
+                isTreasureCardFaceDown(id) {
+                    return dojo.hasClass($(id), 'face-down');
+                },
+
+                isTreasureCardUnFlipped(id) {
+                    return dojo.hasClass($(id), 'un-flipped');
                 },
 
                 addServantDieToCard(servantId, targetCardId) {
@@ -242,8 +283,13 @@ define(
                         ))
                 },
 
-                getSelectedTreasureCards() {
-                    const selectedTreasureCards = dojo.query('.treasure-card.selected');
+                getSelectedTreasureCardsInPlayerArea() {
+                    const selectedTreasureCards = dojo.query('.player-treasure-area .treasure-card.selected');
+                    return selectedTreasureCards.map(e => e.id).map(id => id.replace('treasure-card-', ''));
+                },
+
+                getSelectedTreasureCardsInDisplay() {
+                    const selectedTreasureCards = dojo.query('#treasure-cards-display .treasure-card.selected');
                     return selectedTreasureCards.map(e => e.id).map(id => id.replace('treasure-card-', ''));
                 },
 
@@ -349,16 +395,28 @@ define(
                                 this.game.showMessage( _('No available servants left'), 'error');
                             }
                         }
-                    } else if(this.selectTreasureMode.active) {
+                    } else if(this.selectTreasureModeDisplay.active && this.cardDisplay.getAllItems().includes(`treasure-card-${cardId}`)) {
+                        const elementId = `treasure-card-${cardId}`;
+                        if (dojo.hasClass($(elementId), 'selectable')) {
+                            const nrOfCardsSelected = dojo.query('#treasure-cards-display .treasure-card.selected').length;
+                            if (dojo.hasClass($(elementId), 'selected')) {
+                                dojo.removeClass($(elementId), 'selected');
+                            } else if (nrOfCardsSelected < Number(this.selectTreasureModeDisplay.nrOfCardsToSelect)) {
+                                dojo.addClass($(elementId), 'selected');
+                            } else {
+                                this.game.showMessage(dojo.string.substitute( _("You can only select ${i} treasure cards"), {i: Number(this.selectTreasureModeDisplay.nrOfCardsToSelect)} ), 'error');
+                            }
+                        }
+                    } else if(this.selectTreasureModePlayerArea.active) {
                         const elementId = `treasure-card-${cardId}`;
                         if (dojo.hasClass($(elementId), 'selectable')) {
                             const nrOfCardsSelected = dojo.query('.player-treasure-area .treasure-card.selected').length;
                             if (dojo.hasClass($(elementId), 'selected')) {
                                 dojo.removeClass($(elementId), 'selected');
-                            } else if (nrOfCardsSelected < Number(this.selectTreasureMode.nrOfCardsToSelect)) {
+                            } else if (nrOfCardsSelected < Number(this.selectTreasureModePlayerArea.nrOfCardsToSelect)) {
                                 dojo.addClass($(elementId), 'selected');
                             } else {
-                                this.game.showMessage(dojo.string.substitute( _("You can only select ${i} treasure cards"), {i: Number(this.selectTreasureMode.nrOfCardsToSelect)} ), 'error');
+                                this.game.showMessage(dojo.string.substitute( _("You can only select ${i} treasure cards"), {i: Number(this.selectTreasureModePlayerArea.nrOfCardsToSelect)} ), 'error');
                             }
                         }
                     }

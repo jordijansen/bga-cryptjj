@@ -148,7 +148,7 @@ class CryptJj extends Table
         }
         $result['treasureDeck']['size'] = $this->treasureCardsManager->countCardsInDeck();
         $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
-        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id, $this->collectorCardsManager->hasUsedManuscriptBThisRound($current_player_id));
+        $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id);
 
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -213,6 +213,11 @@ class CryptJj extends Table
         return sizeof($players);
     }
 
+    public function getStateName() {
+        $state = $this->gamestate->state();
+        return $state['name'];
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
 //////////// 
@@ -258,7 +263,7 @@ class CryptJj extends Table
 
         self::trace(json_encode($claimTreasureSelection));
 
-        $cardsInDisplay = $this->treasureCardsManager->getAllTreasureCardsInDisplay();
+        $cardsInDisplay = $this->treasureCardsManager->getTreasureCardsInDisplayForPlayer(self::getActivePlayerId());
 
         self::trace(json_encode($cardsInDisplay));
 
@@ -340,15 +345,15 @@ class CryptJj extends Table
         self::trace(json_encode($activateCollector));
 
         $collector = $this->collectorCardsManager->getCollector($activateCollector['collectorId']);
-        $treasureCards = [];
-        foreach ($activateCollector['treasureCardIds'] as $treasureCardId) {
-            $treasureCards[] = $this->treasureCardsManager->getTreasureCard($treasureCardId, self::getCurrentPlayerId());
+        $treasureCardsToFlip = [];
+        foreach ($activateCollector['treasureCardsToFlip'] as $treasureCardId) {
+            $treasureCardsToFlip[] = $this->treasureCardsManager->getTreasureCard($treasureCardId, self::getCurrentPlayerId());
         }
 
         if (isset($collector)) {
             if ($this->isCollectorAllowed($collector)) {
-                if (sizeof($treasureCards) == $collector['nr_of_cards_to_flip']) {
-                    $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCards);
+                if (sizeof($treasureCardsToFlip) == $collector['nr_of_cards_to_flip']) {
+                    $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCardsToFlip, $activateCollector['treasureCardsSelected']);
                 } else {
                     throw new BgaUserException("Wrong number of cards provided");
                 }
@@ -361,8 +366,21 @@ class CryptJj extends Table
 
     }
 
+    function endTurn() {
+
+        self::checkAction(ACTION_END_TURN);
+
+        if ($this->getStateName() === STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS) {
+            $this->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
+        }
+    }
+
     function isCollectorAllowed($collector) {
         if ($collector['ability_type'] === 'ANY_TIME') {
+            return true;
+        } else if ($collector['ability_type'] === 'BEFORE_CLAIM_PHASE'
+            && $this->getStateName() === STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS
+            && $this->getActivePlayerId() === self::getCurrentPlayerId()) {
             return true;
         }
         return false;
@@ -434,13 +452,30 @@ class CryptJj extends Table
             'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
         ));
 
+        $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
         $this->gamestate->nextState(STATE_BEFORE_CLAIM_PHASE);
     }
 
     function stBeforeClaimPhase() {
-        // TODO HANDLE BEFORE CLAIM PHASE THINGS
-        $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
-        $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
+        $collectorsThatCanBeUsedByPlayer = $this->collectorCardsManager->getAvailableCollectors($this->getActivePlayerId(), COLLECTOR_BEFORE_CLAIM_PHASE);
+        if (sizeof($collectorsThatCanBeUsedByPlayer) > 0) {
+            $this->gamestate->nextState(STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
+        } else {
+            $this->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
+        }
+    }
+
+    function stEndBeforeClaimPhaseActivateCollectors() {
+        $playersCustomOrderNo = $this->playerManager->getPlayerCustomOrderNo($this->getActivePlayerId());
+        if ($playersCustomOrderNo == $this->getPlayerCount()) {
+            // This was the last player, so we activate the leader player again and move to the Claim Treasure phase
+            $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
+            $this->gamestate->nextState(STATE_BEFORE_PLAYER_TURN);
+        } else {
+            // This was not the last player, so we go to the next player and see if they have any collectors to activate.
+            $this->activeNextPlayer();
+            $this->gamestate->nextState(STATE_BEFORE_CLAIM_PHASE);
+        }
     }
 
     function stBeforePlayerTurn() {
@@ -487,7 +522,7 @@ class CryptJj extends Table
             $exhaustedServantDiceForPlayer = $this->servantDiceManager->getServantDiceInExhaustedArea($playerId);
             if (sizeof($servantDiceOnTreasureCard) === 0 && sizeof($exhaustedServantDiceForPlayer) > 0) {
                 $this->servantDiceManager->recoverServantDice(array_column($exhaustedServantDiceForPlayer, 'id'));
-                $this->notificationsManager->notifyServantDiceRecovered($playerId, $exhaustedServantDiceForPlayer);
+                $this->notificationsManager->notifyServantDiceRecovered($playerId, $exhaustedServantDiceForPlayer, true);
             }
         }
 

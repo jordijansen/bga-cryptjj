@@ -46,6 +46,10 @@ class CryptPlayerManager extends APP_DbObject
         return self::getCollectionFromDb("SELECT player_id id, custom_order, has_used_manuscript_b_this_round, has_played_before_this_round FROM player ORDER BY custom_order DESC");
     }
 
+    public function getPlayerCustomOrderNo($playerId) {
+        return self::getUniqueValueFromDB("SELECT custom_order FROM player WHERE player_id = " .$playerId);
+    }
+
     public function passTorchCards($players) {
         foreach( $players as $playerId => $player )
         {

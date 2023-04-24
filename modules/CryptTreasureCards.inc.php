@@ -81,47 +81,35 @@ class CryptTreasureCards extends APP_DbObject
         self::DbQuery("UPDATE treasure_cards SET card_face_up=1 WHERE card_id in (".$ids.")");
     }
 
-    public function getAllTreasureCardsInPlay($playerId, $forceFaceUpDisplay) {
-        $sql = "SELECT card_id as id,
-                       card_type as type,
-                       CASE
-                        WHEN card_face_up = 1 OR card_location = 'player_area_".$playerId."' OR 1 = ".($forceFaceUpDisplay ? 1 : 0)." THEN card_type_arg
-                        ELSE 'back'
-                       END as value,
-                       card_location as location,
-                       card_face_up as face_up,
-                       card_flipped as flipped
-                FROM treasure_cards
-                WHERE card_location != 'deck'
+    public function getAllTreasureCardsInPlay($playerId) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_location != 'deck'
                 ORDER BY card_location_arg ASC";
 
         return self::getObjectListFromDB($sql);
     }
 
     public function getTreasureCard($cardId, $playerId) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_id = " .$cardId;
+
+        return self::getObjectFromDB($sql);
+    }
+
+    public function getTreasureCardsInDisplayForPlayer($playerId) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_location = 'display' ORDER BY card_location_arg ASC";
+
+        return self::getObjectListFromDB($sql);
+    }
+
+    public function getAllTreasureCardsInDisplay() {
         $sql = "SELECT card_id as id,
                        card_type as type,
                        CASE
-                        WHEN card_face_up = 1 OR card_location = 'player_area_".$playerId."' THEN card_type_arg
+                        WHEN card_face_up = 1 THEN card_type_arg
                         ELSE 'back'
                        END as value,
                        card_location as location,
                        card_face_up as face_up,
                        card_flipped as flipped
-                FROM treasure_cards
-                WHERE card_id = " .$cardId;
-
-        return self::getObjectFromDB($sql);
-    }
-
-    public function getAllTreasureCardsInDisplay($forceFaceUp = false) {
-        $sql = "SELECT card_id as id,
-                       card_type as type,
-                       CASE
-                        WHEN card_face_up = 1 OR 1 = ".($forceFaceUp ? 1 : 0)." THEN card_type_arg
-                        ELSE 'back'
-                       END as value,
-                       card_location as location
                 FROM treasure_cards
                 WHERE card_location = 'display'
                 ORDER BY card_location_arg ASC";
@@ -147,6 +135,20 @@ class CryptTreasureCards extends APP_DbObject
 
     public function flipCard($treasureCardId) {
         self::DbQuery("UPDATE treasure_cards SET card_flipped=1, card_face_up=1 WHERE card_id = ".$treasureCardId);
+    }
+
+    function baseTreasureCardQuery($playerId) {
+        return "SELECT card_id as id,
+                       card_type as type,
+                       CASE
+                        WHEN card_face_up = 1 OR card_location = 'player_area_".$playerId."' 
+                        OR (SELECT has_used_manuscript_b_this_round FROM player WHERE player_id = ".$playerId.") = 1 THEN card_type_arg
+                        ELSE 'back'
+                       END as value,
+                       card_location as location,
+                       card_face_up as face_up,
+                       card_flipped as flipped
+                FROM treasure_cards";
     }
 
     function determineNumberOfFaceUpTreasureCards($playerCount) {

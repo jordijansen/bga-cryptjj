@@ -60,16 +60,36 @@ class CryptCollectorCards extends APP_DbObject
         return $collector;
     }
 
-    public function useCollector($playerId, $collector, $treasureCards) {
+    public function getAvailableCollectors($playerId, $abilityType) {
+        $results = self::getObjectListFromDB("SELECT * 
+                FROM collectors c 
+                WHERE c.ability_type = '".$abilityType."'
+                AND EXISTS (SELECT COUNT(1) 
+                            FROM treasure_cards tc
+                            WHERE tc.card_type = c.treasure_type
+                            AND tc.card_location = concat('player_area_', ".$playerId.")
+                            AND tc.card_flipped = 0
+                            HAVING COUNT(1) >= c.nr_of_cards_to_flip)");
+        foreach ($results as $index => $collector) {
+            $results[$index]['name_translated'] = $this->game->collectors[$collector['treasure_type']]['name'];
+            $results[$index]['description_translated'] = $this->game->collectors[$collector['treasure_type']]['sides'][$collector['side']]['description'];
+        }
+        return $results;
+    }
+
+    public function useCollector($playerId, $collector, $treasureCardsToFlip, $treasureCardsSelected) {
         $flippedTreasureCards = [];
-        foreach ($treasureCards as $treasureCard) {
-            if ($collector['treasure_type'] === $treasureCard['type']) {
-                $this->game->treasureCardsManager->flipCard($treasureCard['id']);
-                // We always use the playerId used here, since after flipping it, all information is public to everybody
-                $flippedTreasureCards[] = $this->game->treasureCardsManager->getTreasureCard($treasureCard['id'], $playerId);
-            } else {
-                throw new BgaUserException("The provided Treasure Cards are not of type " . $collector['treasure_type']);
+        foreach ($treasureCardsToFlip as $treasureCard) {
+            if ($collector['treasure_type'] !== $treasureCard['type']) {
+                throw new BgaUserException("The provided Treasure Card is not of type " . $collector['treasure_type']);
             }
+            if ($treasureCard['flipped'] !== '0') {
+                throw new BgaUserException("The provided Treasure Card is already flipped");
+            }
+
+            $this->game->treasureCardsManager->flipCard($treasureCard['id']);
+            // We always use the playerId used here, since after flipping it, all information is public to everybody
+            $flippedTreasureCards[] = $this->game->treasureCardsManager->getTreasureCard($treasureCard['id'], $playerId);
         }
 
         if ($collector['id'] === 'remains-A') {
@@ -84,10 +104,35 @@ class CryptCollectorCards extends APP_DbObject
             $this->game->notificationsManager->notifyServantDiceRecovered($playerId, $recoveredServantDice, true);
         } else if ($collector['id'] === 'manuscript-B') {
             // ANY_TIME reveal cards in display
-            $treasureCardsInDisplay = $this->game->treasureCardsManager->getAllTreasureCardsInDisplay(true);
+            if ($this->hasUsedManuscriptBThisRound($playerId)) {
+                throw new BgaUserException("You've already revealed the face down treasure cards this round");
+            }
+            $this->setHasUsedManuscriptBThisRound($playerId);
+            $treasureCardsInDisplay = $this->game->treasureCardsManager->getTreasureCardsInDisplayForPlayer($playerId);
             $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
             $this->game->notificationsManager->notifyFaceDownDisplayCardsRevealed($playerId, $treasureCardsInDisplay);
-            $this->setHasUsedManuscriptBThisRound($playerId);
+        } else if ($collector['id'] === 'pottery-B') {
+            // BEFORE_CLAIM_PHASE collect face-up card from display
+            if (isset($treasureCardsSelected) && sizeof($treasureCardsSelected) != 1) {
+                throw new BgaUserException("You need to select 1 treasure card");
+            }
+            $treasureCard = $this->game->treasureCardsManager->getTreasureCard(reset($treasureCardsSelected), $playerId);
+            if ($treasureCard['location'] !== 'display') {
+                throw new BgaUserException("You need to select a treasure card in the display");
+            }
+            self::trace(json_encode($treasureCard));
+
+            if ($treasureCard['face_up'] !== '0') {
+                throw new BgaUserException("You need to select a face-down treasure card");
+            }
+
+            $this->game->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
+            $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
+            $this->game->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], []);
+            if (sizeof($this->getAvailableCollectors($playerId, COLLECTOR_BEFORE_CLAIM_PHASE)) < 1) {
+                // Auto end turn if no more collectors can be activated
+                $this->game->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
+            }
         }
     }
 
