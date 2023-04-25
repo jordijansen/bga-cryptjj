@@ -37,8 +37,8 @@ define(
                     this._performAction('recoverServants')
                 },
 
-                activateCollector(collectorId, treasureCardsToFlip = [], treasureCardsSelected = []) {
-                    const args = {actionArgs: JSON.stringify({collectorId, treasureCardsToFlip, treasureCardsSelected})}
+                activateCollector(collectorId, treasureCardsToFlip = [], treasureCardsSelected = [], servantDiceSelected = []) {
+                    const args = {actionArgs: JSON.stringify({collectorId, treasureCardsToFlip, treasureCardsSelected, servantDiceSelected})}
                     this._performActionWithoutCheckAction('activateCollector', args)
                 },
 

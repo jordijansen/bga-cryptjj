@@ -10,27 +10,29 @@
 
 define(
     [
-      'dojo',
-      'dojo/_base/declare',
-      'ebg/counter',
+        'dojo',
+        'dojo/_base/declare',
+        'ebg/counter',
     ],
     (dojo, declare) => {
-      return declare(
-          'crypt.DeckManager',
-          null, {
-            game: null,
+        return declare(
+            'crypt.DeckManager',
+            null, {
+                game: null,
 
-            constructor(game) {
-              this.game = game;
-            },
+                constructor(game) {
+                    this.game = game;
+                },
 
-            setup() {
-                console.log("DeckManager#setup")
-                // Set-up treasure deck
-                const treasureDeck = this.game.format_block('jstpl_treasure_deck', this.game.gamedatas.treasureDeck);
+                setup() {
+                    console.log("DeckManager#setup")
+                    // Set-up treasure deck
+                    this.update(this.game.gamedatas.treasureDeck)
+                },
 
-                dojo.place(treasureDeck, "treasure-cards-deck")
-            },
-          });
+                update(treasureDeck) {
+                    dojo.place(this.game.format_block('jstpl_treasure_deck', treasureDeck), "treasure-cards-deck", "only")
+                }
+            });
     }
 );

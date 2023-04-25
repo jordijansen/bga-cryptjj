@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS `servant_dice` (
   `card_type_arg` varchar(25) NOT NULL,
   `card_location` varchar(100) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
+  `card_effort` int(1) NULL,
   PRIMARY KEY (`card_id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

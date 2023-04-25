@@ -24,6 +24,7 @@ define(
                 displayTreasureCardSelectionAreas: {},
                 displayTreasureCardAreas: {},
                 exhaustedArea: null,
+                selectServantDiceMode: {active: false},
 
                 constructor(game) {
                     this.game = game;
@@ -79,10 +80,6 @@ define(
                     }
                 },
 
-                moveAllServantDieBackToPlayerArea(playerId) {
-                    this.getServantDieInPlayerArea(playerId).forEach(die => this.moveServantDieToPlayerArea(die.id, playerId));
-                },
-
                 moveServantDieToPlayerArea(servantId, playerId) {
                     this.removeServantDieFromZones(servantId);
                     this.playerAreas[playerId].placeInZone(`servant-die-${servantId}`);
@@ -105,6 +102,7 @@ define(
                     this.removeServantDieFromZones(servantId);
                     this.exhaustedArea.placeInZone(`servant-die-${servantId}`)
                     this.setServantDieValue(servantId, value);
+                    dojo.connect($(`servant-die-${servantId}`), 'onclick', this, 'onServantDieClicked')
                 },
 
                 getServantDieForTreasureCardSelection(cardId) {
@@ -155,6 +153,55 @@ define(
                     Object.values(this.displayTreasureCardSelectionAreas).forEach(zone => zone.removeFromZone(id, false))
                     Object.values(this.displayTreasureCardAreas).forEach(zone => zone.removeFromZone(id, false))
                 },
+
+                enterSelectServantDiceMode(diceForSelection) {
+                    this.selectServantDiceMode = {active: true, diceForSelection}
+                    if (diceForSelection && diceForSelection.length > 0) {
+                        diceForSelection.filter(die => this.exhaustedArea.getAllItems().includes(`servant-die-${die.id}`)) // We only allow selection in exhausted area
+                            .forEach(die => {
+                                dojo.addClass($(`servant-die-${die.id}`), 'selectable')
+                        })
+                    }
+                },
+
+                exitSelectServantDiceMode() {
+                    this.selectServantDiceMode = {active: false }
+                    this.exhaustedArea.getAllItems().forEach(id => {
+                        dojo.removeClass($(id), 'selectable')
+                        dojo.removeClass($(id), 'selected')
+                    });
+                    dojo.empty('exhausted-servants-text');
+                },
+
+                onServantDieClicked(event) {
+                    console.log("ServantManager#onServantDieClicked")
+                    const dieId = event.currentTarget.dataset.id;
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if(this.selectServantDiceMode.active) {
+                        const elementId = `servant-die-${dieId}`;
+                        if (dojo.hasClass($(elementId), 'selectable')) {
+                            const nrOfCardsSelected = dojo.query('.die.selected').length;
+                            if (dojo.hasClass($(elementId), 'selected')) {
+                                dojo.removeClass($(elementId), 'selected');
+                                dojo.empty('exhausted-servants-text');
+                            } else if (nrOfCardsSelected < 1) {
+                                dojo.addClass($(elementId), 'selected');
+                                const servantDie = this.selectServantDiceMode.diceForSelection.find(die => die.id === die.id);
+                                const helpText = dojo.string.substitute( _("Roll lower than ${i} to recover"), {i: servantDie.effort})
+                                dojo.place(`<p>${helpText}</p>`, 'exhausted-servants-text');
+                            } else {
+                                this.game.showMessage(dojo.string.substitute( _("You can only select 1 servant die")), 'error');
+                            }
+                        }
+                    }
+                },
+
+                getSelectedServantDice() {
+                    const selectedTreasureCards = dojo.query('.die.selected');
+                    return selectedTreasureCards.map(e => e.id).map(id => id.replace('servant-die-', ''));
+                }
     });
     }
 );

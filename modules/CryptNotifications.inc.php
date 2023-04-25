@@ -127,4 +127,24 @@ class CryptNotifications extends APP_DbObject
             'flippedTreasureCards' => $flippedTreasureCards
         ));
     }
+
+    public function servantDieReRolled($playerId, $servantDie, $originalValue, $rolledValue, $exhausted) {
+        $player = $this->game->getPlayer($playerId);
+
+        $additionalText = clienttranslate( 'which is equal or higher than ${effort}, so it is recovered');
+        if ($exhausted) {
+            $additionalText = clienttranslate( 'which is lower than ${effort}, so it remains exhausted');
+        }
+        $this->game->notifyAllPlayers('servantDieReRolled', clienttranslate( '${player_name} re-rolls ${originalValue} into a ${rolledValue} ') .$additionalText, array(
+            'playerId' => $playerId,
+            'player_name' => $player['player_name'],
+            'servantDie' => $servantDie,
+            'originalValue' => $originalValue,
+            'rolledValue' => $rolledValue,
+            'effort' => $servantDie['effort'],
+            'exhausted' => $exhausted
+        ));
+    }
+
+
 }

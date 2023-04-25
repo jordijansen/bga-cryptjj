@@ -32,6 +32,7 @@
     <div id="treasure-cards-deck" class="whiteblock"></div>
     <div id="exhausted-servants-wrapper" class="whiteblock">
         <div id="exhausted-servants-background">
+            <div id="exhausted-servants-text"></div>
             <div id="exhausted-servants">
 
             </div>

@@ -20,11 +20,13 @@
  */
 class CryptServantDice extends APP_DbObject
 {
+    private $selectColumnList;
     protected $game;
 
     public function __construct($game)
     {
         $this->game = $game;
+        $this->selectColumnList = "card_id as id, card_type as type, card_type_arg as type_arg, card_location as location, card_location_arg as location_arg, card_effort as effort";
     }
 
     public function createServantDice()
@@ -40,36 +42,48 @@ class CryptServantDice extends APP_DbObject
     }
 
     public function getAllServantDice($playerId) {
-        return $this->game->servant_dice->getCardsOfType($playerId);
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."'";
+        return self::getObjectListFromDB($sql);
     }
 
     public function getServantDie($id) {
-        return $this->game->servant_dice->getCard($id);
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_id = '".$id."'";
+        return self::getObjectFromDB($sql);
     }
 
     public function getServantDiceOnTreasureCards($playerId) {
-        $sql = "SELECT *
-                FROM servant_dice
-                WHERE card_type = '".$playerId."' AND card_location LIKE 'treasure_card_%'";
-
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location LIKE 'treasure_card_%'";
         return self::getObjectListFromDB($sql);
     }
 
     public function getServantDiceInPlayerArea($playerId) {
-        return $this->game->servant_dice->getCardsOfTypeInLocation($playerId, null, 'player_area', null);
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location = 'player_area'";
+        return self::getCollectionFromDB($sql);
     }
 
     public function getServantDiceInExhaustedArea($playerId) {
-        return $this->game->servant_dice->getCardsOfTypeInLocation($playerId, null, 'exhausted', null);
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location = 'exhausted'";
+        return self::getObjectListFromDB($sql);
     }
 
     public function getServantDiceOnTreasureCard($treasureCardId) {
-        return $this->game->servant_dice->getCardsInLocation('treasure_card_' .$treasureCardId);
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_location LIKE 'treasure_card_" .$treasureCardId."'";
+        return self::getObjectListFromDB($sql);
+    }
+
+    public function getServantDiceForReRoll($playerId) {
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location = 'exhausted' AND card_effort IS NOT NULL";
+        return self::getObjectListFromDB($sql);
     }
 
     public function moveServantDiceToTreasureCardWithValue($id, $treasureCardId, $dieValue) {
         $this->game->servant_dice->moveCard($id, 'treasure_card_' .$treasureCardId, $dieValue);
+        self::DbQuery("UPDATE servant_dice SET card_effort=".$dieValue." WHERE card_id = ".$id);
         return $this->game->servant_dice->getCard($id);
+    }
+
+    public function resetAllEffortValues() {
+        self::DbQuery("UPDATE servant_dice SET card_effort = null");
     }
 
     public function exhaustServantDie($id, $value) {

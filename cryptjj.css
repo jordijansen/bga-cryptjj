@@ -93,14 +93,14 @@
     width: 100%;
 }
 
-.card.selectable {
+.card.selectable, .die.selectable {
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
     animation: pulse 2s infinite;
     outline: 4px rgba(80, 200, 255, 0.75) solid;
     cursor: pointer;
 }
 
-.card.selected {
+.card.selected, .die.selected {
     outline: 4px rgba(124, 252, 0, 0.75) solid !important;
     cursor: pointer;
 }
@@ -192,7 +192,18 @@
 }
 
 #exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
-    margin: 55px;
+    margin-left: 55px;
+    margin-right: 55px;
+    margin-bottom: 55px;
+}
+
+#exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants-text {
+    height: 55px;
+    padding-top: 15px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 18px;
+    color: white;
 }
 
 .ui-row #treasure-cards-discard {
@@ -211,7 +222,7 @@
     opacity: 0.6;
 }
 
-.ui-row #treasure-cards-display {
+#treasure-cards-display {
     width: 100%;
     min-height: 261px;
 }

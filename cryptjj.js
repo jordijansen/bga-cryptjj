@@ -52,6 +52,7 @@ function (dojo, declare) {
             this.gameStates = {
                 playerTurn: 'playerTurn',
                 beforeClaimPhaseActivateCollectors: 'beforeClaimPhaseActivateCollectors',
+                afterCollectTreasureActivateCollectors: 'afterCollectTreasureActivateCollectors',
                 claimTreasure: 'claimTreasure', // Client Side only state
                 activateCollector: 'activateCollector' // Client Side only state
             }
@@ -122,7 +123,7 @@ function (dojo, declare) {
                     this.treasureCardManager.enterClaimTreasureMode();
                     break;
                 case this.gameStates.activateCollector:
-                    this.collectorCardManager.enterActivateCollectorMode(args.args.possibleCollectors);
+                    this.collectorCardManager.enterActivateCollectorMode(args.args.possibleCollectors, args.args.servantDiceForReRoll);
                     break;
             }
         },
@@ -151,6 +152,7 @@ function (dojo, declare) {
                     break;
                 case this.gameStates.activateCollector:
                     this.treasureCardManager.exitSelectTreasureMode();
+                    this.servantManager.exitSelectServantDiceMode();
                     this.collectorCardManager.exitActivateCollectorMode();
                     break;
             }
@@ -167,9 +169,10 @@ function (dojo, declare) {
                 switch (stateName) {
                     case this.gameStates.playerTurn:
                     case this.gameStates.beforeClaimPhaseActivateCollectors:
+                    case this.gameStates.afterCollectTreasureActivateCollectors:
                         const possibleCollectors = this.collectorCardManager.getPossibleCollectors(stateName);
                         if (possibleCollectors.length > 0) {
-                            this.addActionButton('activate_collector', _('Activate Collectors'), (evt)=> this.enterActivateCollectorMode(evt,possibleCollectors), null, false, 'red');
+                            this.addActionButton('activate_collector', _('Activate Collectors'), (evt)=> this.enterActivateCollectorMode(evt,possibleCollectors, args?.servantDiceForReRoll), null, false, 'red');
                         }
                         break;
                     case this.gameStates.activateCollector:
@@ -202,8 +205,10 @@ function (dojo, declare) {
                         this.addActionButton('undo_claim_treasure_state', _('Cancel'), 'undoClaimTreasure', null, false, 'gray');
                         break;
                     case this.gameStates.beforeClaimPhaseActivateCollectors:
+                    case this.gameStates.afterCollectTreasureActivateCollectors:
                         this.addActionButton('end_before_claim_phase_activate_collectors', _("End Turn"), 'endTurn');
                         break;
+
                 }
             }
         },
@@ -325,16 +330,17 @@ function (dojo, declare) {
             );
         },
 
-        enterActivateCollectorMode: function (evt, possibleCollectors)
+        enterActivateCollectorMode: function (evt, possibleCollectors, servantDiceForReRoll)
         {
             console.log('enterActivateCollectorMode=')
             console.log(possibleCollectors)
+            console.log(servantDiceForReRoll)
 
             // Preventing default browser reaction
             dojo.stopEvent(evt);
 
             this.setClientState(this.gameStates.activateCollector, {
-                args: {possibleCollectors},
+                args: {possibleCollectors, servantDiceForReRoll},
                 description: _("Select a collector to activate"),
                 descriptionmyturn: _("Select a collector to activate")
             })
@@ -348,8 +354,9 @@ function (dojo, declare) {
             if (collectorId) {
                 const treasureCardIdsToFlip = this.treasureCardManager.getSelectedTreasureCardsInPlayerArea();
                 const treasureCardIdsSelected = this.treasureCardManager.getSelectedTreasureCardsInDisplay();
+                const servantDiceSelected = this.servantManager.getSelectedServantDice();
                 if (treasureCardIdsToFlip.length > 0) {
-                    this.actionManager.activateCollector(collectorId, treasureCardIdsToFlip, treasureCardIdsSelected);
+                    this.actionManager.activateCollector(collectorId, treasureCardIdsToFlip, treasureCardIdsSelected, servantDiceSelected);
                 } else {
                     this.showMessage( _('You need to select treasure card(s) to flip'), 'error');
                 }
@@ -406,6 +413,7 @@ function (dojo, declare) {
             dojo.subscribe('lightsOutCardPassed', this, 'notif_lightsOutCardPassed');
             dojo.subscribe('collectorUsed', this, 'notif_collectorUsed');
             dojo.subscribe('faceDownDisplayCardsRevealed', this, 'notif_faceDownDisplayCardsRevealed');
+            dojo.subscribe('servantDieReRolled', this, 'notif_servantDieReRolled');
 
             this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
@@ -414,6 +422,7 @@ function (dojo, declare) {
             this.notifqueue.setSynchronous( 'treasureCardDisplayUpdated', 1000 );
             this.notifqueue.setSynchronous( 'collectorUsed', 1000 );
             this.notifqueue.setSynchronous( 'faceDownDisplayCardsRevealed', 1000 );
+            this.notifqueue.setSynchronous( 'servantDieReRolled', 1000 );
 
 
             // Example 1: standard notification handling
@@ -492,12 +501,13 @@ function (dojo, declare) {
             this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
         },
 
-        notif_treasureCardDisplayUpdated: function( notif = {args: {treasureCards: []}} ) {
+        notif_treasureCardDisplayUpdated: function( notif = {args: {treasureCards: [], treasureDeck: {}}} ) {
             console.log( 'notif_treasureCardDisplayUpdated' );
 
             const treasureCardDisplayUpdated = notif['args'];
             console.log( treasureCardDisplayUpdated );
 
+            this.deckManager.update(treasureCardDisplayUpdated.treasureDeck);
             this.treasureCardManager.renderCardsAndMoveToZone(treasureCardDisplayUpdated.treasureCards);
             this.servantManager.setupDisplayZones(treasureCardDisplayUpdated.treasureCards);
         },
@@ -541,6 +551,21 @@ function (dojo, declare) {
 
             if (faceDownDisplayCardsRevealed.treasureCards) {
                 this.treasureCardManager.renderCardsAndMoveToZone(faceDownDisplayCardsRevealed.treasureCards, true);
+            }
+        },
+
+        notif_servantDieReRolled: function( notif = {args: {playerId: '1', exhausted: true, servantDie: {id: '1', type: 'playerId', location_arg: 'exhausted'}}} ) {
+            console.log( 'notif_servantDieReRolled' );
+
+            const servantDieReRolled = notif['args'];
+            console.log( servantDieReRolled );
+
+            if (servantDieReRolled.servantDie) {
+                if (servantDieReRolled.exhausted) {
+                    this.servantManager.moveServantDieToExhaustedArea(servantDieReRolled.servantDie.id, servantDieReRolled.servantDie.location_arg)
+                } else {
+                    this.servantManager.moveServantDieToPlayerArea(servantDieReRolled.servantDie.id, servantDieReRolled.servantDie.type)
+                }
             }
         },
 

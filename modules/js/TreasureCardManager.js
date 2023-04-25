@@ -68,7 +68,7 @@ define(
                         const elementId = `treasure-card-${card.id}`;
                         if (!replace) {
                             const treasureCard = this.createTreasureCard(card);
-                            dojo.place(treasureCard, 'treasure-cards-display')
+                            dojo.place(treasureCard, 'treasure-cards-deck')
                         }
                         console.log(card);
                         const cardValue = card.location.startsWith('player_area_') && card.flipped === '0' ? 'back' : card.value;

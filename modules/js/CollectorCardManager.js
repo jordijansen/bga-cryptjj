@@ -20,7 +20,7 @@ define(
             null, {
                 game: null,
                 collectorCards: {},
-                activateCollectorMode: false,
+                activateCollectorMode: {active: false},
 
                 constructor(game) {
                     this.game = game;
@@ -70,14 +70,18 @@ define(
                                 && this.game.isCurrentPlayerActive()
                                 && stateName === this.game.gameStates.beforeClaimPhaseActivateCollectors) {
                                 result.push(card);
+                            } else if (card.ability_type === 'COLLECT_PHASE'
+                                && this.game.isCurrentPlayerActive()
+                                && stateName === this.game.gameStates.afterCollectTreasureActivateCollectors) {
+                                result.push(card);
                             }
                         }
                     }
                     return result;
                 },
 
-                enterActivateCollectorMode(possibleCollectors) {
-                    this.activateCollectorMode = true;
+                enterActivateCollectorMode(possibleCollectors, servantDiceForReRoll) {
+                    this.activateCollectorMode = {active: true, servantDiceForReRoll};
 
                     for (const card of possibleCollectors) {
                         dojo.addClass($(`collector-card-${card.id}`), 'selectable')
@@ -88,7 +92,7 @@ define(
                 },
 
                 exitActivateCollectorMode() {
-                    this.activateCollectorMode = false;
+                    this.activateCollectorMode = {active: false };
                     for (const card of this.game.gamedatas.collectors) {
                         const cardElement = $(`collector-card-${card.id}`);
                         dojo.removeClass(cardElement, 'selectable')
@@ -113,7 +117,7 @@ define(
 
                     const selected = this.game.gamedatas.collectors.find(c => c.id === cardId);
 
-                    if (this.activateCollectorMode) {
+                    if (this.activateCollectorMode.active) {
                         // Only one collector card should be selected at a time
                         for (const card of this.game.gamedatas.collectors) {
                             const cardElement = $(`collector-card-${card.id}`);
@@ -125,13 +129,15 @@ define(
                         this.game.treasureCardManager.enterSelectTreasureModePlayerArea(collectorType, selected.nr_of_cards_to_flip)
                         if (selected.id === 'pottery-B') {
                             this.game.treasureCardManager.enterSelectTreasureModeDisplay(1);
+                        } else if (selected.id === 'idol-A') {
+                            this.game.servantManager.enterSelectServantDiceMode(this.activateCollectorMode.servantDiceForReRoll);
                         }
                         this.activateCollectorMode = false;
                         this.game.gamedatas.gamestate.descriptionmyturn = selected.name_translated + ': ' + dojo.string.substitute( _("flips ${i} ${type} treasure card(s)"), {i: Number(selected.nr_of_cards_to_flip), type: selected.treasure_type} );
                         this.game.gamedatas.gamestate.description = this.game.gamedatas.gamestate.descriptionmyturn;
                         this.game.updatePageTitle();
                     }
-                }
+                },
             });
     }
 );

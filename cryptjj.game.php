@@ -353,7 +353,7 @@ class CryptJj extends Table
         if (isset($collector)) {
             if ($this->isCollectorAllowed($collector)) {
                 if (sizeof($treasureCardsToFlip) == $collector['nr_of_cards_to_flip']) {
-                    $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCardsToFlip, $activateCollector['treasureCardsSelected']);
+                    $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCardsToFlip, $activateCollector['treasureCardsSelected'], $activateCollector['servantDiceSelected']);
                 } else {
                     throw new BgaUserException("Wrong number of cards provided");
                 }
@@ -372,14 +372,20 @@ class CryptJj extends Table
 
         if ($this->getStateName() === STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS) {
             $this->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
+        } else if ($this->getStateName() === STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS) {
+            $this->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
         }
     }
 
     function isCollectorAllowed($collector) {
         if ($collector['ability_type'] === 'ANY_TIME') {
             return true;
-        } else if ($collector['ability_type'] === 'BEFORE_CLAIM_PHASE'
+        } else if ($collector['ability_type'] === COLLECTOR_BEFORE_CLAIM_PHASE
             && $this->getStateName() === STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS
+            && $this->getActivePlayerId() === self::getCurrentPlayerId()) {
+            return true;
+        } else if ($collector['ability_type'] === COLLECTOR_COLLECT_PHASE
+            && $this->getStateName() === STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS
             && $this->getActivePlayerId() === self::getCurrentPlayerId()) {
             return true;
         }
@@ -414,11 +420,18 @@ class CryptJj extends Table
     }    
     */
 
+    // TODO PROVIDE ARGS TO BEFORE CLAIM PHASE TURN
     function argStatePlayerTurn()
     {
         return array(
           'playedBeforeThisRound' => self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1,
           'usedManuscriptBThisRound' => self::getUniqueValueFromDB("SELECT has_used_manuscript_b_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1
+        );
+    }
+
+    function argStateAfterCollectTreasureActivateCollectors() {
+        return array(
+          'servantDiceForReRoll' => $this->servantDiceManager->getServantDiceForReRoll($this->getActivePlayerId())
         );
     }
 
@@ -448,8 +461,13 @@ class CryptJj extends Table
         self::debug("stRevealTreasure");
         $this->treasureCardsManager->drawTreasureCardsForDisplay($this->getPlayerCount());
 
+        $treasureDeck = [];
+        $treasureDeck['size'] = $this->treasureCardsManager->countCardsInDeck();
+        $treasureDeck['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
+
         self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display filled with treasure cards'), array(
-            'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay()
+            'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay(),
+            'treasureDeck' => $treasureDeck
         ));
 
         $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
@@ -564,11 +582,36 @@ class CryptJj extends Table
             }
         }
 
-        if ($this->treasureCardsManager->countCardsInDeck() > 0) {
-            $this->gamestate->nextState(STATE_PASS_TORCH_CARDS);
-        } else  {
-            $this->gamestate->nextState(STATE_GAME_END);
+        $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
+        $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE);
+    }
+
+    function stAfterCollectTreasure() {
+        $collectorsThatCanBeUsedByPlayer = $this->collectorCardsManager->getAvailableCollectors($this->getActivePlayerId(), COLLECTOR_COLLECT_PHASE);
+        if (sizeof($collectorsThatCanBeUsedByPlayer) > 0) {
+            $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
+        } else {
+            $this->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
         }
+    }
+
+    function stEndAfterCollectTreasureActivateCollectors() {
+        $playersCustomOrderNo = $this->playerManager->getPlayerCustomOrderNo($this->getActivePlayerId());
+        if ($playersCustomOrderNo == $this->getPlayerCount()) {
+            // This was the last player, we check to see if this was the game end, otherwise we move on to the next round by passing the torch cards
+            if ($this->treasureCardsManager->countCardsInDeck() > 0) {
+                $this->servantDiceManager->resetAllEffortValues();
+                $this->gamestate->nextState(STATE_PASS_TORCH_CARDS);
+            } else  {
+                $this->gamestate->nextState(STATE_GAME_END);
+            }
+        } else {
+            // This was not the last player, so we go to the next player and see if they have any collectors to activate.
+            $this->activeNextPlayer();
+            $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE);
+        }
+
+
     }
 
     function stPassTorchCards() {

@@ -77,7 +77,7 @@ class CryptCollectorCards extends APP_DbObject
         return $results;
     }
 
-    public function useCollector($playerId, $collector, $treasureCardsToFlip, $treasureCardsSelected) {
+    public function useCollector($playerId, $collector, $treasureCardsToFlip, $treasureCardsSelected, $servantDiceSelected) {
         $flippedTreasureCards = [];
         foreach ($treasureCardsToFlip as $treasureCard) {
             if ($collector['treasure_type'] !== $treasureCard['type']) {
@@ -113,15 +113,13 @@ class CryptCollectorCards extends APP_DbObject
             $this->game->notificationsManager->notifyFaceDownDisplayCardsRevealed($playerId, $treasureCardsInDisplay);
         } else if ($collector['id'] === 'pottery-B') {
             // BEFORE_CLAIM_PHASE collect face-up card from display
-            if (isset($treasureCardsSelected) && sizeof($treasureCardsSelected) != 1) {
+            if (!isset($treasureCardsSelected) || sizeof($treasureCardsSelected) != 1) {
                 throw new BgaUserException("You need to select 1 treasure card");
             }
             $treasureCard = $this->game->treasureCardsManager->getTreasureCard(reset($treasureCardsSelected), $playerId);
             if ($treasureCard['location'] !== 'display') {
                 throw new BgaUserException("You need to select a treasure card in the display");
             }
-            self::trace(json_encode($treasureCard));
-
             if ($treasureCard['face_up'] !== '0') {
                 throw new BgaUserException("You need to select a face-down treasure card");
             }
@@ -133,8 +131,35 @@ class CryptCollectorCards extends APP_DbObject
                 // Auto end turn if no more collectors can be activated
                 $this->game->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
             }
+        } else if ($collector['id'] === 'idol-A') {
+            // COLLECT_PHASE re-roll a servant dice
+            if (!isset($servantDiceSelected) || sizeof($servantDiceSelected) != 1) {
+                throw new BgaUserException("You need to select 1 servant die");
+            }
+            $servantDie = $this->game->servantDiceManager->getServantDie(reset($servantDiceSelected));
+            if ($servantDie['type'] !== $playerId) {
+                throw new BgaUserException("You need to select a servant die that is yours");
+            }
+            if ($servantDie['location'] !== 'exhausted') {
+                throw new BgaUserException("You need to select a servant die that is exhausted");
+            }
+
+            $rolledValue = bga_rand(1, 6);
+            self::debug($servantDie['id'] .' => '. $rolledValue. ' - ' .$servantDie['effort']);
+
+            if ($rolledValue < $servantDie['effort']) {
+                $this->game->servantDiceManager->exhaustServantDie($servantDie['id'], $rolledValue);
+            } else {
+                $this->game->servantDiceManager->recoverServantDice(array($servantDie['id']));
+            }
+            $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
+            $this->game->notificationsManager->servantDieReRolled($playerId, $this->game->servantDiceManager->getServantDie($servantDie['id']), $servantDie['location_arg'], $rolledValue, $rolledValue < $servantDie['effort']);
+            if (sizeof($this->getAvailableCollectors($playerId, COLLECTOR_COLLECT_PHASE)) < 1) {
+                // Auto end turn if no more collectors can be activated
+                $this->game->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
+            }
         }
-    }
+     }
 
     private function setHasUsedManuscriptBThisRound($playerId) {
         self::DbQuery("UPDATE player SET has_used_manuscript_b_this_round=1 WHERE player_id = " .$playerId);

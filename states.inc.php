@@ -81,8 +81,8 @@ $machinestates = array(
 
     STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS_ID => array(
         "name" => STATE_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS,
-        "description" => clienttranslate('${actplayer} may activate collectors'),
-        "descriptionmyturn" => clienttranslate('${you} may activate collectors'),
+        "description" => clienttranslate('${actplayer} may activate collector(s)'),
+        "descriptionmyturn" => clienttranslate('${you} may activate collector(s)'),
         "type" => "activeplayer",
         "updateGameProgression" => false,
         "possibleactions" => array( ACTION_ACTIVATE_COLLECTOR, ACTION_END_TURN ),
@@ -132,7 +132,36 @@ $machinestates = array(
         "type" => "game",
         "action" => "stCollectTreasure",
         "updateGameProgression" => false,
-        "transitions" => array( STATE_PASS_TORCH_CARDS => STATE_PASS_TORCH_CARDS_ID, STATE_GAME_END => STATE_GAME_END_ID, )
+        "transitions" => array( STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID, STATE_GAME_END => STATE_GAME_END_ID, )
+    ),
+
+    STATE_AFTER_COLLECT_TREASURE_ID => array(
+        "name" => STATE_AFTER_COLLECT_TREASURE,
+        "description" => '',
+        "type" => "game",
+        "action" => "stAfterCollectTreasure",
+        "updateGameProgression" => false,
+        "transitions" => array(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS => STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS_ID, STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS => STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS_ID)
+    ),
+
+    STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS_ID => array(
+        "name" => STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS,
+        "description" => clienttranslate('${actplayer} may activate collector(s)'),
+        "descriptionmyturn" => clienttranslate('${you} may activate collector(s)'),
+        "args" => "argStateAfterCollectTreasureActivateCollectors",
+        "type" => "activeplayer",
+        "updateGameProgression" => false,
+        "possibleactions" => array( ACTION_ACTIVATE_COLLECTOR, ACTION_END_TURN ),
+        "transitions" => array( STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS => STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS_ID )
+    ),
+
+    STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS_ID => array(
+        "name" => STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS,
+        "description" => '',
+        "type" => "game",
+        "action" => "stEndAfterCollectTreasureActivateCollectors",
+        "updateGameProgression" => false,
+        "transitions" => array(STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID, STATE_PASS_TORCH_CARDS => STATE_PASS_TORCH_CARDS_ID, STATE_GAME_END => STATE_GAME_END_ID)
     ),
 
     STATE_PASS_TORCH_CARDS_ID => array(
