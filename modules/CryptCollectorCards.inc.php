@@ -77,7 +77,24 @@ class CryptCollectorCards extends APP_DbObject
         return $results;
     }
 
-    public function useCollector($playerId, $collector, $treasureCardsToFlip, $treasureCardsSelected, $servantDiceSelected) {
+    public function getAvailableCollectorById($playerId, $collectorId) {
+        $collector = self::getObjectFromDB("SELECT * 
+                FROM collectors c 
+                WHERE c.id = '".$collectorId."'
+                AND EXISTS (SELECT COUNT(1) 
+                            FROM treasure_cards tc
+                            WHERE tc.card_type = c.treasure_type
+                            AND tc.card_location = concat('player_area_', ".$playerId.")
+                            AND tc.card_flipped = 0
+                            HAVING COUNT(1) >= c.nr_of_cards_to_flip)");
+        if (isset($collector)) {
+            $collector['name_translated'] = $this->game->collectors[$collector['treasure_type']]['name'];
+            $collector['description_translated'] = $this->game->collectors[$collector['treasure_type']]['sides'][$collector['side']]['description'];
+        }
+        return $collector;
+    }
+
+    public function useCollector($playerId, $collector, $treasureCardsToFlip, $treasureCardsSelected = [], $servantDiceSelected = []) {
         $flippedTreasureCards = [];
         foreach ($treasureCardsToFlip as $treasureCard) {
             if ($collector['treasure_type'] !== $treasureCard['type']) {
@@ -158,15 +175,42 @@ class CryptCollectorCards extends APP_DbObject
                 // Auto end turn if no more collectors can be activated
                 $this->game->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
             }
+        } else if ($collector['id'] === 'idol-B') {
+            // END_GAME first player to flip 2 cards
+            $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
         }
-     }
+    }
 
-    private function setHasUsedManuscriptBThisRound($playerId) {
-        self::DbQuery("UPDATE player SET has_used_manuscript_b_this_round=1 WHERE player_id = " .$playerId);
+    public function activateIdolBIfInPlay() {
+        if (self::getUniqueValueFromDB("SELECT 1 FROM collectors WHERE id = 'idol-B'") == 1) {
+            if ($this->game->getGameStateValue(GLOBAL_IDOL_B_USED) == 0) {
+                $players = $this->game->loadPlayersBasicInfos();
+                foreach( $players as $playerId => $player )
+                {
+                    $collector = $this->getAvailableCollectorById($playerId, 'idol-B');
+                    if (isset($collector)) {
+                        $flippableCards = $this->game->treasureCardsManager->findByPlayerIdAndTypeAndUnFlipped($playerId, 'idol');
+                        if (sizeof($flippableCards) >= $collector['nr_of_cards_to_flip']) {
+                            self::trace("===============");
+                            self::trace(json_encode($flippableCards));
+                            $treasureCardsToFlip = array_splice($flippableCards, 0, $collector['nr_of_cards_to_flip']);
+                            self::trace(json_encode($treasureCardsToFlip));
+                            $this->useCollector($playerId, $collector, $treasureCardsToFlip);
+                        }
+                        $this->game->setGameStateValue(GLOBAL_IDOL_B_USED, 1);
+                    }
+                }
+            }
+        }
+
     }
 
     public function hasUsedManuscriptBThisRound($playerId) {
         return self::getUniqueValueFromDB("SELECT has_used_manuscript_b_this_round FROM player WHERE player_id = " .$playerId) == '1';
+    }
+
+    private function setHasUsedManuscriptBThisRound($playerId) {
+        self::DbQuery("UPDATE player SET has_used_manuscript_b_this_round=1 WHERE player_id = " .$playerId);
     }
 
     private function determineSide($options)

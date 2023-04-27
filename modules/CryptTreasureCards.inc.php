@@ -88,6 +88,14 @@ class CryptTreasureCards extends APP_DbObject
         return self::getObjectListFromDB($sql);
     }
 
+    public function findByPlayerIdAndTypeAndUnFlipped($playerId, $type) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." 
+                WHERE card_location = 'player_area_".$playerId."' AND card_type = '".$type."' AND card_flipped = 0
+                ORDER BY card_face_up DESC";
+
+        return self::getObjectListFromDB($sql);
+    }
+
     public function getTreasureCard($cardId, $playerId) {
         $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_id = " .$cardId;
 

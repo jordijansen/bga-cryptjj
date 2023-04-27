@@ -568,19 +568,5 @@ function (dojo, declare) {
                 }
             }
         },
-
-//         'type' => 'treasureCardCollected',
-//         'message' => clienttranslate( '${playerName} collects ${treasureCard.type}'),
-//         'args' => array(
-//         'playerId' => $playerId,
-//         'playerName' => $players[$playerId]['player_name'],
-//         'treasureCard' => $treasureCard,
-//         'rolledServantDice' => $rolledServantDice
-// )
-
-        // 'effort' => $effort,
-        // 'rolledValue' => $rolledValue,
-        // 'die' => $servantDie,
-        // 'exhausted' => $exhausted
     });
 });

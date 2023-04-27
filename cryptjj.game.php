@@ -38,13 +38,8 @@ class CryptJj extends Table
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels( array( 
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
+        self::initGameStateLabels( array(
+            GLOBAL_IDOL_B_USED => 10
         ) );
 
         $this->treasure_cards = self::getNew( "module.common.deck" );
@@ -98,8 +93,8 @@ class CryptJj extends Table
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
-        
+        self::setGameStateInitialValue( GLOBAL_IDOL_B_USED, 0 );
+
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
@@ -485,6 +480,9 @@ class CryptJj extends Table
 
     function stEndBeforeClaimPhaseActivateCollectors() {
         $playersCustomOrderNo = $this->playerManager->getPlayerCustomOrderNo($this->getActivePlayerId());
+        // If the player now has two Idol B cards, they may flip them to score extra during END_GAME scoring
+        $this->collectorCardsManager->activateIdolBIfInPlay();
+
         if ($playersCustomOrderNo == $this->getPlayerCount()) {
             // This was the last player, so we activate the leader player again and move to the Claim Treasure phase
             $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
@@ -581,6 +579,9 @@ class CryptJj extends Table
                 $this->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], $rolledServantDice);
             }
         }
+
+        // The players that now have 2 idol cards may flip them face-up to score extra during END_GAME scoring
+        $this->collectorCardsManager->activateIdolBIfInPlay();
 
         $this->gamestate->changeActivePlayer($this->playerManager->getLeaderPlayerId());
         $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE);

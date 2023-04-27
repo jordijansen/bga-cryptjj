@@ -9,6 +9,9 @@
  * -----
  */
 
+// Globals
+const GLOBAL_IDOL_B_USED = 'idol_b_used';
+
 // Options
 const OPTION_COLLECTORS = 100;
 const OPTION_COLLECTORS_A = 1;
