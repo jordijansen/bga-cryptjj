@@ -55,17 +55,19 @@ define(
                         }
 
                         const playerArea = this.game.format_block('jstpl_player_area', {
-                            "id": player.id,
+                            "player_id": player.player_id,
                             "color": player.color,
                             "name": player.name,
                         });
-                        if (Number(player.id) === this.game.player_id) {
+                        if (Number(player.player_id) === this.game.player_id) {
                             thisPlayerArea = playerArea;
                         } else {
                             otherPlayerAreas.push(playerArea);
                         }
 
-
+                        const scoreTooltipText = _('Scores shown are based on public information, face-down collected treasure cards are not reflected in your score. Hence your final score might result in a higher score.');
+                        this.game.addTooltip(`player_score_${playerId}`, scoreTooltipText, '');
+                        this.game.addTooltip(`icon_point_${playerId}`, scoreTooltipText, '');
                     })
 
                     dojo.place(thisPlayerArea, "player-areas-row")
@@ -116,6 +118,10 @@ define(
 
                 hasUsedManuscriptBThisRound() {
                     return this.usedManuscriptBThisRound === true;
+                },
+
+                updateScore(score = {playerId: 1, player_score: 1}) {
+                    this.game.scoreCtrl[score.playerId].setValue(score.player_score);
                 },
 
                 renderTorchCardTooltip(type) {

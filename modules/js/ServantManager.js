@@ -39,8 +39,8 @@ define(
                     this.setupDisplayZones(this.game.gamedatas.treasureCards.filter(card => card.location === 'display'));
 
                     Object.values(this.game.gamedatas.players).forEach(player => {
-                        this.playerAreas[player.id] = new ebg.zone();
-                        this.playerAreas[player.id].create(this.game, dojo.query(`#player-area-${player.id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
+                        this.playerAreas[player.player_id] = new ebg.zone();
+                        this.playerAreas[player.player_id].create(this.game, dojo.query(`#player-area-${player.player_id} .dice-placement-area`)[0], this.servantSize, this.servantSize);
                     })
 
                     this.game.gamedatas.servantDice.forEach(servantDie => {
@@ -147,7 +147,7 @@ define(
                     const id = `servant-die-${servantId}`;
                     this.exhaustedArea.removeFromZone(id, false);
                     Object.values(this.game.gamedatas.players).forEach(player => {
-                        this.playerAreas[player.id].removeFromZone(id, false);
+                        this.playerAreas[player.player_id].removeFromZone(id, false);
                     })
 
                     Object.values(this.displayTreasureCardSelectionAreas).forEach(zone => zone.removeFromZone(id, false))

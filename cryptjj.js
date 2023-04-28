@@ -414,6 +414,7 @@ function (dojo, declare) {
             dojo.subscribe('collectorUsed', this, 'notif_collectorUsed');
             dojo.subscribe('faceDownDisplayCardsRevealed', this, 'notif_faceDownDisplayCardsRevealed');
             dojo.subscribe('servantDieReRolled', this, 'notif_servantDieReRolled');
+            dojo.subscribe('allCardsFlipped', this, 'notif_allCardsFlipped');
 
             this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
@@ -473,12 +474,13 @@ function (dojo, declare) {
             Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
         },
 
-        notif_servantDiceRecovered: function( notif = {args: {recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
+        notif_servantDiceRecovered: function( notif = {args: {playerId: 1, player_score: 3, recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
             console.log( 'notif_servantDiceRecovered' );
 
             const servantDiceRecovered = notif['args'];
             console.log( servantDiceRecovered );
 
+            this.playerManager.updateScore(servantDiceRecovered);
             Object.values(servantDiceRecovered.recoveredServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
         },
 
@@ -491,12 +493,13 @@ function (dojo, declare) {
             this.treasureCardManager.moveTreasureCardToDiscard(treasureCardDiscarded.treasureCard.id);
         },
 
-        notif_treasureCardCollected: function( notif = {args: {playerId: 1, rolledServantDice: [{effort: 1, rolledValue: 2, die: {id: 1}}], treasureCard: {id: 1}}} ) {
+        notif_treasureCardCollected: function( notif = {args: {playerId: 1, player_score: 3, rolledServantDice: [{effort: 1, rolledValue: 2, die: {id: 1}}], treasureCard: {id: 1}}} ) {
             console.log( 'notif_treasureCardCollected' );
 
             const treasureCardCollected = notif['args'];
             console.log( treasureCardCollected );
 
+            this.playerManager.updateScore(treasureCardCollected);
             this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice.map(rolledServanDie => rolledServanDie.die));
             this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
         },
@@ -530,13 +533,15 @@ function (dojo, declare) {
             this.playerManager.setLightsOutCard(lightsOutCardPassed.player_id)
         },
 
-        notif_collectorUsed: function( notif = {args: {playerId: '1', collector: {}, flippedTreasureCards: []}} ) {
+        notif_collectorUsed: function( notif = {args: {playerId: 1, player_score: 3, collector: {}, flippedTreasureCards: []}} ) {
             console.log( 'notif_collectorUsed' );
 
             const collectorUsed = notif['args'];
             console.log( collectorUsed );
 
             this.treasureCardManager.renderCardsAndMoveToZone(collectorUsed.flippedTreasureCards, true);
+
+            this.playerManager.updateScore(collectorUsed);
 
             if (Number(collectorUsed.playerId) === this.player_id) {
                 this.restoreServerGameState();
@@ -568,5 +573,15 @@ function (dojo, declare) {
                 }
             }
         },
+
+        notif_allCardsFlipped: function( notif = {args: {treasureCards: []}}) {
+            console.log( 'notif_allCardsFlipped' );
+
+            const allCardsFlipped = notif['args'];
+            console.log( allCardsFlipped );
+
+            this.treasureCardManager.renderCardsAndMoveToZone(allCardsFlipped.treasureCards, true);
+
+        }
     });
 });

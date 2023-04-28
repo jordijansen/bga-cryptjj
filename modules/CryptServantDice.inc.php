@@ -88,10 +88,14 @@ class CryptServantDice extends APP_DbObject
 
     public function exhaustServantDie($id, $value) {
         $this->game->servant_dice->moveCard($id, 'exhausted', $value);
+        $this->game->scoreManager->updateTotalScore($this->getServantDie($id)['type']);
     }
 
     public function recoverServantDice($dieIds) {
         $this->game->servant_dice->moveCards($dieIds, 'player_area', 1);
+        if (sizeof($dieIds) > 0) {
+            $this->game->scoreManager->updateTotalScore($this->getServantDie(reset($dieIds))['type']);
+        }
     }
 
     public function recoverServantDie($dieId) {

@@ -179,6 +179,7 @@ class CryptCollectorCards extends APP_DbObject
             // END_GAME first player to flip 2 cards
             $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
         }
+        $this->game->scoreManager->updateTotalScore($playerId);
     }
 
     public function activateIdolBIfInPlay() {

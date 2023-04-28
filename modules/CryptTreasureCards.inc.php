@@ -48,7 +48,8 @@ class CryptTreasureCards extends APP_DbObject
                         $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1);
                     }
                 } else if (sizeof($players) == 4) {
-                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 2);
+//                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 2);
+                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1); // TODO REMOVE BECAUSE THIS SHORTENS THE GAME
                 }
             }
         }
@@ -96,6 +97,22 @@ class CryptTreasureCards extends APP_DbObject
         return self::getObjectListFromDB($sql);
     }
 
+    public function findByPlayerIdAndType($playerId, $type) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." 
+                WHERE card_location = 'player_area_".$playerId."' AND card_type = '".$type."'
+                ORDER BY card_face_up DESC";
+
+        return self::getObjectListFromDB($sql);
+    }
+
+    public function findByPlayerId($playerId) {
+        $sql = $this->baseTreasureCardQuery($playerId) ." 
+                WHERE card_location = 'player_area_".$playerId."' 
+                ORDER BY card_face_up DESC";
+
+        return self::getObjectListFromDB($sql);
+    }
+
     public function getTreasureCard($cardId, $playerId) {
         $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_id = " .$cardId;
 
@@ -131,6 +148,7 @@ class CryptTreasureCards extends APP_DbObject
 
     public function collectTreasureCard($playerId, $treasureCardId) {
         $this->game->treasure_cards->moveCard($treasureCardId, 'player_area_' .$playerId);
+        $this->game->scoreManager->updateTotalScore($playerId);
     }
 
     public function countCardsInDeck() {
@@ -143,6 +161,14 @@ class CryptTreasureCards extends APP_DbObject
 
     public function flipCard($treasureCardId) {
         self::DbQuery("UPDATE treasure_cards SET card_flipped=1, card_face_up=1 WHERE card_id = ".$treasureCardId);
+    }
+
+    public function flipAllCardsInPlayerAreas() {
+        self::DbQuery("UPDATE treasure_cards SET card_flipped=1, card_face_up=1 WHERE card_location LIKE 'player_area_%'");
+        $sql = $this->baseTreasureCardQuery('999999999') ." 
+                WHERE card_location LIKE 'player_area_%'";
+
+        return self::getObjectListFromDB($sql);
     }
 
     function baseTreasureCardQuery($playerId) {

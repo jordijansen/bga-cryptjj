@@ -56,7 +56,7 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}" style="color: #${color}" id="player-area-${color}">\
+var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${player_id}" style="color: #${color}">\
     <h2>${name}</h2>\
     <div style="display: flex;">\
         <div class="card player-card-${color}-male">\
@@ -64,12 +64,12 @@ var jstpl_player_area='<div class="player-area whiteblock" id="player-area-${id}
             </div>\
         </div>\
         <div class="player-treasure-areas">\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-idol"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-jewelery"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-manuscript"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-pottery"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-remains"></div></div>\
-            <div class="player-treasure-area"><div id="player-${id}-treasure-tapestry"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-idol"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-jewelery"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-manuscript"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-pottery"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-remains"></div></div>\
+            <div class="player-treasure-area"><div id="player-${player_id}-treasure-tapestry"></div></div>\
         </div>\
     </div>\
 </div>';

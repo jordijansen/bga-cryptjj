@@ -132,7 +132,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stCollectTreasure",
         "updateGameProgression" => false,
-        "transitions" => array( STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID, STATE_GAME_END => STATE_GAME_END_ID, )
+        "transitions" => array( STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID )
     ),
 
     STATE_AFTER_COLLECT_TREASURE_ID => array(
@@ -161,16 +161,25 @@ $machinestates = array(
         "type" => "game",
         "action" => "stEndAfterCollectTreasureActivateCollectors",
         "updateGameProgression" => false,
-        "transitions" => array(STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID, STATE_PASS_TORCH_CARDS => STATE_PASS_TORCH_CARDS_ID, STATE_GAME_END => STATE_GAME_END_ID)
+        "transitions" => array(STATE_AFTER_COLLECT_TREASURE => STATE_AFTER_COLLECT_TREASURE_ID, STATE_PASS_TORCH_CARDS => STATE_PASS_TORCH_CARDS_ID, STATE_BEFORE_GAME_END => STATE_BEFORE_GAME_END_ID)
     ),
 
     STATE_PASS_TORCH_CARDS_ID => array(
         "name" => STATE_PASS_TORCH_CARDS,
-        "description" => 'Pass the Torch: passing torch cards...',
+        "description" => clienttranslate('Pass the Torch: passing torch cards...'),
         "type" => "game",
         "action" => "stPassTorchCards",
         "updateGameProgression" => false,
         "transitions" => array( STATE_REVEAL_TREASURE => STATE_REVEAL_TREASURE_ID )
+    ),
+
+    STATE_BEFORE_GAME_END_ID => array(
+        "name" => STATE_BEFORE_GAME_END,
+        "description" => clienttranslate('Final Scoring'),
+        "type" => "game",
+        "action" => "stBeforeGameEnd",
+        "updateGameProgression" => false,
+        "transitions" => array( STATE_GAME_END => STATE_GAME_END_ID )
     ),
 
 /*

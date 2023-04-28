@@ -43,7 +43,7 @@ class CryptPlayerManager extends APP_DbObject
     }
 
     public function getPlayersInTurnOrder() {
-        return self::getCollectionFromDb("SELECT player_id id, custom_order, has_used_manuscript_b_this_round, has_played_before_this_round FROM player ORDER BY custom_order DESC");
+        return self::getCollectionFromDb("SELECT player_id, player_score as score, player_name, player_color, player_zombie, custom_order, has_used_manuscript_b_this_round, has_played_before_this_round FROM player ORDER BY custom_order DESC");
     }
 
     public function getPlayerCustomOrderNo($playerId) {

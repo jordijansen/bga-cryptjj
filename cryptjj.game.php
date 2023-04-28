@@ -25,6 +25,7 @@ require_once("modules/CryptServantDice.inc.php");
 require_once("modules/CryptPlayerManager.inc.php");
 require_once("modules/CryptNotifications.inc.php");
 require_once("modules/CryptCollectorCards.inc.php");
+require_once("modules/CryptScoreManager.inc.php");
 
 class CryptJj extends Table
 {
@@ -53,6 +54,7 @@ class CryptJj extends Table
         $this->playerManager = new CryptPlayerManager($this);
         $this->notificationsManager = new CryptNotifications($this);
         $this->collectorCardsManager = new CryptCollectorCards($this);
+        $this->scoreManager = new CryptScoreManager($this);
 	}
 	
     protected function getGameName( )
@@ -112,6 +114,9 @@ class CryptJj extends Table
         // 4. Distribute torch & last light cards to players
         $this->playerManager->distributeInitialTorchCards($players);
 
+        // 5. Set initial scores
+        $this->scoreManager->setInitialScore($players);
+
         /************ End of the game initialization *****/
     }
 
@@ -135,14 +140,15 @@ class CryptJj extends Table
 
         $players = self::loadPlayersBasicInfos();
         $result['servantDice'] = array();
-        foreach( $players as $player_id => $player )
+        foreach( $players as $playerId => $player )
         {
-            foreach ($this->servantDiceManager->getAllServantDice($player_id) as $servantDie) {
+            foreach ($this->servantDiceManager->getAllServantDice($playerId) as $servantDie) {
                 $result['servantDice'][] = $servantDie;
             }
         }
         $result['treasureDeck']['size'] = $this->treasureCardsManager->countCardsInDeck();
-        $result['treasureDeck']['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
+        $topCardOfDeck = $this->treasure_cards->getCardOnTop('deck');
+        $result['treasureDeck']['topCardType'] = isset($topCardOfDeck) ? $topCardOfDeck['type'] : 'empty';
         $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id);
 
 
@@ -211,6 +217,24 @@ class CryptJj extends Table
     public function getStateName() {
         $state = $this->gamestate->state();
         return $state['name'];
+    }
+
+    public function runDebug() {
+        $players = $this->loadPlayersBasicInfos();
+        foreach($players as $playerId => $player)
+        {
+            // Update the scores for all players
+            $this->scoreManager->updateTotalScore($playerId, true);
+        }
+
+        $finalScoring = [];
+        foreach( $players as $playerId => $player )
+        {
+            $finalScoring[$playerId] = $this->scoreManager->getScoreBreakDown($playerId);
+        }
+        self::trace(json_encode($finalScoring));
+
+        $this->notificationsManager->notifyFinalScoring($finalScoring);
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -458,7 +482,8 @@ class CryptJj extends Table
 
         $treasureDeck = [];
         $treasureDeck['size'] = $this->treasureCardsManager->countCardsInDeck();
-        $treasureDeck['topCardType'] = $this->treasure_cards->getCardOnTop('deck')["type"];
+        $topCardOfDeck = $this->treasure_cards->getCardOnTop('deck');
+        $treasureDeck['topCardType'] = isset($topCardOfDeck) ? $topCardOfDeck['type'] : 'empty';
 
         self::notifyAllPlayers( 'treasureCardDisplayUpdated', clienttranslate( 'Treasure card display filled with treasure cards'), array(
             'treasureCards' => $this->treasureCardsManager->getAllTreasureCardsInDisplay(),
@@ -604,15 +629,13 @@ class CryptJj extends Table
                 $this->servantDiceManager->resetAllEffortValues();
                 $this->gamestate->nextState(STATE_PASS_TORCH_CARDS);
             } else  {
-                $this->gamestate->nextState(STATE_GAME_END);
+                $this->gamestate->nextState(STATE_BEFORE_GAME_END);
             }
         } else {
             // This was not the last player, so we go to the next player and see if they have any collectors to activate.
             $this->activeNextPlayer();
             $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE);
         }
-
-
     }
 
     function stPassTorchCards() {
@@ -622,6 +645,31 @@ class CryptJj extends Table
         $this->playerManager->passTorchCards($players);
         $this->notificationsManager->notifyTorchCardsPassed();
         $this->gamestate->nextState(STATE_REVEAL_TREASURE);
+    }
+
+    function stBeforeGameEnd() {
+        self::debug("stBeforeGameEnd");
+
+        $players = $this->loadPlayersBasicInfos();
+        foreach($players as $playerId => $player)
+        {
+            // Update the scores for all players
+            $this->scoreManager->updateTotalScore($playerId, true);
+        }
+
+        // Break ties if necessary
+        $this->scoreManager->breakTies();
+
+        $finalScoring = [];
+        foreach($players as $playerId => $player)
+        {
+            $finalScoring[$playerId] = $this->scoreManager->getScoreBreakDown($playerId);
+        }
+
+        $this->notificationsManager->notifyAllCardsFlipped($this->treasureCardsManager->flipAllCardsInPlayerAreas());
+        $this->notificationsManager->notifyFinalScoring($finalScoring);
+
+        $this->gamestate->nextState(STATE_GAME_END);
     }
 
 //////////////////////////////////////////////////////////////////////////////
