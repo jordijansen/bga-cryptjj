@@ -73,7 +73,14 @@ define(
                             } else if (card.ability_type === 'COLLECT_PHASE'
                                 && this.game.isCurrentPlayerActive()
                                 && stateName === this.game.gameStates.afterCollectTreasureActivateCollectors) {
-                                result.push(card);
+                                if (card.id === 'idol-A') {
+                                    // idol-A lets you re-roll a die, useless if you have no exhausted dice
+                                    if (this.game.servantManager.getServantDieInExhaustedArea(this.game.player_id).length > 0) {
+                                        result.push(card);
+                                    }
+                                } else {
+                                    result.push(card);
+                                }
                             }
                         }
                     }

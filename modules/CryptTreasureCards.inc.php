@@ -48,8 +48,8 @@ class CryptTreasureCards extends APP_DbObject
                         $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1);
                     }
                 } else if (sizeof($players) == 4) {
-//                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 2);
-                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1); // TODO REMOVE BECAUSE THIS SHORTENS THE GAME
+                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 2);
+//                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1); // TODO REMOVE BECAUSE THIS SHORTENS THE GAME
                 }
             }
         }

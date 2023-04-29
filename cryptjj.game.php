@@ -614,8 +614,9 @@ class CryptJj extends Table
 
     function stAfterCollectTreasure() {
         $collectorsThatCanBeUsedByPlayer = $this->collectorCardsManager->getAvailableCollectors($this->getActivePlayerId(), COLLECTOR_COLLECT_PHASE);
-        if (sizeof($collectorsThatCanBeUsedByPlayer) > 0) {
-            $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
+        if (sizeof($collectorsThatCanBeUsedByPlayer) > 0 && sizeof($this->servantDiceManager->getServantDiceInExhaustedAreaWithEffortValue($this->getActivePlayerId())) > 0) {
+            // Only activate this state for the player if they have dice that can be re-rolled
+                $this->gamestate->nextState(STATE_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
         } else {
             $this->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);
         }

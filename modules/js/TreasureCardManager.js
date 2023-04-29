@@ -220,10 +220,10 @@ define(
                             && this.game.playerManager.hasLeaderCard(this.game.player_id)
                             && this.game.playerManager.hasPlayedBeforeThisRound()) {
                             console.log(this.game.playerManager.hasPlayedBeforeThisRound());
-                            this.toggleSelectableDisplayCards(false);
+                            this.toggleClaimableDisplayCards(false);
                         } else if (this.game.playerManager.getPlayerCount() > 2
                             && this.game.playerManager.hasLightsOutCard(this.game.player_id)) {
-                            this.toggleSelectableDisplayCards(false);
+                            this.toggleClaimableDisplayCards(false);
                         }
                     }
 
@@ -380,6 +380,11 @@ define(
                     event.preventDefault();
                     event.stopPropagation();
 
+                    const elementId = `treasure-card-${cardId}`;
+                    if (!dojo.hasClass(elementId, "selectable")) {
+                        return;
+                    }
+
                     if (this.claimTreasureMode) {
                         const diceStillInPlayerArea = this.game.servantManager.getServantDieInPlayerArea(this.game.player_id);
                         if (diceStillInPlayerArea.length > 0) {
@@ -396,7 +401,7 @@ define(
                             }
                         }
                     } else if(this.selectTreasureModeDisplay.active && this.cardDisplay.getAllItems().includes(`treasure-card-${cardId}`)) {
-                        const elementId = `treasure-card-${cardId}`;
+
                         if (dojo.hasClass($(elementId), 'selectable')) {
                             const nrOfCardsSelected = dojo.query('#treasure-cards-display .treasure-card.selected').length;
                             if (dojo.hasClass($(elementId), 'selected')) {

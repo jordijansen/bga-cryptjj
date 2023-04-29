@@ -109,7 +109,7 @@
     outline: 4px rgba(255, 0, 0, 0.75) solid !important;
 }
 
-#treasure-cards-display .treasure-card.selection.selected .row .bgabutton {
+#treasure-cards-display .treasure-card:has(.dice-selection-area .servant-die) .row .bgabutton {
     visibility: visible;
 }
 

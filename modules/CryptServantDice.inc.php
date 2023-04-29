@@ -65,6 +65,10 @@ class CryptServantDice extends APP_DbObject
         $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location = 'exhausted'";
         return self::getObjectListFromDB($sql);
     }
+    public function getServantDiceInExhaustedAreaWithEffortValue($playerId) {
+        $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_type = '".$playerId."' AND card_location = 'exhausted' AND card_effort IS NOT NULL";
+        return self::getObjectListFromDB($sql);
+    }
 
     public function getServantDiceOnTreasureCard($treasureCardId) {
         $sql = "SELECT ".$this->selectColumnList." FROM servant_dice WHERE card_location LIKE 'treasure_card_" .$treasureCardId."'";

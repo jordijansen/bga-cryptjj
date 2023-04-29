@@ -160,6 +160,9 @@ class CryptCollectorCards extends APP_DbObject
             if ($servantDie['location'] !== 'exhausted') {
                 throw new BgaUserException("You need to select a servant die that is exhausted");
             }
+            if ($servantDie['effort'] == null) {
+                throw new BgaUserException("You can only re-roll a die that was rolled this collect phase");
+            }
 
             $rolledValue = bga_rand(1, 6);
             self::debug($servantDie['id'] .' => '. $rolledValue. ' - ' .$servantDie['effort']);
