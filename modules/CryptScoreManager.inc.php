@@ -55,12 +55,14 @@ class CryptScoreManager extends APP_DbObject
                 $rolledValues = [];
                 $servantDice = $this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId);
                 foreach ($servantDice as $servanDie) {
-                    $rolledValues[] = bga_rand(1, 6);
+                    $rolledValue = bga_rand(1, 6);
+                    $this->game->servantDiceManager->setDieValue($servanDie['id'], $rolledValue);
+                    $rolledValues[] = $rolledValue;
                 }
                 $auxScore = array_sum($rolledValues);
                 self::DbQuery("UPDATE player SET player_score=".$auxScore." WHERE player_id = " .$tiedPlayerId);
                 if (sizeof($rolledValues) > 0) {
-                    $this->game->notificationsManager->notifyTieBreakerRolled($tiedPlayerId, $rolledValues);
+                    $this->game->notificationsManager->notifyTieBreakerRolled($tiedPlayerId, $this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId));
                 }
             }
             $tiedPlayerIds = $this->getTies(true);

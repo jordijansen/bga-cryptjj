@@ -71,19 +71,22 @@ define(
 
                 setServantDieValue(dieId, value) {
                     const servantDie = this.game.gamedatas.servantDice.find(die => die.id === dieId);
-                    servantDie.location_arg = value;
+                    servantDie.location_arg = Number(value);
 
                     const servantDieElement = $(`servant-die-${servantDie.id}`);
-                    dojo.empty(servantDieElement);
-                    for (let i = 0; i < value; i++) {
-                        dojo.create("span", { class: "pip" }, servantDieElement);
+
+                    for (var i = 1; i <= 6; i++) {
+                        dojo.removeClass(servantDieElement, 'value-' + i)
+                        if (servantDie.location_arg === i) {
+                            dojo.addClass(servantDieElement, 'value-' + i)
+                        }
                     }
                 },
 
-                moveServantDieToPlayerArea(servantId, playerId) {
+                moveServantDieToPlayerArea(servantId, playerId, value) {
                     this.removeServantDieFromZones(servantId);
                     this.playerAreas[playerId].placeInZone(`servant-die-${servantId}`);
-                    this.setServantDieValue(servantId, 1);
+                    this.setServantDieValue(servantId, value);
                 },
 
                 moveServantDieToTreasureCardSelectionArea(servantId, cardId, value) {
@@ -133,7 +136,7 @@ define(
                 moveServantDiceToLocations(servantDice) {
                     servantDice.forEach(servantDie => {
                         if (servantDie.location === 'player_area') {
-                            this.moveServantDieToPlayerArea(servantDie.id, servantDie.type);
+                            this.moveServantDieToPlayerArea(servantDie.id, servantDie.type, servantDie.location_arg);
                         } else if (servantDie.location.startsWith('treasure_card_')) {
                             const treasureCardId = servantDie.location.replace('treasure_card_', '');
                             this.moveServantDieToTreasureCard(servantDie.id, treasureCardId, servantDie.location_arg)
@@ -182,14 +185,14 @@ define(
                     if(this.selectServantDiceMode.active) {
                         const elementId = `servant-die-${dieId}`;
                         if (dojo.hasClass($(elementId), 'selectable')) {
-                            const nrOfCardsSelected = dojo.query('.die.selected').length;
+                            const nrOfCardsSelected = dojo.query('.servant-die.selected').length;
                             if (dojo.hasClass($(elementId), 'selected')) {
                                 dojo.removeClass($(elementId), 'selected');
                                 dojo.empty('exhausted-servants-text');
                             } else if (nrOfCardsSelected < 1) {
                                 dojo.addClass($(elementId), 'selected');
                                 const servantDie = this.selectServantDiceMode.diceForSelection.find(die => die.id === die.id);
-                                const helpText = dojo.string.substitute( _("Roll lower than ${i} to recover"), {i: servantDie.effort})
+                                const helpText = dojo.string.substitute( _("Roll higher or equal to ${i} to recover"), {i: servantDie.effort})
                                 dojo.place(`<p>${helpText}</p>`, 'exhausted-servants-text');
                             } else {
                                 this.game.showMessage(dojo.string.substitute( _("You can only select 1 servant die")), 'error');
@@ -199,7 +202,7 @@ define(
                 },
 
                 getSelectedServantDice() {
-                    const selectedTreasureCards = dojo.query('.die.selected');
+                    const selectedTreasureCards = dojo.query('.servant-die.selected');
                     return selectedTreasureCards.map(e => e.id).map(id => id.replace('servant-die-', ''));
                 }
     });

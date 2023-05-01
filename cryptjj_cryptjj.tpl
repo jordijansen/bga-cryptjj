@@ -24,6 +24,14 @@
     
     Please REMOVE this comment before publishing your game on BGA
 -->
+<span class="crypt-icon treasure-type small treasure-idol"></span>
+<span class="crypt-icon treasure-type small treasure-jewelery"></span>
+<span class="crypt-icon treasure-type small treasure-manuscript"></span>
+<span class="crypt-icon treasure-type small treasure-pottery"></span>
+<span class="crypt-icon treasure-type small treasure-remains"></span>
+<span class="crypt-icon treasure-type small treasure-tapestry"></span>
+
+<span class="crypt-icon coin small">3</span>
 
 <div class="whiteblock">
     <div id="collector-cards"></div>
@@ -79,9 +87,9 @@ var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="wi
         <div class="row"><a href="#" data-id="${id}" id="increase-dice-${id}" class="bgabutton bgabutton_blue"><span>+</span></a></div>\
         <div class="row">\
             <div data-id="${id}" id="dice-selection-area-${id}" class="dice-selection-area row">\
-                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
-                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
-                <div class="die die-placeholder"><span class="pip-placeholder">+</span></div>\
+                <div class="die-placeholder"><span class="pip-placeholder">+</span></div>\
+                <div class="die-placeholder"><span class="pip-placeholder">+</span></div>\
+                <div class="die-placeholder"><span class="pip-placeholder">+</span></div>\
             </div>\
         </div>\
         <div class="row"><a href="#" data-id="${id}" id="decrease-dice-${id}" class="bgabutton bgabutton_blue"><span>-</span></a></div>\
@@ -96,7 +104,20 @@ var jstpl_treasure_card_tooltip='<div class="treasure-card-tooltip">\
 ${text}\
 <div>';
 
-var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="die servant-die die-${color}"></div>';
+var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="dice servant-die">\
+<div class="color-${color} side side1">\
+</div>\
+<div class="color-${color} side side2">\
+</div>\
+<div class="color-${color} side side3">\
+</div>\
+<div class="color-${color} side side4">\
+</div>\
+<div class="color-${color} side side5">\
+</div>\
+<div class="color-${color} side side6">\
+</div>\
+</div>';
 
 var jstpl_torch_card_container='<div id="torch-cards-${playerId}"></div>';
 var jstpl_torch_card='<div id="${type}-card" class="card small torch-card-${type}"></div>';
@@ -107,6 +128,12 @@ ${text}\
 <div>';
 
 var jstpl_collector_card='<div data-id="${id}" id="collector-card-${id}" class="card collector-card collector-card-${id}"><div>';
+
+var jstpl_icon_treasure='<span class="crypt-icon treasure-type small treasure-${type}"></span>'
+var jstpl_icon_coin='<span class="crypt-icon coin small">${value}</span>'
+var jstpl_icon_dice='<span class="color-${color} side${value} crypt-icon die small"></span>'
+var jstpl_icon_torch='<span class="crypt-icon torch small torch-card-${type}"></span>';
+
 
 </script>
 

@@ -330,7 +330,7 @@ class CryptJj extends Table
                     }
                     // Bump the other servants of the card
                     $this->servantDiceManager->recoverServantDice(array_column($servantDiceOnTreasureCard, 'id'));
-                    $this->notificationsManager->notifyTreasureCardBumped(self::getActivePlayerId(), $treasureCard, $servantDiceOnTreasureCard);
+                    $this->notificationsManager->notifyTreasureCardBumped(self::getActivePlayerId(), $treasureCard['id'], $servantDiceOnTreasureCard);
                 }
 
                 // Move the servant dice to the treasure cards and update their value
@@ -339,7 +339,7 @@ class CryptJj extends Table
                     $servantDice[] = $this->servantDiceManager->moveServantDiceToTreasureCardWithValue($servantDieId, $treasureCardSelection['id'], $treasureCardSelection['value']);
                 }
 
-                $this->notificationsManager->notifyTreasureCardClaimed(self::getActivePlayerId(), $treasureCard, $servantDice);
+                $this->notificationsManager->notifyTreasureCardClaimed(self::getActivePlayerId(), $treasureCard['id'], $servantDice);
             }
         }
 
@@ -574,7 +574,7 @@ class CryptJj extends Table
             // 2.1 if No Servants on Card, discard card
             if (sizeof($servantDiceOnTreasureCard) === 0) {
                 $this->treasureCardsManager->discardTreasureCard($treasureCard['id']);
-                $this->notificationsManager->notifyTreasureCardDiscarded($treasureCard);
+                $this->notificationsManager->notifyTreasureCardDiscarded($treasureCard['id']);
             } else {
                 // 2.2 if Servants on Card, Roll each Servant.
                 // If less than effort  > exhaust.
@@ -582,26 +582,23 @@ class CryptJj extends Table
                 $playerId = null;
                 $rolledServantDice = array();
 
+                $effort = reset($servantDiceOnTreasureCard)['location_arg'];
                 foreach ($servantDiceOnTreasureCard as $servantDie) {
                     $playerId = $servantDie['type'];
-                    $effort = $servantDie['location_arg'];
                     $rolledValue = bga_rand(1, 6);
                     self::debug($servantDie['id'] .' => '. $rolledValue);
                     if ($rolledValue < $effort) {
-                        $this->servantDiceManager->exhaustServantDie($servantDie['id'], $rolledValue);
+                        $this->servantDiceManager->exhaustServantDie($servantDie['id']);
                     } else {
                         $this->servantDiceManager->recoverServantDice(array($servantDie['id']));
                     }
+                    $this->servantDiceManager->setDieValue($servantDie['id'], $rolledValue);
 
-                    $rolledServantDice[] = array(
-                        'effort' => $effort,
-                        'rolledValue' => $rolledValue,
-                        'die' => $this->servantDiceManager->getServantDie($servantDie['id']),
-                    );
+                    $rolledServantDice[] = $this->servantDiceManager->getServantDie($servantDie['id']);
                 }
 
                 $this->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
-                $this->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], $rolledServantDice);
+                $this->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], $effort, $rolledServantDice);
             }
         }
 

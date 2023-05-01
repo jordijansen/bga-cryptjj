@@ -223,6 +223,42 @@ function (dojo, declare) {
         
         */
 
+        /* @Override */
+        format_string_recursive : function format_string_recursive(log, args) {
+            try {
+                if (log && args && !args.processed) {
+                    args.processed = true;
+
+                    // list of special keys we want to replace with images
+                    const keys = ['icon_treasure','icon_coin', 'icon_dice', 'icon_torch'];
+
+                    keys.forEach(key => {
+                        Object.keys(args)
+                            .filter(k => k.startsWith(key))
+                            .forEach(k => args[k] = this.getIcon(k, args))
+                    })
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+            return this.inherited({callee: format_string_recursive}, arguments);
+        },
+
+        getIcon : function(key, args) {
+            if (key.startsWith('icon_treasure')) {
+                return this.format_block('jstpl_icon_treasure',{type: args[key]});
+            } else if (key.startsWith('icon_coin')) {
+                return this.format_block('jstpl_icon_coin',{value: args[key] === 'back' ? '?' : args[key]});
+            } else if (key.startsWith('icon_dice')) {
+                return args[key]
+                    .map(die => this.format_block('jstpl_icon_dice',{color: die.type_arg, value: die.location_arg}))
+                    .join(' ')
+            } else if (key.startsWith('icon_torch')) {
+                return this.format_block('jstpl_icon_torch',{type: args['icon_torch']});
+            }
+            return key;
+        },
+
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -471,7 +507,7 @@ function (dojo, declare) {
             const treasureCardBumped = notif['args'];
             console.log( treasureCardBumped );
 
-            Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
+            Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type, servantDie.location_arg))
         },
 
         notif_servantDiceRecovered: function( notif = {args: {playerId: 1, player_score: 3, recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
@@ -481,7 +517,7 @@ function (dojo, declare) {
             console.log( servantDiceRecovered );
 
             this.playerManager.updateScore(servantDiceRecovered);
-            Object.values(servantDiceRecovered.recoveredServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type))
+            Object.values(servantDiceRecovered.recoveredServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type, servantDie.location_arg))
         },
 
         notif_treasureCardDiscarded: function( notif = {args: {treasureCard: {id: 1}}} ) {
@@ -493,14 +529,14 @@ function (dojo, declare) {
             this.treasureCardManager.moveTreasureCardToDiscard(treasureCardDiscarded.treasureCard.id);
         },
 
-        notif_treasureCardCollected: function( notif = {args: {playerId: 1, player_score: 3, rolledServantDice: [{effort: 1, rolledValue: 2, die: {id: 1}}], treasureCard: {id: 1}}} ) {
+        notif_treasureCardCollected: function( notif = {args: {playerId: 1, player_score: 3, rolledServantDice: [{id: 1}], treasureCard: {id: 1}}} ) {
             console.log( 'notif_treasureCardCollected' );
 
             const treasureCardCollected = notif['args'];
             console.log( treasureCardCollected );
 
             this.playerManager.updateScore(treasureCardCollected);
-            this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice.map(rolledServanDie => rolledServanDie.die));
+            this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice);
             this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
         },
 
@@ -569,7 +605,7 @@ function (dojo, declare) {
                 if (servantDieReRolled.exhausted) {
                     this.servantManager.moveServantDieToExhaustedArea(servantDieReRolled.servantDie.id, servantDieReRolled.servantDie.location_arg)
                 } else {
-                    this.servantManager.moveServantDieToPlayerArea(servantDieReRolled.servantDie.id, servantDieReRolled.servantDie.type)
+                    this.servantManager.moveServantDieToPlayerArea(servantDieReRolled.servantDie.id, servantDieReRolled.servantDie.type, servantDieReRolled.servantDie.location_arg)
                 }
             }
         },

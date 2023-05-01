@@ -143,7 +143,7 @@ class CryptCollectorCards extends APP_DbObject
 
             $this->game->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
             $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
-            $this->game->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id'], []);
+            $this->game->notificationsManager->notifyTreasureCardCollected($playerId, $treasureCard['id']);
             if (sizeof($this->getAvailableCollectors($playerId, COLLECTOR_BEFORE_CLAIM_PHASE)) < 1) {
                 // Auto end turn if no more collectors can be activated
                 $this->game->gamestate->nextState(STATE_END_BEFORE_CLAIM_PHASE_ACTIVATE_COLLECTORS);
@@ -165,15 +165,14 @@ class CryptCollectorCards extends APP_DbObject
             }
 
             $rolledValue = bga_rand(1, 6);
-            self::debug($servantDie['id'] .' => '. $rolledValue. ' - ' .$servantDie['effort']);
-
+            $this->game->servantDiceManager->setDieValue($servantDie['id'], $rolledValue);
             if ($rolledValue < $servantDie['effort']) {
-                $this->game->servantDiceManager->exhaustServantDie($servantDie['id'], $rolledValue);
+                $this->game->servantDiceManager->exhaustServantDie($servantDie['id']);
             } else {
                 $this->game->servantDiceManager->recoverServantDice(array($servantDie['id']));
             }
             $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
-            $this->game->notificationsManager->servantDieReRolled($playerId, $this->game->servantDiceManager->getServantDie($servantDie['id']), $servantDie['location_arg'], $rolledValue, $rolledValue < $servantDie['effort']);
+            $this->game->notificationsManager->servantDieReRolled($playerId, $this->game->servantDiceManager->getServantDie($servantDie['id']), $servantDie, $rolledValue < $servantDie['effort']);
             if (sizeof($this->getAvailableCollectors($playerId, COLLECTOR_COLLECT_PHASE)) < 1) {
                 // Auto end turn if no more collectors can be activated
                 $this->game->gamestate->nextState(STATE_END_AFTER_COLLECT_TREASURE_ACTIVATE_COLLECTORS);

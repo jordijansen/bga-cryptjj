@@ -90,19 +90,25 @@ class CryptServantDice extends APP_DbObject
         self::DbQuery("UPDATE servant_dice SET card_effort = null");
     }
 
-    public function exhaustServantDie($id, $value) {
-        $this->game->servant_dice->moveCard($id, 'exhausted', $value);
+    public function exhaustServantDie($id) {
+        self::DbQuery("UPDATE servant_dice SET card_location='exhausted' WHERE card_id = ".$id);
         $this->game->scoreManager->updateTotalScore($this->getServantDie($id)['type']);
     }
 
     public function recoverServantDice($dieIds) {
-        $this->game->servant_dice->moveCards($dieIds, 'player_area', 1);
+        foreach ($dieIds as $dieId) {
+            $this->recoverServantDie($dieId);
+        }
         if (sizeof($dieIds) > 0) {
             $this->game->scoreManager->updateTotalScore($this->getServantDie(reset($dieIds))['type']);
         }
     }
 
-    public function recoverServantDie($dieId) {
-        $this->game->servant_dice->moveCard($dieId, 'player_area', 1);
+    public function recoverServantDie($id) {
+        self::DbQuery("UPDATE servant_dice SET card_location='player_area' WHERE card_id = ".$id);
+    }
+
+    public function setDieValue($id, $dieValue) {
+        self::DbQuery("UPDATE servant_dice SET card_location_arg=".$dieValue." WHERE card_id = ".$id);
     }
 }
