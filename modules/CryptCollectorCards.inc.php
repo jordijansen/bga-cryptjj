@@ -196,10 +196,7 @@ class CryptCollectorCards extends APP_DbObject
                     if (isset($collector)) {
                         $flippableCards = $this->game->treasureCardsManager->findByPlayerIdAndTypeAndUnFlipped($playerId, 'idol');
                         if (sizeof($flippableCards) >= $collector['nr_of_cards_to_flip']) {
-                            self::trace("===============");
-                            self::trace(json_encode($flippableCards));
                             $treasureCardsToFlip = array_splice($flippableCards, 0, $collector['nr_of_cards_to_flip']);
-                            self::trace(json_encode($treasureCardsToFlip));
                             $this->useCollector($playerId, $collector, $treasureCardsToFlip);
                         }
                         $this->game->setGameStateValue(GLOBAL_IDOL_B_USED, 1);

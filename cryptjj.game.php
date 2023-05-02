@@ -539,8 +539,14 @@ class CryptJj extends Table
             self::giveExtraTime($this->getActivePlayerId());
             $this->gamestate->nextState(STATE_PLAYER_TURN);
         } else {
-            // If the player has no servant dice in their player area we automatically perform the recover servants action
-            $this->recoverServants(false);
+            $collector = $this->collectorCardsManager->getAvailableCollectorById($this->getActivePlayerId(), 'remains-A');
+            if (isset($collector)) {
+                self::giveExtraTime($this->getActivePlayerId());
+                $this->gamestate->nextState(STATE_PLAYER_TURN);
+            } else {
+                // If the player has no servant dice in their player area we automatically perform the recover servants action, and they can't recover using remains-A
+                $this->recoverServants(false);
+            }
         }
     }
 

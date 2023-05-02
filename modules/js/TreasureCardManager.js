@@ -89,9 +89,9 @@ define(
                         if (card.location !== 'display') {
                             this.game.addTooltipHtml(`treasure-card-${card.id}`, this.renderTooltip(card), 800);
                         }
-                        if (!replace) {
-                            dojo.connect($(`treasure-card-${card.id}`), 'onclick', this, 'onTreasureCardClicked')
-                        }
+
+                        this.game.disconnect($(elementId), 'onclick')
+                        this.game.connect($(elementId), 'onclick', (e) => this.onTreasureCardClicked(e))
                     }
                 },
 
@@ -323,16 +323,16 @@ define(
                 renderTooltip(card) {
                     const info = [];
                     const valueDisplay = card.value === 'back' ? '?' : card.value;
-                    info.push('<small>'+_('Type: ')+'</small><em>'+_(card.type)+'</em>');
-                    info.push('<small>'+_('Value: ')+'</small><em>' + valueDisplay + '</em>');
+                    info.push('<small>'+_('Type:')+'</small><em>'+_(card.type)+'</em>');
+                    info.push('<small>'+_('Value:')+'</small><em>' + valueDisplay + '</em>');
 
                     if (card.location.startsWith("player_area_")) {
                         if (card.location.endsWith(this.game.player_id)) {
                             const faceUpDisplay = card['face_up'] === '1' ? _('Yes') : _('No')
-                            info.push('<small>'+_('Value publicly known: ')+'</small><em>' + faceUpDisplay + '</em>');
+                            info.push('<small>'+_('Value publicly known:')+'</small><em>' + faceUpDisplay + '</em>');
                         }
                         const flippedDisplay = card.flipped === '1' ? _('Yes') : _('No')
-                        info.push('<small>'+_('Flipped: ')+'</small><em>' + flippedDisplay + '</em>');
+                        info.push('<small>'+_('Flipped:')+'</small><em>' + flippedDisplay + '</em>');
                     }
 
                     return this.game.format_block('jstpl_treasure_card_tooltip', {

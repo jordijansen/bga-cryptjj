@@ -203,7 +203,7 @@ class CryptScoreManager extends APP_DbObject
         {
             $treasureCards = $this->game->treasureCardsManager->findByPlayerIdAndType($id, 'tapestry');
             if (sizeof($treasureCards) >= 3) {
-                $playersWith3OrMoreTapestryCards[] = [$id];
+                $playersWith3OrMoreTapestryCards[] = $id;
             }
         }
         if (sizeof($playersWith3OrMoreTapestryCards) >= 1) {
