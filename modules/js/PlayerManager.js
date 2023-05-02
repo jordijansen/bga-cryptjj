@@ -33,7 +33,7 @@ define(
                     console.log("PlayerManager#setup")
                     // Set-up player areas
                     let thisPlayerArea;
-                    const otherPlayerAreas = [];
+                    const playerAreas = [];
                     Object.entries(this.game.gamedatas.players).forEach(([playerId, player]) => {
                         this.playerTorchCardAreas[playerId] = new ebg.zone();
 
@@ -60,9 +60,9 @@ define(
                             "name": player.name,
                         });
                         if (Number(player.player_id) === this.game.player_id) {
-                            thisPlayerArea = playerArea;
+                            playerAreas.unshift(playerArea);
                         } else {
-                            otherPlayerAreas.push(playerArea);
+                            playerAreas.push(playerArea);
                         }
 
                         const scoreTooltipText = _('Scores shown are based on public information, face-down collected treasure cards are not reflected in your score. Hence your final score might result in a higher score.');
@@ -70,8 +70,7 @@ define(
                         this.game.addTooltip(`icon_point_${playerId}`, scoreTooltipText, '');
                     })
 
-                    dojo.place(thisPlayerArea, "player-areas-row")
-                    otherPlayerAreas.forEach(playerArea => dojo.place(playerArea, "player-areas-row"))
+                    playerAreas.forEach(playerArea => dojo.place(playerArea, "player-areas-row"))
                 },
 
                 getPlayerCount() {
@@ -120,8 +119,8 @@ define(
                     return this.usedManuscriptBThisRound === true;
                 },
 
-                updateScore(score = {playerId: 1, player_score: 1}) {
-                    this.game.scoreCtrl[score.playerId].setValue(score.player_score);
+                updateScore(score = {player_id: 1, player_score: 1}) {
+                    this.game.scoreCtrl[score.player_id].setValue(score.player_score);
                 },
 
                 renderTorchCardTooltip(type) {

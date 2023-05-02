@@ -26,7 +26,7 @@ class CryptServantDice extends APP_DbObject
     public function __construct($game)
     {
         $this->game = $game;
-        $this->selectColumnList = "card_id as id, card_type as type, card_type_arg as type_arg, card_location as location, card_location_arg as location_arg, card_effort as effort";
+        $this->selectColumnList = "card_id as id, card_type as type, card_type_arg as type_arg, card_location as location, card_location_arg as location_arg, card_effort as effort"; // NOI18N
     }
 
     public function createServantDice()

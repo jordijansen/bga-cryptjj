@@ -102,7 +102,6 @@ function (dojo, declare) {
         //                  You can use this method to perform some user interface changes at this moment.
         //
         onEnteringState: function (stateName, args) {
-            console.log(args);
             switch (stateName) {
 
                 /* Example:
@@ -368,9 +367,7 @@ function (dojo, declare) {
 
         enterActivateCollectorMode: function (evt, possibleCollectors, servantDiceForReRoll)
         {
-            console.log('enterActivateCollectorMode=')
-            console.log(possibleCollectors)
-            console.log(servantDiceForReRoll)
+            console.log('enterActivateCollectorMode')
 
             // Preventing default browser reaction
             dojo.stopEvent(evt);
@@ -444,11 +441,12 @@ function (dojo, declare) {
             dojo.subscribe('servantDiceRecovered', this, 'notif_servantDiceRecovered');
             dojo.subscribe('treasureCardDiscarded', this, 'notif_treasureCardDiscarded');
             dojo.subscribe('treasureCardCollected', this, 'notif_treasureCardCollected');
+            dojo.subscribe('treasureCardCollectedPrivate', this, 'notif_treasureCardCollectedPrivate');
             dojo.subscribe('treasureCardDisplayUpdated', this, 'notif_treasureCardDisplayUpdated');
             dojo.subscribe('leaderCardPassed', this, 'notif_leaderCardPassed');
             dojo.subscribe('lightsOutCardPassed', this, 'notif_lightsOutCardPassed');
             dojo.subscribe('collectorUsed', this, 'notif_collectorUsed');
-            dojo.subscribe('faceDownDisplayCardsRevealed', this, 'notif_faceDownDisplayCardsRevealed');
+            dojo.subscribe('faceDownDisplayCardsRevealedPrivate', this, 'notif_faceDownDisplayCardsRevealedPrivate');
             dojo.subscribe('servantDieReRolled', this, 'notif_servantDieReRolled');
             dojo.subscribe('allCardsFlipped', this, 'notif_allCardsFlipped');
 
@@ -458,9 +456,8 @@ function (dojo, declare) {
             this.notifqueue.setSynchronous( 'treasureCardCollected', 1000 );
             this.notifqueue.setSynchronous( 'treasureCardDisplayUpdated', 1000 );
             this.notifqueue.setSynchronous( 'collectorUsed', 1000 );
-            this.notifqueue.setSynchronous( 'faceDownDisplayCardsRevealed', 1000 );
+            this.notifqueue.setSynchronous( 'faceDownDisplayCardsRevealedPrivate', 1000 );
             this.notifqueue.setSynchronous( 'servantDieReRolled', 1000 );
-
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -510,7 +507,7 @@ function (dojo, declare) {
             Object.values(treasureCardBumped.bumpedServantDice).forEach(servantDie => this.servantManager.moveServantDieToPlayerArea(servantDie.id, servantDie.type, servantDie.location_arg))
         },
 
-        notif_servantDiceRecovered: function( notif = {args: {playerId: 1, player_score: 3, recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
+        notif_servantDiceRecovered: function( notif = {args: {player_id: 1, player_score: 3, recoveredServantDice: [{id: 1, location: '', location_arg: 3}], treasureCard: {id: 1}}} ) {
             console.log( 'notif_servantDiceRecovered' );
 
             const servantDiceRecovered = notif['args'];
@@ -529,7 +526,7 @@ function (dojo, declare) {
             this.treasureCardManager.moveTreasureCardToDiscard(treasureCardDiscarded.treasureCard.id);
         },
 
-        notif_treasureCardCollected: function( notif = {args: {playerId: 1, player_score: 3, rolledServantDice: [{id: 1}], treasureCard: {id: 1}}} ) {
+        notif_treasureCardCollected: function( notif = {args: {player_id: 1, player_score: 3, rolledServantDice: [{id: 1}], treasureCard: {id: 1}}} ) {
             console.log( 'notif_treasureCardCollected' );
 
             const treasureCardCollected = notif['args'];
@@ -537,6 +534,15 @@ function (dojo, declare) {
 
             this.playerManager.updateScore(treasureCardCollected);
             this.servantManager.moveServantDiceToLocations(treasureCardCollected.rolledServantDice);
+            this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
+        },
+
+        notif_treasureCardCollectedPrivate: function( notif = {args: {playerId: 1, player_score: 3, rolledServantDice: [{id: 1}], treasureCard: {id: 1}}} ) {
+            console.log( 'notif_treasureCardCollectedPrivate' );
+
+            const treasureCardCollected = notif['args'];
+            console.log( treasureCardCollected );
+
             this.treasureCardManager.renderCardsAndMoveToZone([treasureCardCollected.treasureCard], true);
         },
 
@@ -569,7 +575,7 @@ function (dojo, declare) {
             this.playerManager.setLightsOutCard(lightsOutCardPassed.player_id)
         },
 
-        notif_collectorUsed: function( notif = {args: {playerId: 1, player_score: 3, collector: {}, flippedTreasureCards: []}} ) {
+        notif_collectorUsed: function( notif = {args: {player_id: 1, player_score: 3, collector: {}, flippedTreasureCards: []}} ) {
             console.log( 'notif_collectorUsed' );
 
             const collectorUsed = notif['args'];
@@ -579,13 +585,13 @@ function (dojo, declare) {
 
             this.playerManager.updateScore(collectorUsed);
 
-            if (Number(collectorUsed.playerId) === this.player_id) {
+            if (Number(collectorUsed.player_id) === this.player_id) {
                 this.restoreServerGameState();
             }
         },
 
-        notif_faceDownDisplayCardsRevealed: function( notif = {args: {playerId: '1', treasureCards: []}} ) {
-            console.log( 'notif_faceDownDisplayCardsRevealed' );
+        notif_faceDownDisplayCardsRevealedPrivate: function( notif = {args: {playerId: '1', treasureCards: []}} ) {
+            console.log( 'notif_faceDownDisplayCardsRevealedPrivate' );
 
             const faceDownDisplayCardsRevealed = notif['args'];
             console.log( faceDownDisplayCardsRevealed );

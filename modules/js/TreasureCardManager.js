@@ -72,8 +72,11 @@ define(
                         }
                         console.log(card);
                         const cardValue = card.location.startsWith('player_area_') && card.flipped === '0' ? 'back' : card.value;
-                        dojo.attr(elementId, 'class', `card treasure-card treasure-card-${card.type}-${cardValue} ${card.face_up === '0' ? 'face-down' : 'face-up'} ${card.flipped === '1' ? 'flipped' : 'un-flipped'}`)
+                        dojo.attr(elementId, 'class', `crypt-card treasure-card treasure-card-${card.type} treasure-card-${card.type}-${cardValue} ${card.face_up === '0' ? 'face-down' : 'face-up'} ${card.flipped === '1' ? 'flipped' : 'un-flipped'}`)
                         if (card.location === 'display') {
+                            if (!replace) {
+                                this.setMaxWidthOfDisplay();
+                            }
                             this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
                             dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
                             dojo.connect($(`decrease-dice-${card.id}`), 'onclick', this, 'onDecreaseDiceClicked')
@@ -90,6 +93,11 @@ define(
                             dojo.connect($(`treasure-card-${card.id}`), 'onclick', this, 'onTreasureCardClicked')
                         }
                     }
+                },
+
+                setMaxWidthOfDisplay() {
+                    const cardsAlreadyInDisplay = dojo.query('#treasure-cards-display .treasure-card')
+                    dojo.style('treasure-cards-display', 'max-width', (cardsAlreadyInDisplay.length + 1) * 188 + 'px');
                 },
 
                 enterClaimTreasureMode() {
@@ -365,7 +373,6 @@ define(
                         event.stopPropagation();
 
                         const servantDieAlreadyInSelection = this.game.servantManager.getServantDieForTreasureCardSelection(cardId);
-                        console.log(servantDieAlreadyInSelection);
                         if (servantDieAlreadyInSelection.length > 0 && servantDieAlreadyInSelection[0].location_arg < 6) {
                             const newValue = servantDieAlreadyInSelection[0].location_arg + 1;
                             servantDieAlreadyInSelection.forEach(die => this.game.servantManager.setServantDieValue(die.id, newValue))

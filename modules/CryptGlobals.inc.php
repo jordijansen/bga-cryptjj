@@ -1,14 +1,4 @@
 <?php
-/**
- *------
- * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
- *
- * This code has been produced on the BGA studio platform for use on https://boardgamearena.com.
- * See http://en.doc.boardgamearena.com/Studio for more information.
- * -----
- */
-
 // Globals
 const GLOBAL_IDOL_B_USED = 'idol_b_used';
 
@@ -75,3 +65,10 @@ const STATE_BEFORE_GAME_END_ID = 90;
 
 const STATE_GAME_END = "gameEnd";
 const STATE_GAME_END_ID = 99;
+
+// Stats
+const STAT_TABLE_NUMBER_OF_ROUNDS_PLAYED = "table_number_of_rounds_played";
+const STAT_PLAYER_CLAIM_TREASURE_ACTION_COUNT = "player_claim_treasure_action_count";
+const STAT_PLAYER_RECOVER_SERVANTS_ACTION_COUNT = "player_recover_servants_action_count";
+const STAT_PLAYER_TREASURE_CARD_COUNT = "player_treasure_card_count";
+const STAT_PLAYER_COLLECTOR_ACTIVATED_COUNT = "player_collector_activated_count";

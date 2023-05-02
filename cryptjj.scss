@@ -1,0 +1,491 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * cryptjj.css
+ *
+ * CryptJj stylesheet
+ *
+ */
+
+/*
+    This is the CSS stylesheet of your game User Interface.
+    
+    Styles defined on this file will be applied to the HTML elements you define in your
+    HTML template (cryptjj_cryptjj.tpl), and to HTML elements you create dynamically
+    (in cryptjj.js).
+    
+    Usually, you are using CSS to:
+    
+    1°) define the overall layout of your game
+        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
+
+    2°) create your CSS-sprites:
+        All images of your games should be gathered into a small number of image files. Then, using
+        background-image and background-position CSS properties, you create HTML blocks that can 
+        display these images correctly (see example below).
+    
+    3°) ... anything else:
+        It is really easy to add and remove CSS classes dynamically from your Javascript with
+        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
+        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
+        very often, using CSS classes for the logic of your user interface allow you to do complex
+        thing easily.
+        
+        
+     Note: on the production platform, this file will be compressed and comments will be removed.
+           Consequently, don't hesitate to put as many comments as necessary.
+*/
+
+
+/* Note: you must not use any @import directive */
+
+
+/********* You can start writing your CSS below this line: **********/
+
+
+/*
+    Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+
+    .white_token {
+        background-image: url('img/tokens.png');
+        background-position: 0px 0px;
+    }
+    .black_token {
+        background-image: url('img/tokens.png');
+        background-position: -20px 0px;
+    }
+    .token {
+        width: 20px;
+        height: 20px;
+        background-repeat: none;
+    }
+*/
+
+@mixin selectable {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
+    animation: crypt-pulse 2s infinite;
+    outline: 4px rgba(80, 200, 255, 0.75) solid;
+    cursor: pointer;
+}
+
+@mixin selected {
+    outline: 4px rgba(124, 252, 0, 0.75) solid !important;
+    cursor: pointer;
+}
+
+@mixin invalid {
+    outline: 4px rgba(255, 0, 0, 0.75) solid !important;
+}
+
+@mixin treasure-card-sprite($type) {
+    &.treasure-card-#{$type} {
+        background-image: url("img/treasure-cards-#{$type}.png");
+
+        &.treasure-card-#{$type}-1 {background-position: 0% 0;}
+        &.treasure-card-#{$type}-2 {background-position: 25% 0;}
+        &.treasure-card-#{$type}-3 {background-position: 50% 0;}
+        &.treasure-card-#{$type}-4 {background-position: 75% 0;}
+        &.treasure-card-#{$type}-back { background-position: 100% 0;}
+    }
+}
+
+.crypt-card {
+    width:178px;
+    height:261px;
+    background-size: cover;
+    border-radius: 5px;
+    display: inline-block;
+    box-shadow: 3px 3px 3px #000000a0;
+    box-sizing: border-box;
+    z-index: 1;
+
+    .dice-placement-area {
+        margin-left: 13px;
+        width: 150px;
+    }
+
+    // Sizes
+    &.large {
+        width:267px;
+        height:392px;
+    }
+
+    &.small {
+        width:71px;
+        height:104px;
+    }
+
+    // States
+    &.selectable {
+        @include selectable()
+    }
+
+    &.selected {
+        @include selected()
+    }
+
+    &.invalid {
+        @include invalid()
+    }
+
+    &.treasure-card {
+        .row {
+            text-align: center;
+
+            .bgabutton {
+                // Hide buttons by default
+                visibility: hidden;
+                width: 80px;
+                margin: 2px;
+            }
+
+            .dice-selection-area {
+                position: relative;
+                height: 50px;
+                width: 150px;
+                margin-left: 13px;
+                visibility: hidden;
+            }
+        }
+
+        .dice-selection-area:has(.servant-die){
+            visibility: visible;
+        }
+
+        &:has(.dice-selection-area .servant-die) .row .bgabutton {
+            // Show the increase/decrease buttons if at least one dice has been assigned to this card
+            visibility: visible;
+        }
+
+        &.selection {
+            .dice-selection-area {
+                visibility: visible;
+            }
+        }
+
+        &.treasure-card-empty-back {
+            box-shadow: none;
+        }
+
+        @include treasure-card-sprite('idol');
+        @include treasure-card-sprite('jewelery');
+        @include treasure-card-sprite('remains');
+        @include treasure-card-sprite('manuscript');
+        @include treasure-card-sprite('pottery');
+        @include treasure-card-sprite('tapestry');
+    }
+
+    &.player-card {
+        background-image: url('img/player-cards.png');
+        &.female-262f33 { background-position: 0 0; }
+        &.male-262f33 { background-position: 14.2857142857% 0; }
+        &.female-00808d { background-position: 28.5714285714% 0; }
+        &.male-00808d { background-position: 42.8571428571% 0; }
+        &.female-8250a0 { background-position: 57.1428571429% 0;}
+        &.male-8250a0 { background-position: 71.4285714286% 0;}
+        &.be252e-female { background-position:  85.7142857143% 0;}
+        &.be252e-male { background-position: 100% 0;}
+    }
+
+    &.collector-card {
+        background-image: url("img/collector-cards.png");
+        &.idol-A { background-position: 0 0;}
+        &.idol-B { background-position: 9.09090909091% 0;}
+        &.jewelery-A { background-position: 18.1818181818% 0;}
+        &.jewelery-B { background-position: 27.2727272727% 0;}
+        &.manuscript-A { background-position: 36.3636363636% 0;}
+        &.manuscript-B { background-position: 45.4545454545% 0;}
+        &.pottery-A { background-position: 54.5454545455% 0;}
+        &.pottery-B { background-position: 63.6363636364% 0;}
+        &.remains-A { background-position: 72.7272727273% 0;}
+        &.remains-B { background-position: 81.8181818182% 0;}
+        &.tapestry-A { background-position: 90.9090909091% 0;}
+        &.tapestry-B { background-position: 100% 0;}
+    }
+
+    &.torch-card {
+        background-image: url('img/torch-cards.png');
+        &.torch-card-leader  { background-position: 0 0; }
+        &.torch-card-lights-out { background-position: 100% 0; }
+    }
+}
+
+.crypt-die {
+    width: 44px;
+    height: 44px;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    margin: 2px;
+
+    .side {
+        position: absolute;
+        border-radius:5px;
+        width: 44px;
+        height: 44px;
+        text-align: center;
+        line-height: 2em;
+        box-shadow: 0 0 5px #000000a0;
+        background-image: url('img/dice.png');
+
+        &:nth-child(1) { transform: translateZ(1.364em); }
+        &:nth-child(6) { transform: rotateY(90deg) translateZ(1.364em); }
+        &:nth-child(3) { transform: rotateY(-90deg) translateZ(1.364em); }
+        &:nth-child(4) { transform: rotateX(90deg) translateZ(1.364em); }
+        &:nth-child(5) { transform: rotateX(-90deg) translateZ(1.364em); }
+        &:nth-child(2) { transform: rotateY(-180deg) translateZ(1.364em); }
+    }
+
+    &.selectable .side {
+        @include selectable()
+    }
+
+    &.selected .side {
+        @include selected()
+    }
+
+    &.value-1 { transform: rotateX(720deg) rotateZ(-720deg); }
+    &.value-2 {transform: rotateX(-900deg) rotateZ(1080deg); }
+    &.value-3 {transform: rotateY(810deg) rotateZ(720deg); }
+    &.value-4 {transform: rotateX(-810deg) rotateZ(-1080deg); }
+    &.value-5 {transform: rotateX(450deg) rotateZ(-720deg); }
+    &.value-6 {transform: rotateY(-450deg) rotateZ(-1440deg); }
+
+    .color-00808d.side1 { background-position: 0% 0%;}
+    .color-00808d.side2 { background-position: 4.34782608696% 0%;}
+    .color-00808d.side3 { background-position: 8.69565217391% 0%;}
+    .color-00808d.side4 { background-position: 13.0434782609% 0%;}
+    .color-00808d.side5 { background-position: 17.3913043478% 0%;}
+    .color-00808d.side6 { background-position: 21.7391304348% 0%;}
+    .color-be252e.side1 { background-position: 26.0869565217% 0%;}
+    .color-be252e.side2 { background-position: 30.4347826087% 0%;}
+    .color-be252e.side3 { background-position: 34.7826086957% 0%;}
+    .color-be252e.side4 { background-position: 39.1304347826% 0%;}
+    .color-be252e.side5 { background-position: 43.4782608696% 0%;}
+    .color-be252e.side6 { background-position: 47.8260869565% 0%;}
+    .color-262f33.side1 { background-position: 52.1739130435% 0%;}
+    .color-262f33.side2 { background-position: 56.5217391304% 0%;}
+    .color-262f33.side3 { background-position: 60.8695652174% 0%;}
+    .color-262f33.side4 { background-position: 65.2173913043% 0%;}
+    .color-262f33.side5 { background-position: 69.5652173913% 0%;}
+    .color-262f33.side6 { background-position: 73.9130434783% 0%;}
+    .color-8250a0.side1 { background-position: 78.2608695652% 0%;}
+    .color-8250a0.side2 { background-position: 82.6086956522% 0%;}
+    .color-8250a0.side3 { background-position: 86.9565217391% 0%;}
+    .color-8250a0.side4 { background-position: 91.3043478261% 0%;}
+    .color-8250a0.side5 { background-position: 95.652173913% 0%;}
+    .color-8250a0.side6 { background-position: 100% 0%;}
+}
+
+.crypt-icon {
+    background-size: cover;
+    display: inline-block;
+    vertical-align: middle;
+
+    &.treasure-type {
+        background-image: url('img/treasure-icons.png');
+
+        &.treasure-manuscript { background-position: 0 0; }
+        &.treasure-pottery { background-position: 20% 0; }
+        &.treasure-remains { background-position: 40% 0; }
+        &.treasure-tapestry { background-position: 60% 0; }
+        &.treasure-idol { background-position: 80% 0; }
+        &.treasure-jewelery {  background-position: 100% 0; }
+
+        &.small {
+            width: 19px;
+            height: 24px;
+        }
+    }
+    &.coin {
+        text-align: center;
+        color: white;
+        background-image: url('img/coin.png');
+        background-position: 0 0;
+        &.small {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+        }
+    }
+    &.die {
+        &.small {
+            width: 24px;
+            height: 24px;
+            border-radius: 2px;
+        }
+        background-image: url('img/dice.png');
+
+        &.color-00808d.side1 { background-position: 0% 0%;}
+        &.color-00808d.side2 { background-position: 4.34782608696% 0%;}
+        &.color-00808d.side3 { background-position: 8.69565217391% 0%;}
+        &.color-00808d.side4 { background-position: 13.0434782609% 0%;}
+        &.color-00808d.side5 { background-position: 17.3913043478% 0%;}
+        &.color-00808d.side6 { background-position: 21.7391304348% 0%;}
+        &.color-be252e.side1 { background-position: 26.0869565217% 0%;}
+        &.color-be252e.side2 { background-position: 30.4347826087% 0%;}
+        &.color-be252e.side3 { background-position: 34.7826086957% 0%;}
+        &.color-be252e.side4 { background-position: 39.1304347826% 0%;}
+        &.color-be252e.side5 { background-position: 43.4782608696% 0%;}
+        &.color-be252e.side6 { background-position: 47.8260869565% 0%;}
+        &.color-262f33.side1 { background-position: 52.1739130435% 0%;}
+        &.color-262f33.side2 { background-position: 56.5217391304% 0%;}
+        &.color-262f33.side3 { background-position: 60.8695652174% 0%;}
+        &.color-262f33.side4 { background-position: 65.2173913043% 0%;}
+        &.color-262f33.side5 { background-position: 69.5652173913% 0%;}
+        &.color-262f33.side6 { background-position: 73.9130434783% 0%;}
+        &.color-8250a0.side1 { background-position: 78.2608695652% 0%;}
+        &.color-8250a0.side2 { background-position: 82.6086956522% 0%;}
+        &.color-8250a0.side3 { background-position: 86.9565217391% 0%;}
+        &.color-8250a0.side4 { background-position: 91.3043478261% 0%;}
+        &.color-8250a0.side5 { background-position: 95.652173913% 0%;}
+        &.color-8250a0.side6 { background-position: 100% 0%;}
+    }
+    &.torch {
+        &.small {
+            width: 16px;
+            height: 24px;
+            border-radius: 1px;
+        }
+
+        &.torch-card {
+            background-image: url('img/torch-cards.png');
+            &.torch-card-leader  { background-position: 0 0; }
+            &.torch-card-lights-out { background-position: 100% 0; }
+        }
+    }
+}
+
+.crypt-die-placeholder {
+    background-color: white;
+    opacity: 0.6;
+    width: 44px;
+    height: 44px;
+    margin: 2px;
+    box-shadow: 3px 3px 3px #000000a0;
+    border-radius: 10%;
+    z-index: 2;
+    float: left;
+    line-height: 44px;
+    text-align: center;
+
+    &:nth-child(1):nth-last-child(n+4),
+    &:nth-child(2):nth-last-child(n+4),
+    &:nth-child(3):nth-last-child(n+4){
+        visibility: hidden;
+    }
+}
+
+.crypt-player-area {
+    .dice-placement-area {
+        position: relative;
+        top: 180px;
+    }
+    .player-treasure-areas {
+        display: flex;
+        flex-wrap: wrap;
+
+        .player-treasure-area {
+            width: 180px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+
+            &:not(:has(.treasure-card)) {
+                display: none !important;
+            }
+        }
+    }
+}
+
+.crypt-flex-ui-row {
+    display: flex;
+    width: 100%;
+
+    #treasure-cards-deck {
+        width: 178px;
+
+        .deck-count {
+            color: white;
+            text-align: center;
+            margin-top: 120px;
+            margin-left: 50px;
+            margin-right: 50px;
+            padding: 5px;
+            border-radius: 25px;
+            background-color: black;
+            opacity: 0.6;
+        }
+    }
+
+    #treasure-cards-discard {
+        width: 178px;
+    }
+
+    #exhausted-servants-wrapper {
+        flex-grow: 1;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        #exhausted-servants-background {
+            background-image: url('img/exhausted-servants.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 261px;
+            max-width: 517px;
+            flex: 1;
+
+            #exhausted-servants {
+                margin-left: 55px;
+                margin-right: 55px;
+                margin-bottom: 55px;
+            }
+
+            #exhausted-servants-text {
+                height: 55px;
+                padding-top: 15px;
+                box-sizing: border-box;
+                text-align: center;
+                font-size: 18px;
+                color: white;
+            }
+        }
+    }
+}
+
+#collector-cards, #treasure-cards-display {
+    min-height: 261px;
+    max-width: 1128px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Final Scoring Dialog */
+.tableWindow table {
+    font-size: 16px;
+}
+.tableWindow table tr td:first-child{
+    text-align: right;
+    font-weight: bold;
+}
+
+@keyframes crypt-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+

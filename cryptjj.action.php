@@ -21,7 +21,6 @@
  *
  */
 
-
 class action_cryptjj extends APP_GameAction
 {
     // Constructor: please do not modify
@@ -84,38 +83,13 @@ class action_cryptjj extends APP_GameAction
         if (is_int($value)) {
             return true;
         }
-        $bValid = preg_match("/^[_0-9a-zA-Z- ]*$/", $value) === 1;
+
+        $bValid = preg_match("/^[_0-9a-zA-Z- ]*$/", $value) === 1; // NOI18N
         if (!$bValid) {
             throw new BgaSystemException("Bad value for: $argName", true, true, FEX_bad_input_argument);
         }
         return true;
     }
-
-
-
-
-
-    /*
-    
-    Example:
-  	
-    public function myAction()
-    {
-        self::setAjaxMode();     
-
-        // Retrieve arguments
-        // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
-        $arg1 = self::getArg( "myArgument1", AT_posint, true );
-        $arg2 = self::getArg( "myArgument2", AT_posint, true );
-
-        // Then, call the appropriate method in your game logic, like "playCard" or "myAction"
-        $this->game->myAction( $arg1, $arg2 );
-
-        self::ajaxResponse( );
-    }
-    
-    */
-
 }
   
 

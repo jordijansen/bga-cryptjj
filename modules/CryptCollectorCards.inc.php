@@ -98,10 +98,10 @@ class CryptCollectorCards extends APP_DbObject
         $flippedTreasureCards = [];
         foreach ($treasureCardsToFlip as $treasureCard) {
             if ($collector['treasure_type'] !== $treasureCard['type']) {
-                throw new BgaUserException("The provided Treasure Card is not of type " . $collector['treasure_type']);
+                throw new BgaUserException(clienttranslate("The provided Treasure Card is not of the correct type"));
             }
             if ($treasureCard['flipped'] !== '0') {
-                throw new BgaUserException("The provided Treasure Card is already flipped");
+                throw new BgaUserException(clienttranslate("The provided Treasure Card is already flipped"));
             }
 
             $this->game->treasureCardsManager->flipCard($treasureCard['id']);
@@ -122,7 +122,7 @@ class CryptCollectorCards extends APP_DbObject
         } else if ($collector['id'] === 'manuscript-B') {
             // ANY_TIME reveal cards in display
             if ($this->hasUsedManuscriptBThisRound($playerId)) {
-                throw new BgaUserException("You've already revealed the face down treasure cards this round");
+                throw new BgaUserException(clienttranslate("You've already revealed the face down treasure cards this round"));
             }
             $this->setHasUsedManuscriptBThisRound($playerId);
             $treasureCardsInDisplay = $this->game->treasureCardsManager->getTreasureCardsInDisplayForPlayer($playerId);
@@ -131,14 +131,14 @@ class CryptCollectorCards extends APP_DbObject
         } else if ($collector['id'] === 'pottery-B') {
             // BEFORE_CLAIM_PHASE collect face-up card from display
             if (!isset($treasureCardsSelected) || sizeof($treasureCardsSelected) != 1) {
-                throw new BgaUserException("You need to select 1 treasure card");
+                throw new BgaUserException(clienttranslate("You need to select 1 treasure card"));
             }
             $treasureCard = $this->game->treasureCardsManager->getTreasureCard(reset($treasureCardsSelected), $playerId);
             if ($treasureCard['location'] !== 'display') {
-                throw new BgaUserException("You need to select a treasure card in the display");
+                throw new BgaUserException(clienttranslate("You need to select a treasure card in the display"));
             }
             if ($treasureCard['face_up'] !== '0') {
-                throw new BgaUserException("You need to select a face-down treasure card");
+                throw new BgaUserException(clienttranslate("You need to select a face-down treasure card"));
             }
 
             $this->game->treasureCardsManager->collectTreasureCard($playerId, $treasureCard['id']);
@@ -151,17 +151,17 @@ class CryptCollectorCards extends APP_DbObject
         } else if ($collector['id'] === 'idol-A') {
             // COLLECT_PHASE re-roll a servant dice
             if (!isset($servantDiceSelected) || sizeof($servantDiceSelected) != 1) {
-                throw new BgaUserException("You need to select 1 servant die");
+                throw new BgaUserException(clienttranslate("You need to select 1 servant die"));
             }
             $servantDie = $this->game->servantDiceManager->getServantDie(reset($servantDiceSelected));
             if ($servantDie['type'] !== $playerId) {
-                throw new BgaUserException("You need to select a servant die that is yours");
+                throw new BgaUserException(clienttranslate("You need to select a servant die that is yours"));
             }
             if ($servantDie['location'] !== 'exhausted') {
-                throw new BgaUserException("You need to select a servant die that is exhausted");
+                throw new BgaUserException(clienttranslate("You need to select a servant die that is exhausted"));
             }
             if ($servantDie['effort'] == null) {
-                throw new BgaUserException("You can only re-roll a die that was rolled this collect phase");
+                throw new BgaUserException(clienttranslate("You can only re-roll a die that was rolled this collect phase"));
             }
 
             $rolledValue = bga_rand(1, 6);
@@ -181,6 +181,8 @@ class CryptCollectorCards extends APP_DbObject
             // END_GAME first player to flip 2 cards
             $this->game->notificationsManager->notifyCollectorUsed($playerId, $collector, $flippedTreasureCards);
         }
+
+        $this->game->incStat(1, STAT_PLAYER_COLLECTOR_ACTIVATED_COUNT, $playerId);
         $this->game->scoreManager->updateTotalScore($playerId);
     }
 

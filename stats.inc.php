@@ -47,49 +47,37 @@
     
 */
 
-$stats_type = array(
+require_once("modules/CryptGlobals.inc.php");
+
+$stats_type = [
 
     // Statistics global to table
-    "table" => array(
+    "table" => [
 
-        "turns_number" => array("id"=> 10,
-                    "name" => totranslate("Number of turns"),
+        STAT_TABLE_NUMBER_OF_ROUNDS_PLAYED => array("id"=> 10,
+                    "name" => totranslate("Number of rounds"),
                     "type" => "int" ),
 
-/*
-        Examples:
-
-
-        "table_teststat1" => array(   "id"=> 10,
-                                "name" => totranslate("table test stat 1"), 
-                                "type" => "int" ),
-                                
-        "table_teststat2" => array(   "id"=> 11,
-                                "name" => totranslate("table test stat 2"), 
-                                "type" => "float" )
-*/  
-    ),
+    ],
     
     // Statistics existing for each player
-    "player" => array(
+    "player" => [
 
-        "turns_number" => array("id"=> 10,
-                    "name" => totranslate("Number of turns"),
+        STAT_PLAYER_CLAIM_TREASURE_ACTION_COUNT => array("id"=> 11,
+                    "name" => totranslate("Number of Claim Treasure actions"),
                     "type" => "int" ),
-    
-/*
-        Examples:    
-        
-        
-        "player_teststat1" => array(   "id"=> 10,
-                                "name" => totranslate("player test stat 1"), 
-                                "type" => "int" ),
-                                
-        "player_teststat2" => array(   "id"=> 11,
-                                "name" => totranslate("player test stat 2"), 
-                                "type" => "float" )
 
-*/    
-    )
+        STAT_PLAYER_RECOVER_SERVANTS_ACTION_COUNT => array("id"=> 12,
+            "name" => totranslate("Number of Recover Servant actions"),
+            "type" => "int" ),
 
-);
+        STAT_PLAYER_TREASURE_CARD_COUNT => array("id"=> 13,
+            "name" => totranslate("Number of Treasure Cards collected"),
+            "type" => "int" ),
+
+        STAT_PLAYER_COLLECTOR_ACTIVATED_COUNT => array("id"=> 14,
+            "name" => totranslate("Number of Collectors activated"),
+            "type" => "int" ),
+    ]
+
+];

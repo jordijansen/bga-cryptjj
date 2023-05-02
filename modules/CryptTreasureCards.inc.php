@@ -49,7 +49,6 @@ class CryptTreasureCards extends APP_DbObject
                     }
                 } else if (sizeof($players) == 4) {
                     $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 2);
-//                    $cards[] = array( 'type' => $treasure_type, 'type_arg' => $value, 'nbr' => 1); // TODO REMOVE BECAUSE THIS SHORTENS THE GAME
                 }
             }
         }
@@ -119,6 +118,12 @@ class CryptTreasureCards extends APP_DbObject
         return self::getObjectFromDB($sql);
     }
 
+    public function getTreasureCardForPublic($cardId) {
+        $sql = $this->baseTreasureCardQuery(999999) ." WHERE card_id = " .$cardId;
+
+        return self::getObjectFromDB($sql);
+    }
+
     public function getTreasureCardsInDisplayForPlayer($playerId) {
         $sql = $this->baseTreasureCardQuery($playerId) ." WHERE card_location = 'display' ORDER BY card_location_arg ASC";
 
@@ -149,6 +154,8 @@ class CryptTreasureCards extends APP_DbObject
     public function collectTreasureCard($playerId, $treasureCardId) {
         $this->game->treasure_cards->moveCard($treasureCardId, 'player_area_' .$playerId);
         $this->game->scoreManager->updateTotalScore($playerId);
+
+        $this->game->incStat(1, STAT_PLAYER_TREASURE_CARD_COUNT, $playerId);
     }
 
     public function countCardsInDeck() {
@@ -182,7 +189,7 @@ class CryptTreasureCards extends APP_DbObject
                        card_location as location,
                        card_face_up as face_up,
                        card_flipped as flipped
-                FROM treasure_cards";
+                FROM treasure_cards"; // NOI18N
     }
 
     function determineNumberOfFaceUpTreasureCards($playerCount) {

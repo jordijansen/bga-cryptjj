@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -12,16 +13,15 @@
  * CryptJj stylesheet
  *
  */
-
 /*
     This is the CSS stylesheet of your game User Interface.
-    
+
     Styles defined on this file will be applied to the HTML elements you define in your
     HTML template (cryptjj_cryptjj.tpl), and to HTML elements you create dynamically
     (in cryptjj.js).
-    
+
     Usually, you are using CSS to:
-    
+
     1°) define the overall layout of your game
         (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
 
@@ -29,26 +29,20 @@
         All images of your games should be gathered into a small number of image files. Then, using
         background-image and background-position CSS properties, you create HTML blocks that can 
         display these images correctly (see example below).
-    
+
     3°) ... anything else:
         It is really easy to add and remove CSS classes dynamically from your Javascript with
         dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
         (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
         very often, using CSS classes for the logic of your user interface allow you to do complex
         thing easily.
-        
-        
+
+
      Note: on the production platform, this file will be compressed and comments will be removed.
            Consequently, don't hesitate to put as many comments as necessary.
 */
-
-
 /* Note: you must not use any @import directive */
-
-
 /********* You can start writing your CSS below this line: **********/
-
-
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
 
@@ -66,433 +60,635 @@
         background-repeat: none;
     }
 */
-
-.card {
-    width:178px;
-    height:261px;
-    background-size: cover;
-    border-radius: 5px;
-    display: inline-block;
-    box-shadow: 3px 3px 3px #000000a0;
-    box-sizing: border-box;
-    z-index: 1;
+.crypt-card {
+  width: 178px;
+  height: 261px;
+  background-size: cover;
+  border-radius: 5px;
+  display: inline-block;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.6274509804);
+  box-sizing: border-box;
+  z-index: 1;
+}
+.crypt-card .dice-placement-area {
+  margin-left: 13px;
+  width: 150px;
+}
+.crypt-card.large {
+  width: 267px;
+  height: 392px;
+}
+.crypt-card.small {
+  width: 71px;
+  height: 104px;
+}
+.crypt-card.selectable {
+  box-shadow: 0 0 0 0 rgb(255, 255, 255);
+  animation: crypt-pulse 2s infinite;
+  outline: 4px rgba(80, 200, 255, 0.75) solid;
+  cursor: pointer;
+}
+.crypt-card.selected {
+  outline: 4px rgba(124, 252, 0, 0.75) solid !important;
+  cursor: pointer;
+}
+.crypt-card.invalid {
+  outline: 4px rgba(255, 0, 0, 0.75) solid !important;
+}
+.crypt-card.treasure-card .row {
+  text-align: center;
+}
+.crypt-card.treasure-card .row .bgabutton {
+  visibility: hidden;
+  width: 80px;
+  margin: 2px;
+}
+.crypt-card.treasure-card .row .dice-selection-area {
+  position: relative;
+  height: 50px;
+  width: 150px;
+  margin-left: 13px;
+  visibility: hidden;
+}
+.crypt-card.treasure-card .dice-selection-area:has(.servant-die) {
+  visibility: visible;
+}
+.crypt-card.treasure-card:has(.dice-selection-area .servant-die) .row .bgabutton {
+  visibility: visible;
+}
+.crypt-card.treasure-card.selection .dice-selection-area {
+  visibility: visible;
+}
+.crypt-card.treasure-card.treasure-card-empty-back {
+  box-shadow: none;
+}
+.crypt-card.treasure-card.treasure-card-idol {
+  background-image: url("img/treasure-cards-idol.png");
+}
+.crypt-card.treasure-card.treasure-card-idol.treasure-card-idol-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-idol.treasure-card-idol-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-idol.treasure-card-idol-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-idol.treasure-card-idol-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-idol.treasure-card-idol-back {
+  background-position: 100% 0;
+}
+.crypt-card.treasure-card.treasure-card-jewelery {
+  background-image: url("img/treasure-cards-jewelery.png");
+}
+.crypt-card.treasure-card.treasure-card-jewelery.treasure-card-jewelery-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-jewelery.treasure-card-jewelery-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-jewelery.treasure-card-jewelery-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-jewelery.treasure-card-jewelery-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-jewelery.treasure-card-jewelery-back {
+  background-position: 100% 0;
+}
+.crypt-card.treasure-card.treasure-card-remains {
+  background-image: url("img/treasure-cards-remains.png");
+}
+.crypt-card.treasure-card.treasure-card-remains.treasure-card-remains-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-remains.treasure-card-remains-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-remains.treasure-card-remains-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-remains.treasure-card-remains-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-remains.treasure-card-remains-back {
+  background-position: 100% 0;
+}
+.crypt-card.treasure-card.treasure-card-manuscript {
+  background-image: url("img/treasure-cards-manuscript.png");
+}
+.crypt-card.treasure-card.treasure-card-manuscript.treasure-card-manuscript-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-manuscript.treasure-card-manuscript-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-manuscript.treasure-card-manuscript-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-manuscript.treasure-card-manuscript-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-manuscript.treasure-card-manuscript-back {
+  background-position: 100% 0;
+}
+.crypt-card.treasure-card.treasure-card-pottery {
+  background-image: url("img/treasure-cards-pottery.png");
+}
+.crypt-card.treasure-card.treasure-card-pottery.treasure-card-pottery-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-pottery.treasure-card-pottery-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-pottery.treasure-card-pottery-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-pottery.treasure-card-pottery-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-pottery.treasure-card-pottery-back {
+  background-position: 100% 0;
+}
+.crypt-card.treasure-card.treasure-card-tapestry {
+  background-image: url("img/treasure-cards-tapestry.png");
+}
+.crypt-card.treasure-card.treasure-card-tapestry.treasure-card-tapestry-1 {
+  background-position: 0% 0;
+}
+.crypt-card.treasure-card.treasure-card-tapestry.treasure-card-tapestry-2 {
+  background-position: 25% 0;
+}
+.crypt-card.treasure-card.treasure-card-tapestry.treasure-card-tapestry-3 {
+  background-position: 50% 0;
+}
+.crypt-card.treasure-card.treasure-card-tapestry.treasure-card-tapestry-4 {
+  background-position: 75% 0;
+}
+.crypt-card.treasure-card.treasure-card-tapestry.treasure-card-tapestry-back {
+  background-position: 100% 0;
+}
+.crypt-card.player-card {
+  background-image: url("img/player-cards.png");
+}
+.crypt-card.player-card.female-262f33 {
+  background-position: 0 0;
+}
+.crypt-card.player-card.male-262f33 {
+  background-position: 14.2857142857% 0;
+}
+.crypt-card.player-card.female-00808d {
+  background-position: 28.5714285714% 0;
+}
+.crypt-card.player-card.male-00808d {
+  background-position: 42.8571428571% 0;
+}
+.crypt-card.player-card.female-8250a0 {
+  background-position: 57.1428571429% 0;
+}
+.crypt-card.player-card.male-8250a0 {
+  background-position: 71.4285714286% 0;
+}
+.crypt-card.player-card.be252e-female {
+  background-position: 85.7142857143% 0;
+}
+.crypt-card.player-card.be252e-male {
+  background-position: 100% 0;
+}
+.crypt-card.collector-card {
+  background-image: url("img/collector-cards.png");
+}
+.crypt-card.collector-card.idol-A {
+  background-position: 0 0;
+}
+.crypt-card.collector-card.idol-B {
+  background-position: 9.0909090909% 0;
+}
+.crypt-card.collector-card.jewelery-A {
+  background-position: 18.1818181818% 0;
+}
+.crypt-card.collector-card.jewelery-B {
+  background-position: 27.2727272727% 0;
+}
+.crypt-card.collector-card.manuscript-A {
+  background-position: 36.3636363636% 0;
+}
+.crypt-card.collector-card.manuscript-B {
+  background-position: 45.4545454545% 0;
+}
+.crypt-card.collector-card.pottery-A {
+  background-position: 54.5454545455% 0;
+}
+.crypt-card.collector-card.pottery-B {
+  background-position: 63.6363636364% 0;
+}
+.crypt-card.collector-card.remains-A {
+  background-position: 72.7272727273% 0;
+}
+.crypt-card.collector-card.remains-B {
+  background-position: 81.8181818182% 0;
+}
+.crypt-card.collector-card.tapestry-A {
+  background-position: 90.9090909091% 0;
+}
+.crypt-card.collector-card.tapestry-B {
+  background-position: 100% 0;
+}
+.crypt-card.torch-card {
+  background-image: url("img/torch-cards.png");
+}
+.crypt-card.torch-card.torch-card-leader {
+  background-position: 0 0;
+}
+.crypt-card.torch-card.torch-card-lights-out {
+  background-position: 100% 0;
 }
 
-.card.large {
-    width:267px;
-    height:392px;
+.crypt-die {
+  width: 44px;
+  height: 44px;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+  margin: 2px;
+}
+.crypt-die .side {
+  position: absolute;
+  border-radius: 5px;
+  width: 44px;
+  height: 44px;
+  text-align: center;
+  line-height: 2em;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.6274509804);
+  background-image: url("img/dice.png");
+}
+.crypt-die .side:nth-child(1) {
+  transform: translateZ(1.364em);
+}
+.crypt-die .side:nth-child(6) {
+  transform: rotateY(90deg) translateZ(1.364em);
+}
+.crypt-die .side:nth-child(3) {
+  transform: rotateY(-90deg) translateZ(1.364em);
+}
+.crypt-die .side:nth-child(4) {
+  transform: rotateX(90deg) translateZ(1.364em);
+}
+.crypt-die .side:nth-child(5) {
+  transform: rotateX(-90deg) translateZ(1.364em);
+}
+.crypt-die .side:nth-child(2) {
+  transform: rotateY(-180deg) translateZ(1.364em);
+}
+.crypt-die.selectable .side {
+  box-shadow: 0 0 0 0 rgb(255, 255, 255);
+  animation: crypt-pulse 2s infinite;
+  outline: 4px rgba(80, 200, 255, 0.75) solid;
+  cursor: pointer;
+}
+.crypt-die.selected .side {
+  outline: 4px rgba(124, 252, 0, 0.75) solid !important;
+  cursor: pointer;
+}
+.crypt-die.value-1 {
+  transform: rotateX(720deg) rotateZ(-720deg);
+}
+.crypt-die.value-2 {
+  transform: rotateX(-900deg) rotateZ(1080deg);
+}
+.crypt-die.value-3 {
+  transform: rotateY(810deg) rotateZ(720deg);
+}
+.crypt-die.value-4 {
+  transform: rotateX(-810deg) rotateZ(-1080deg);
+}
+.crypt-die.value-5 {
+  transform: rotateX(450deg) rotateZ(-720deg);
+}
+.crypt-die.value-6 {
+  transform: rotateY(-450deg) rotateZ(-1440deg);
+}
+.crypt-die .color-00808d.side1 {
+  background-position: 0% 0%;
+}
+.crypt-die .color-00808d.side2 {
+  background-position: 4.347826087% 0%;
+}
+.crypt-die .color-00808d.side3 {
+  background-position: 8.6956521739% 0%;
+}
+.crypt-die .color-00808d.side4 {
+  background-position: 13.0434782609% 0%;
+}
+.crypt-die .color-00808d.side5 {
+  background-position: 17.3913043478% 0%;
+}
+.crypt-die .color-00808d.side6 {
+  background-position: 21.7391304348% 0%;
+}
+.crypt-die .color-be252e.side1 {
+  background-position: 26.0869565217% 0%;
+}
+.crypt-die .color-be252e.side2 {
+  background-position: 30.4347826087% 0%;
+}
+.crypt-die .color-be252e.side3 {
+  background-position: 34.7826086957% 0%;
+}
+.crypt-die .color-be252e.side4 {
+  background-position: 39.1304347826% 0%;
+}
+.crypt-die .color-be252e.side5 {
+  background-position: 43.4782608696% 0%;
+}
+.crypt-die .color-be252e.side6 {
+  background-position: 47.8260869565% 0%;
+}
+.crypt-die .color-262f33.side1 {
+  background-position: 52.1739130435% 0%;
+}
+.crypt-die .color-262f33.side2 {
+  background-position: 56.5217391304% 0%;
+}
+.crypt-die .color-262f33.side3 {
+  background-position: 60.8695652174% 0%;
+}
+.crypt-die .color-262f33.side4 {
+  background-position: 65.2173913043% 0%;
+}
+.crypt-die .color-262f33.side5 {
+  background-position: 69.5652173913% 0%;
+}
+.crypt-die .color-262f33.side6 {
+  background-position: 73.9130434783% 0%;
+}
+.crypt-die .color-8250a0.side1 {
+  background-position: 78.2608695652% 0%;
+}
+.crypt-die .color-8250a0.side2 {
+  background-position: 82.6086956522% 0%;
+}
+.crypt-die .color-8250a0.side3 {
+  background-position: 86.9565217391% 0%;
+}
+.crypt-die .color-8250a0.side4 {
+  background-position: 91.3043478261% 0%;
+}
+.crypt-die .color-8250a0.side5 {
+  background-position: 95.652173913% 0%;
+}
+.crypt-die .color-8250a0.side6 {
+  background-position: 100% 0%;
 }
 
-.card.small {
-    width:71px;
-    height:104px;
+.crypt-icon {
+  background-size: cover;
+  display: inline-block;
+  vertical-align: middle;
+}
+.crypt-icon.treasure-type {
+  background-image: url("img/treasure-icons.png");
+}
+.crypt-icon.treasure-type.treasure-manuscript {
+  background-position: 0 0;
+}
+.crypt-icon.treasure-type.treasure-pottery {
+  background-position: 20% 0;
+}
+.crypt-icon.treasure-type.treasure-remains {
+  background-position: 40% 0;
+}
+.crypt-icon.treasure-type.treasure-tapestry {
+  background-position: 60% 0;
+}
+.crypt-icon.treasure-type.treasure-idol {
+  background-position: 80% 0;
+}
+.crypt-icon.treasure-type.treasure-jewelery {
+  background-position: 100% 0;
+}
+.crypt-icon.treasure-type.small {
+  width: 19px;
+  height: 24px;
+}
+.crypt-icon.coin {
+  text-align: center;
+  color: white;
+  background-image: url("img/coin.png");
+  background-position: 0 0;
+}
+.crypt-icon.coin.small {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+.crypt-icon.die {
+  background-image: url("img/dice.png");
+}
+.crypt-icon.die.small {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+}
+.crypt-icon.die.color-00808d.side1 {
+  background-position: 0% 0%;
+}
+.crypt-icon.die.color-00808d.side2 {
+  background-position: 4.347826087% 0%;
+}
+.crypt-icon.die.color-00808d.side3 {
+  background-position: 8.6956521739% 0%;
+}
+.crypt-icon.die.color-00808d.side4 {
+  background-position: 13.0434782609% 0%;
+}
+.crypt-icon.die.color-00808d.side5 {
+  background-position: 17.3913043478% 0%;
+}
+.crypt-icon.die.color-00808d.side6 {
+  background-position: 21.7391304348% 0%;
+}
+.crypt-icon.die.color-be252e.side1 {
+  background-position: 26.0869565217% 0%;
+}
+.crypt-icon.die.color-be252e.side2 {
+  background-position: 30.4347826087% 0%;
+}
+.crypt-icon.die.color-be252e.side3 {
+  background-position: 34.7826086957% 0%;
+}
+.crypt-icon.die.color-be252e.side4 {
+  background-position: 39.1304347826% 0%;
+}
+.crypt-icon.die.color-be252e.side5 {
+  background-position: 43.4782608696% 0%;
+}
+.crypt-icon.die.color-be252e.side6 {
+  background-position: 47.8260869565% 0%;
+}
+.crypt-icon.die.color-262f33.side1 {
+  background-position: 52.1739130435% 0%;
+}
+.crypt-icon.die.color-262f33.side2 {
+  background-position: 56.5217391304% 0%;
+}
+.crypt-icon.die.color-262f33.side3 {
+  background-position: 60.8695652174% 0%;
+}
+.crypt-icon.die.color-262f33.side4 {
+  background-position: 65.2173913043% 0%;
+}
+.crypt-icon.die.color-262f33.side5 {
+  background-position: 69.5652173913% 0%;
+}
+.crypt-icon.die.color-262f33.side6 {
+  background-position: 73.9130434783% 0%;
+}
+.crypt-icon.die.color-8250a0.side1 {
+  background-position: 78.2608695652% 0%;
+}
+.crypt-icon.die.color-8250a0.side2 {
+  background-position: 82.6086956522% 0%;
+}
+.crypt-icon.die.color-8250a0.side3 {
+  background-position: 86.9565217391% 0%;
+}
+.crypt-icon.die.color-8250a0.side4 {
+  background-position: 91.3043478261% 0%;
+}
+.crypt-icon.die.color-8250a0.side5 {
+  background-position: 95.652173913% 0%;
+}
+.crypt-icon.die.color-8250a0.side6 {
+  background-position: 100% 0%;
+}
+.crypt-icon.torch.small {
+  width: 16px;
+  height: 24px;
+  border-radius: 1px;
+}
+.crypt-icon.torch.torch-card {
+  background-image: url("img/torch-cards.png");
+}
+.crypt-icon.torch.torch-card.torch-card-leader {
+  background-position: 0 0;
+}
+.crypt-icon.torch.torch-card.torch-card-lights-out {
+  background-position: 100% 0;
 }
 
-.card .row {
-    text-align: center;
-    width: 100%;
+.crypt-die-placeholder {
+  background-color: white;
+  opacity: 0.6;
+  width: 44px;
+  height: 44px;
+  margin: 2px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.6274509804);
+  border-radius: 10%;
+  z-index: 2;
+  float: left;
+  line-height: 44px;
+  text-align: center;
+}
+.crypt-die-placeholder:nth-child(1):nth-last-child(n+4), .crypt-die-placeholder:nth-child(2):nth-last-child(n+4), .crypt-die-placeholder:nth-child(3):nth-last-child(n+4) {
+  visibility: hidden;
 }
 
-.card.selectable, .dice.selectable .side {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
-    animation: pulse 2s infinite;
-    outline: 4px rgba(80, 200, 255, 0.75) solid;
-    cursor: pointer;
+.crypt-player-area .dice-placement-area {
+  position: relative;
+  top: 180px;
+}
+.crypt-player-area .player-treasure-areas {
+  display: flex;
+  flex-wrap: wrap;
+}
+.crypt-player-area .player-treasure-areas .player-treasure-area {
+  width: 180px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+.crypt-player-area .player-treasure-areas .player-treasure-area:not(:has(.treasure-card)) {
+  display: none !important;
 }
 
-.card.selected, .dice.selected .side {
-    outline: 4px rgba(124, 252, 0, 0.75) solid !important;
-    cursor: pointer;
+.crypt-flex-ui-row {
+  display: flex;
+  width: 100%;
+}
+.crypt-flex-ui-row #treasure-cards-deck {
+  width: 178px;
+}
+.crypt-flex-ui-row #treasure-cards-deck .deck-count {
+  color: white;
+  text-align: center;
+  margin-top: 120px;
+  margin-left: 50px;
+  margin-right: 50px;
+  padding: 5px;
+  border-radius: 25px;
+  background-color: black;
+  opacity: 0.6;
+}
+.crypt-flex-ui-row #treasure-cards-discard {
+  width: 178px;
+}
+.crypt-flex-ui-row #exhausted-servants-wrapper {
+  flex-grow: 1;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background {
+  background-image: url("img/exhausted-servants.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 261px;
+  max-width: 517px;
+  flex: 1;
+}
+.crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
+  margin-left: 55px;
+  margin-right: 55px;
+  margin-bottom: 55px;
+}
+.crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants-text {
+  height: 55px;
+  padding-top: 15px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 18px;
+  color: white;
 }
 
-.card.invalid {
-    outline: 4px rgba(255, 0, 0, 0.75) solid !important;
-}
-
-#treasure-cards-display .treasure-card:has(.dice-selection-area .servant-die) .row .bgabutton {
-    visibility: visible;
-}
-
-#treasure-cards-display .treasure-card.selection .dice-selection-area,
-.dice-selection-area:has(.servant-die){
-    visibility: visible;
-}
-
-.treasure-card .row .bgabutton {
-    visibility: hidden;
-    width: 80px;
-    margin: 2px;
-}
-
-.player-area .dice-placement-area {
-    position: relative;
-    top: 180px;
-}
-
-.player-area .player-treasure-areas {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.player-area .player-treasure-areas .player-treasure-area {
-    width: 180px;
-    margin-left: 10px;
-    margin-bottom: 10px;
-}
-
-.player-treasure-area:not(:has(.card)) {
-    display: none !important;
-}
-
-.dice-selection-area {
-    position: relative;
-    height: 50px;
-    width: 150px;
-    margin-left: 13px;
-    visibility: hidden;
-}
-
-.treasure-card-empty-back {
-    box-shadow: none;
-}
-
-.dice-placement-area {
-    margin-left: 13px;
-    width: 150px;
-}
-
-.ui-row {
-    display: flex;
-    width: 100%;
-}
-
-.ui-row h2 {
-    text-align: center;
-}
-
-.ui-row #treasure-cards-deck {
-    width: 178px;
-}
-
-.ui-row #collector-cards {
-    flex-grow: 1;
-}
-
-.ui-row #exhausted-servants-wrapper {
-    flex-grow: 1;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#exhausted-servants-wrapper #exhausted-servants-background {
-    background-image: url('img/exhausted-servants.png');
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 261px;
-    max-width: 517px;
-    flex: 1;
-}
-
-#exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
-    margin-left: 55px;
-    margin-right: 55px;
-    margin-bottom: 55px;
-}
-
-#exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants-text {
-    height: 55px;
-    padding-top: 15px;
-    box-sizing: border-box;
-    text-align: center;
-    font-size: 18px;
-    color: white;
-}
-
-.ui-row #treasure-cards-discard {
-    width: 178px;
-}
-
-.ui-row #treasure-cards-deck .deck-count {
-    color: white;
-    text-align: center;
-    margin-top: 120px;
-    margin-left: 50px;
-    margin-right: 50px;
-    padding: 5px;
-    border-radius: 25px;
-    background-color: black;
-    opacity: 0.6;
-}
-
-#treasure-cards-display {
-    width: 100%;
-    min-height: 261px;
-}
-
-.ui-row #treasure-cards-display .treasure-card {
-    margin-left: 5px;
-    margin-bottom: 5px;
-    margin-right: 5px;
-}
-
-.player-card-262f33-female { background-image: url('img/player-cards.png'); background-position: 0 0; }
-.player-card-262f33-male { background-image: url('img/player-cards.png'); background-position: 14.2857142857% 0; }
-.player-card-00808d-female { background-image:url('img/player-cards.png'); background-position: 28.5714285714% 0; }
-.player-card-00808d-male  { background-image: url('img/player-cards.png'); background-position: 42.8571428571% 0; }
-.player-card-8250a0-female {background-image: url('img/player-cards.png'); background-position: 57.1428571429% 0;}
-.player-card-8250a0-male {background-image: url('img/player-cards.png'); background-position: 71.4285714286% 0;}
-.player-card-be252e-female {background-image: url('img/player-cards.png'); background-position:  85.7142857143% 0;}
-.player-card-be252e-male {background-image: url('img/player-cards.png'); background-position: 100% 0;}
-
-.treasure-card-idol-1 {background-image: url("img/treasure-cards-idol.png"); background-position: 0% 0;}
-.treasure-card-idol-2 {background-image: url("img/treasure-cards-idol.png"); background-position: 25% 0;}
-.treasure-card-idol-3 {background-image: url("img/treasure-cards-idol.png"); background-position: 50% 0;}
-.treasure-card-idol-4 {background-image: url("img/treasure-cards-idol.png"); background-position: 75% 0;}
-.treasure-card-idol-back {background-image: url("img/treasure-cards-idol.png"); background-position: 100% 0;}
-
-.treasure-card-jewelery-1 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 0% 0;}
-.treasure-card-jewelery-2 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 25% 0;}
-.treasure-card-jewelery-3 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 50% 0;}
-.treasure-card-jewelery-4 {background-image: url("img/treasure-cards-jewelery.png"); background-position: 75% 0;}
-.treasure-card-jewelery-back {background-image: url("img/treasure-cards-jewelery.png"); background-position: 100% 0;}
-
-.treasure-card-remains-1 {background-image: url("img/treasure-cards-remains.png"); background-position: 0% 0;}
-.treasure-card-remains-2 {background-image: url("img/treasure-cards-remains.png"); background-position: 25% 0;}
-.treasure-card-remains-3 {background-image: url("img/treasure-cards-remains.png"); background-position: 50% 0;}
-.treasure-card-remains-4 {background-image: url("img/treasure-cards-remains.png"); background-position: 75% 0;}
-.treasure-card-remains-back {background-image: url("img/treasure-cards-remains.png"); background-position: 100% 0;}
-
-.treasure-card-manuscript-1 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 0% 0;}
-.treasure-card-manuscript-2 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 25% 0;}
-.treasure-card-manuscript-3 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 50% 0;}
-.treasure-card-manuscript-4 {background-image: url("img/treasure-cards-manuscript.png"); background-position: 75% 0;}
-.treasure-card-manuscript-back {background-image: url("img/treasure-cards-manuscript.png"); background-position: 100% 0;}
-
-.treasure-card-pottery-1 {background-image: url("img/treasure-cards-pottery.png"); background-position: 0% 0;}
-.treasure-card-pottery-2 {background-image: url("img/treasure-cards-pottery.png"); background-position: 25% 0;}
-.treasure-card-pottery-3 {background-image: url("img/treasure-cards-pottery.png"); background-position: 50% 0;}
-.treasure-card-pottery-4 {background-image: url("img/treasure-cards-pottery.png"); background-position: 75% 0;}
-.treasure-card-pottery-back {background-image: url("img/treasure-cards-pottery.png"); background-position: 100% 0;}
-
-.treasure-card-tapestry-1 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 0% 0;}
-.treasure-card-tapestry-2 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 25% 0;}
-.treasure-card-tapestry-3 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 50% 0;}
-.treasure-card-tapestry-4 {background-image: url("img/treasure-cards-tapestry.png"); background-position: 75% 0;}
-.treasure-card-tapestry-back {background-image: url("img/treasure-cards-tapestry.png"); background-position: 100% 0;}
-
-.collector-card-idol-A {background-image: url("img/collector-cards.png"); background-position: 0 0;}
-.collector-card-idol-B {background-image: url("img/collector-cards.png"); background-position: 9.09090909091% 0;}
-.collector-card-jewelery-A {background-image: url("img/collector-cards.png"); background-position: 18.1818181818% 0;}
-.collector-card-jewelery-B {background-image: url("img/collector-cards.png"); background-position: 27.2727272727% 0;}
-.collector-card-manuscript-A {background-image: url("img/collector-cards.png"); background-position: 36.3636363636% 0;}
-.collector-card-manuscript-B {background-image: url("img/collector-cards.png"); background-position: 45.4545454545% 0;}
-.collector-card-pottery-A {background-image: url("img/collector-cards.png"); background-position: 54.5454545455% 0;}
-.collector-card-pottery-B {background-image: url("img/collector-cards.png"); background-position: 63.6363636364% 0;}
-.collector-card-remains-A {background-image: url("img/collector-cards.png"); background-position: 72.7272727273% 0;}
-.collector-card-remains-B {background-image: url("img/collector-cards.png"); background-position: 81.8181818182% 0;}
-.collector-card-tapestry-A {background-image: url("img/collector-cards.png"); background-position: 90.9090909091% 0;}
-.collector-card-tapestry-B {background-image: url("img/collector-cards.png"); background-position: 100% 0;}
-
-.die-placeholder {
-    display: grid;
-    grid-template-areas:
-		"a . c"
-		"e g f"
-		"d . b";
-    background-color: white;
-    opacity: 0.6;
-    width: 44px;
-    height: 44px;
-    margin: 2px;
-    box-shadow: 3px 3px 3px #000000a0;
-    border-radius: 10%;
-    z-index: 2;
-    float: left;
-}
-
-.die-placeholder:nth-child(1):nth-last-child(n+4),
-.die-placeholder:nth-child(2):nth-last-child(n+4),
-.die-placeholder:nth-child(3):nth-last-child(n+4){
-    visibility: hidden;
-}
-
-.pip-placeholder {
-    display: block;
-    grid-area: g;
-    font-size: 18px;
-    height: 10px;
-}
-
-.torch-card-leader
-{
-    background-image: url('img/torch-cards.png');
-    background-position: 0 0;
-}
-
-.torch-card-lights-out
-{
-    background-image: url('img/torch-cards.png');
-    background-position: 100% 0;
+#collector-cards, #treasure-cards-display {
+  min-height: 261px;
+  max-width: 1128px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Final Scoring Dialog */
 .tableWindow table {
-    font-size: 16px;
-}
-.tableWindow table tr td:first-child{
-    text-align: right;
-    font-weight: bold;
+  font-size: 16px;
 }
 
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-    }
-
-    70% {
-        box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
+.tableWindow table tr td:first-child {
+  text-align: right;
+  font-weight: bold;
 }
 
-/* Dice Experiment */
-
-.dice {
-    width: 44px;
-    height: 44px;
-    transform-style: preserve-3d;
-    transition: transform 1s;
-    margin: 2px;
+@keyframes crypt-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
 }
 
-.dot {
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    margin: -4px 2px 2px -4px;
-    border-radius: 20px;
-    background-color: #e5c347;
-    box-shadow: inset 2px 2px #555;}
-
-.dice-one {
-    left: 450px; }
-
-.dice-two {
-    left: 300px;
-    top:-200px;
-}
-
-.side {
-    position: absolute;
-    border-radius:5px;
-    width: 44px;
-    height: 44px;
-    text-align: center;
-    line-height: 2em;
-    box-shadow: 0 0 5px #000000a0;
-}
-.color-00808d.side1 { background-image: url('img/dice.png'); background-position: 0% 0%;}
-.color-00808d.side2 { background-image: url('img/dice.png'); background-position: 4.34782608696% 0%;}
-.color-00808d.side3 { background-image: url('img/dice.png'); background-position: 8.69565217391% 0%;}
-.color-00808d.side4 { background-image: url('img/dice.png'); background-position: 13.0434782609% 0%;}
-.color-00808d.side5 { background-image: url('img/dice.png'); background-position: 17.3913043478% 0%;}
-.color-00808d.side6 { background-image: url('img/dice.png'); background-position: 21.7391304348% 0%;}
-.color-be252e.side1 { background-image: url('img/dice.png'); background-position: 26.0869565217% 0%;}
-.color-be252e.side2 { background-image: url('img/dice.png'); background-position: 30.4347826087% 0%;}
-.color-be252e.side3 { background-image: url('img/dice.png'); background-position: 34.7826086957% 0%;}
-.color-be252e.side4 { background-image: url('img/dice.png'); background-position: 39.1304347826% 0%;}
-.color-be252e.side5 { background-image: url('img/dice.png'); background-position: 43.4782608696% 0%;}
-.color-be252e.side6 { background-image: url('img/dice.png'); background-position: 47.8260869565% 0%;}
-.color-262f33.side1 { background-image: url('img/dice.png'); background-position: 52.1739130435% 0%;}
-.color-262f33.side2 { background-image: url('img/dice.png'); background-position: 56.5217391304% 0%;}
-.color-262f33.side3 { background-image: url('img/dice.png'); background-position: 60.8695652174% 0%;}
-.color-262f33.side4 { background-image: url('img/dice.png'); background-position: 65.2173913043% 0%;}
-.color-262f33.side5 { background-image: url('img/dice.png'); background-position: 69.5652173913% 0%;}
-.color-262f33.side6 { background-image: url('img/dice.png'); background-position: 73.9130434783% 0%;}
-.color-8250a0.side1 { background-image: url('img/dice.png'); background-position: 78.2608695652% 0%;}
-.color-8250a0.side2 { background-image: url('img/dice.png'); background-position: 82.6086956522% 0%;}
-.color-8250a0.side3 { background-image: url('img/dice.png'); background-position: 86.9565217391% 0%;}
-.color-8250a0.side4 { background-image: url('img/dice.png'); background-position: 91.3043478261% 0%;}
-.color-8250a0.side5 { background-image: url('img/dice.png'); background-position: 95.652173913% 0%;}
-.color-8250a0.side6 { background-image: url('img/dice.png'); background-position: 100% 0%;}
-
-.side:nth-child(1) {
-    transform: translateZ(1.364em); }
-
-.side:nth-child(6) {
-    transform: rotateY(90deg) translateZ(1.364em); }
-
-.side:nth-child(3) {
-    transform: rotateY(-90deg) translateZ(1.364em); }
-
-.side:nth-child(4) {
-    transform: rotateX(90deg) translateZ(1.364em); }
-
-.side:nth-child(5) {
-    transform: rotateX(-90deg) translateZ(1.364em); }
-
-.side:nth-child(2) {
-    transform: rotateY(-180deg) translateZ(1.364em); }
-
-.value-1 {
-    transform: rotateX(720deg) rotateZ(-720deg); }
-
-.value-2 {
-    transform: rotateX(-900deg) rotateZ(1080deg); }
-
-.value-3 {
-    transform: rotateY(810deg) rotateZ(720deg); }
-
-.value-4 {
-    transform: rotateX(-810deg) rotateZ(-1080deg); }
-
-.value-5 {
-    transform: rotateX(450deg) rotateZ(-720deg); }
-
-.value-6 {
-    transform: rotateY(-450deg) rotateZ(-1440deg); }
-
-.crypt-icon {
-    background-size: cover;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.crypt-icon.treasure-type.small {
-    width: 19px;
-    height: 24px;
-}
-
-.crypt-icon.coin.small {
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    color: white;
-}
-
-.crypt-icon.die.small {
-    width: 24px;
-    height: 24px;
-    border-radius: 2px;
-}
-
-.crypt-icon.torch.small {
-    width: 16px;
-    height: 24px;
-    border-radius: 1px;
-}
-
-.crypt-icon.treasure-type.treasure-manuscript {background-image: url('img/treasure-icons.png'); background-position: 0 0; }
-.crypt-icon.treasure-type.treasure-pottery {background-image: url('img/treasure-icons.png'); background-position: 20% 0; }
-.crypt-icon.treasure-type.treasure-remains {background-image: url('img/treasure-icons.png'); background-position: 40% 0; }
-.crypt-icon.treasure-type.treasure-tapestry {background-image: url('img/treasure-icons.png'); background-position: 60% 0; }
-.crypt-icon.treasure-type.treasure-idol {background-image: url('img/treasure-icons.png'); background-position: 80% 0; }
-.crypt-icon.treasure-type.treasure-jewelery { background-image: url('img/treasure-icons.png'); background-position: 100% 0; }
-
-.crypt-icon.coin { background-image: url('img/coin.png'); background-position: 0 0; }
+/*# sourceMappingURL=cryptjj.css.map */
