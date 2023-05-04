@@ -186,6 +186,7 @@ class CryptNotifications extends APP_DbObject
         $this->game->notifyAllPlayers('tieBreakerRolled', clienttranslate( '${player_name} is tied and rolls ${icon_dice} to break tie'), array(
             'playerId' => $playerId,
             'player_name' => $player['player_name'],
+            'rolledServantDice' => $rolledServantDice,
             'icon_dice' => $rolledServantDice
         ));
     }

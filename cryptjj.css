@@ -648,6 +648,12 @@
   max-width: 517px;
   flex: 1;
 }
+.crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background h1 {
+  line-height: 150px;
+  color: white;
+  font-family: serif;
+  opacity: 0.6;
+}
 .crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
   margin-left: 55px;
   margin-right: 55px;
@@ -660,6 +666,13 @@
   text-align: center;
   font-size: 18px;
   color: white;
+}
+
+.crypt-discard-pile-tooltip {
+  max-width: 225px;
+}
+.crypt-discard-pile-tooltip .treasure-card {
+  margin: 2px;
 }
 
 #collector-cards, #treasure-cards-display {

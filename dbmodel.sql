@@ -42,4 +42,5 @@ ALTER TABLE `player` ADD `custom_order` tinyint(1) NOT NULL default 0;
 ALTER TABLE `player` ADD `has_played_before_this_round` tinyint(1) NOT NULL default 0;
 -- The Manuscript B collector lets you view face-down cards in the display
 ALTER TABLE `player` ADD `has_used_manuscript_b_this_round` tinyint(1) NOT NULL default 0;
+ALTER TABLE `player` ADD `player_card_side` tinyint(1) NOT NULL default 0;
 

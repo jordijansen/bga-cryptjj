@@ -31,10 +31,7 @@
     <div class="crypt-flex-ui-row">
         <div id="treasure-cards-deck"></div>
         <div id="exhausted-servants-wrapper">
-            <div id="exhausted-servants-background">
-                <div id="exhausted-servants-text"></div>
-                <div id="exhausted-servants"></div>
-            </div>
+
         </div>
         <div>
             <div id="treasure-cards-discard"></div>
@@ -56,7 +53,7 @@
 var jstpl_player_area='<div class="crypt-player-area whiteblock" id="player-area-${player_id}" style="color: #${color}">\
     <h2>${name}</h2>\
     <div style="display: flex;">\
-        <div class="crypt-card player-card male-${color}">\
+        <div class="crypt-card player-card ${gender}-${color}">\
             <div class="dice-placement-area lower">\
             </div>\
         </div>\
@@ -70,6 +67,13 @@ var jstpl_player_area='<div class="crypt-player-area whiteblock" id="player-area
         </div>\
     </div>\
 </div>';
+
+var jstpl_exhausted_area='<div id="exhausted-servants-background">\
+    <div id="exhausted-servants-text"></div>\
+    <div id="exhausted-servants">\
+        <h1>${exhaustedServantsAreaText}</h1>\
+    </div>\
+</div>'
 var jstpl_treasure_deck='<div class="crypt-card treasure-card treasure-card-${topCardType} treasure-card-${topCardType}-back"><h2 class="deck-count">${size}</h2></div>';
 var jstpl_treasure_card='<div data-id="${id}" id="treasure-card-${id}" class="will-be-set-by-code">\
     <div class="button-container" style="padding-top: 70px;"> \
@@ -91,6 +95,10 @@ var jstpl_treasure_card_tooltip='<div class="treasure-card-tooltip">\
 <div class="crypt-card treasure-card treasure-card-${type} treasure-card-${type}-${value}"></div>\
 <hr/>\
 ${text}\
+<div>';
+
+var jstpl_discard_pile_tooltip='<div class="crypt-discard-pile-tooltip">\
+${content}\
 <div>';
 
 var jstpl_die='<div data-id="${id}" id="servant-die-${id}" class="crypt-die servant-die">\

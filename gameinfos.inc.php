@@ -91,13 +91,13 @@ $gameinfos = array(
 'complexity' => 1,    
 
 // Luck of the game, from 0 (absolutely no luck in this game) to 5 (totally luck driven)
-'luck' => 3,    
+'luck' => 4,
 
 // Strategy of the game, from 0 (no strategy can be setup) to 5 (totally based on strategy)
 'strategy' => 3,    
 
 // Diplomacy of the game, from 0 (no interaction in this game) to 5 (totally based on interaction and discussion between players)
-'diplomacy' => 3,    
+'diplomacy' => 4,
 
 // Colors attributed to players
 'player_colors' => array( "262f33", "00808d", "8250a0", "be252e" ),

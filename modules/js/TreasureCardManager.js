@@ -78,8 +78,12 @@ define(
                                 this.setMaxWidthOfDisplay();
                             }
                             this.cardDisplay.placeInZone(`treasure-card-${card.id}`)
-                            dojo.connect($(`increase-dice-${card.id}`), 'onclick', this, 'onIncreaseDiceClicked')
-                            dojo.connect($(`decrease-dice-${card.id}`), 'onclick', this, 'onDecreaseDiceClicked')
+                            const increaseButton = $(`increase-dice-${card.id}`);
+                            this.game.disconnect(increaseButton, 'onclick')
+                            this.game.connect(increaseButton, 'onclick', (e) => this.onIncreaseDiceClicked(e))
+                            const decreaseButton = $(`decrease-dice-${card.id}`);
+                            this.game.disconnect(decreaseButton, 'onclick')
+                            this.game.connect(decreaseButton, 'onclick', (e) => this.onDecreaseDiceClicked(e))
                         } else if (card.location === 'discard') {
                             this.cardDiscard.placeInZone(`treasure-card-${card.id}`)
                         } else if (card.location.startsWith('player_area_')) {
@@ -89,6 +93,8 @@ define(
                         if (card.location !== 'display') {
                             this.game.addTooltipHtml(`treasure-card-${card.id}`, this.renderTooltip(card), 800);
                         }
+
+                        this.renderDiscardPileTooltip();
 
                         this.game.disconnect($(elementId), 'onclick')
                         this.game.connect($(elementId), 'onclick', (e) => this.onTreasureCardClicked(e))
@@ -323,22 +329,34 @@ define(
                 renderTooltip(card) {
                     const info = [];
                     const valueDisplay = card.value === 'back' ? '?' : card.value;
-                    info.push('<small>'+_('Type:')+'</small><em>'+_(card.type)+'</em>');
-                    info.push('<small>'+_('Value:')+'</small><em>' + valueDisplay + '</em>');
+                    info.push('<small>'+_('Type:')+'&nbsp;</small><em>'+_(card.type)+'</em>');
+                    info.push('<small>'+_('Value:')+'&nbsp;</small><em>' + valueDisplay + '</em>');
 
                     if (card.location.startsWith("player_area_")) {
                         if (card.location.endsWith(this.game.player_id)) {
                             const faceUpDisplay = card['face_up'] === '1' ? _('Yes') : _('No')
-                            info.push('<small>'+_('Value publicly known:')+'</small><em>' + faceUpDisplay + '</em>');
+                            info.push('<small>'+_('Value publicly known:')+'&nbsp;</small><em>' + faceUpDisplay + '</em>');
                         }
                         const flippedDisplay = card.flipped === '1' ? _('Yes') : _('No')
-                        info.push('<small>'+_('Flipped:')+'</small><em>' + flippedDisplay + '</em>');
+                        info.push('<small>'+_('Flipped:')+'&nbsp;</small><em>' + flippedDisplay + '</em>');
                     }
 
                     return this.game.format_block('jstpl_treasure_card_tooltip', {
                         ...card,
                         text: info.join("<br />")
                     });
+                },
+
+                renderDiscardPileTooltip() {
+                    const cardsInDiscard = dojo.query('#treasure-cards-discard .treasure-card')
+
+                    const title = '<p><strong>' + _('Discard Pile:') +'</strong></p>';
+
+                    const tooltip = this.game.format_block('jstpl_discard_pile_tooltip', {
+                        content: title + cardsInDiscard.map(card => `<div class="${card.className} small" ></div>`).join('')
+                    });
+
+                    this.game.addTooltipHtml(`treasure-cards-discard`, tooltip, 800);
                 },
 
                 createTreasureCard(card, classNames) {

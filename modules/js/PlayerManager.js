@@ -58,6 +58,7 @@ define(
                             "player_id": player.player_id,
                             "color": player.color,
                             "name": player.name,
+                            "gender": Number(player.player_card_side) === 1 ? 'male' : 'female'
                         });
                         if (Number(player.player_id) === this.game.player_id) {
                             playerAreas.unshift(playerArea);

@@ -49,20 +49,21 @@ class CryptScoreManager extends APP_DbObject
 
     public function breakTies() {
         $tiedPlayerIds = $this->getTies();
+        self::trace(json_encode($tiedPlayerIds));
         while (sizeof($tiedPlayerIds) > 0) {
             foreach($tiedPlayerIds as $tiedPlayerId)
             {
                 $rolledValues = [];
-                $servantDice = $this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId);
+                $servantDice = $this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId['player_id']);
                 foreach ($servantDice as $servanDie) {
                     $rolledValue = bga_rand(1, 6);
                     $this->game->servantDiceManager->setDieValue($servanDie['id'], $rolledValue);
                     $rolledValues[] = $rolledValue;
                 }
                 $auxScore = array_sum($rolledValues);
-                self::DbQuery("UPDATE player SET player_score=".$auxScore." WHERE player_id = " .$tiedPlayerId);
+                self::DbQuery("UPDATE player SET player_score_aux=".$auxScore." WHERE player_id = " .$tiedPlayerId['player_id']);
                 if (sizeof($rolledValues) > 0) {
-                    $this->game->notificationsManager->notifyTieBreakerRolled($tiedPlayerId, $this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId));
+                    $this->game->notificationsManager->notifyTieBreakerRolled($tiedPlayerId['player_id'], array_values($this->game->servantDiceManager->getServantDiceInPlayerArea($tiedPlayerId['player_id'])));
                 }
             }
             $tiedPlayerIds = $this->getTies(true);
@@ -72,9 +73,16 @@ class CryptScoreManager extends APP_DbObject
     private function getTies($retry = false) {
         if ($retry) {
             // If this is a retry and their player_score_aux is still zero this player has no dice
-            return self::getObjectListFromDB('SELECT player_id FROM player p WHERE p.player_score IN (SELECT player_score FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1) AND p.player_score_aux > 0');
+            return self::getObjectListFromDB('SELECT player_id 
+                                                    FROM player p 
+                                                    WHERE p.player_score IN (SELECT player_score FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1)
+                                                    AND p.player_score_aux IN (SELECT player_score_aux FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1)
+                                                    AND p.player_score_aux > 0');
         } else {
-            return self::getObjectListFromDB('SELECT player_id FROM player p WHERE p.player_score IN (SELECT player_score FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1)');
+            return self::getObjectListFromDB('SELECT player_id 
+                                                    FROM player p 
+                                                    WHERE p.player_score IN (SELECT player_score FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1)
+                                                    AND p.player_score_aux IN (SELECT player_score_aux FROM player GROUP BY player_score, player_score_aux HAVING COUNT(player_id) > 1)');
         }
     }
 
@@ -176,22 +184,23 @@ class CryptScoreManager extends APP_DbObject
 
     private function calculateTapestryA($playerId) {
         $players = $this->game->loadPlayersBasicInfos();
-        $playersWithTapestryCoinValue = [];
+
+        $highestCoinValue = 0;
+        $highestPlayerId = null;
         foreach( $players as $id => $player )
         {
             $treasureCards = $this->game->treasureCardsManager->findByPlayerIdAndType($id, 'tapestry');
             if (sizeof($treasureCards) > 0) {
-                $playersWithTapestryCoinValue[] = [$id => array_sum(array_column($treasureCards, 'value'))];
+                $playerCoinValue = array_sum(array_column($treasureCards, 'value'));
+                if ($playerCoinValue > $highestCoinValue) {
+                    $highestCoinValue = $playerCoinValue;
+                    $highestPlayerId = $id;
+                }
             }
         }
 
-        if (sizeof($playersWithTapestryCoinValue) > 0) {
-            $highestTapestryValue = max($playersWithTapestryCoinValue);
-            foreach( $playersWithTapestryCoinValue as $id => $coinValue ) {
-                if ($coinValue == $highestTapestryValue && $id == $playerId) {
-                    return 5;
-                }
-            }
+        if ($highestPlayerId == $playerId) {
+            return 5;
         }
         return 0;
     }

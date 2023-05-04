@@ -205,7 +205,7 @@ function (dojo, declare) {
                         break;
                     case this.gameStates.beforeClaimPhaseActivateCollectors:
                     case this.gameStates.afterCollectTreasureActivateCollectors:
-                        this.addActionButton('end_before_claim_phase_activate_collectors', _("End Turn"), 'endTurn');
+                        this.addActionButton('end_before_claim_phase_activate_collectors', _("Don't Activate Collectors"), 'endTurn');
                         break;
 
                 }
@@ -449,6 +449,7 @@ function (dojo, declare) {
             dojo.subscribe('faceDownDisplayCardsRevealedPrivate', this, 'notif_faceDownDisplayCardsRevealedPrivate');
             dojo.subscribe('servantDieReRolled', this, 'notif_servantDieReRolled');
             dojo.subscribe('allCardsFlipped', this, 'notif_allCardsFlipped');
+            dojo.subscribe('tieBreakerRolled', this, 'notif_tieBreakerRolled');
 
             this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
@@ -458,6 +459,7 @@ function (dojo, declare) {
             this.notifqueue.setSynchronous( 'collectorUsed', 1000 );
             this.notifqueue.setSynchronous( 'faceDownDisplayCardsRevealedPrivate', 1000 );
             this.notifqueue.setSynchronous( 'servantDieReRolled', 1000 );
+            this.notifqueue.setSynchronous( 'tieBreakerRolled', 1000 );
 
             // Example 1: standard notification handling
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -624,6 +626,15 @@ function (dojo, declare) {
 
             this.treasureCardManager.renderCardsAndMoveToZone(allCardsFlipped.treasureCards, true);
 
+        },
+
+        notif_tieBreakerRolled: function( notif = {args: {rolledServantDice: []}}) {
+            console.log( 'notif_tieBreakerRolled' );
+
+            const tieBreakerRolled = notif['args'];
+            console.log( tieBreakerRolled );
+
+            tieBreakerRolled.rolledServantDice.forEach(die => this.servantManager.setServantDieValue(die.id, die.location_arg))
         }
     });
 });

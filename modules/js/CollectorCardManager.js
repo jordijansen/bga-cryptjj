@@ -129,6 +129,7 @@ define(
                         for (const card of this.game.gamedatas.collectors) {
                             const cardElement = $(`collector-card-${card.id}`);
                             dojo.removeClass(cardElement, 'selected')
+                            dojo.removeClass(cardElement, 'selectable')
                         }
                         dojo.addClass($(`collector-card-${selected.id}`), 'selected')
 
@@ -139,7 +140,7 @@ define(
                         } else if (selected.id === 'idol-A') {
                             this.game.servantManager.enterSelectServantDiceMode(this.activateCollectorMode.servantDiceForReRoll);
                         }
-                        this.activateCollectorMode = false;
+                        this.activateCollectorMode.active = false;
                         this.game.gamedatas.gamestate.descriptionmyturn = selected.name_translated + ': ' + dojo.string.substitute( _("flips ${i} ${type} treasure card(s)"), {i: Number(selected.nr_of_cards_to_flip), type: selected.treasure_type} );
                         this.game.gamedatas.gamestate.description = this.game.gamedatas.gamestate.descriptionmyturn;
                         this.game.updatePageTitle();
