@@ -2,13 +2,13 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+ * Crypt implementation : © Jordi Jansen <thestartplayer@gmail.com>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * cryptjj.view.php
+ * crypt.view.php
  *
  * This is your "view" file.
  *
@@ -17,7 +17,7 @@
  * _ when a player refreshes the game page (F5)
  *
  * "build_page" method allows you to dynamically modify the HTML generated for the game interface. In
- * particular, you can set here the values of variables elements defined in cryptjj_cryptjj.tpl (elements
+ * particular, you can set here the values of variables elements defined in crypt_crypt.tpl (elements
  * like {MY_VARIABLE_ELEMENT}), and insert HTML block elements (also defined in your HTML template file)
  *
  * Note: if the HTML of your game interface is always the same, you don't have to place anything here.
@@ -26,12 +26,12 @@
   
 require_once( APP_BASE_PATH."view/common/game.view.php" );
   
-class view_cryptjj_cryptjj extends game_view
+class view_crypt_crypt extends game_view
 {
     protected function getGameName()
     {
         // Used for translations and stuff. Please do not modify.
-        return "cryptjj";
+        return "crypt";
     }
     
   	function build_page( $viewArgs )
@@ -67,7 +67,7 @@ class view_cryptjj_cryptjj extends game_view
         //      <!-- END myblock --> 
         
 
-        $this->page->begin_block( "cryptjj_cryptjj", "myblock" );
+        $this->page->begin_block( "crypt_crypt", "myblock" );
         foreach( $players as $player )
         {
             $this->page->insert_block( "myblock", array( 

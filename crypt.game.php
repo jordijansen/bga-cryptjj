@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+  * Crypt implementation : © Jordi Jansen <thestartplayer@gmail.com>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * cryptjj.game.php
+  * crypt.game.php
   *
   * This is the main file for your game logic.
   *
@@ -27,7 +27,7 @@ require_once("modules/CryptNotifications.inc.php");
 require_once("modules/CryptCollectorCards.inc.php");
 require_once("modules/CryptScoreManager.inc.php");
 
-class CryptJj extends Table
+class Crypt extends Table
 {
 	function __construct( )
 	{
@@ -60,7 +60,7 @@ class CryptJj extends Table
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
-        return "cryptjj";
+        return "crypt";
     }	
 
     /*
@@ -256,7 +256,7 @@ class CryptJj extends Table
 
     /*
         Each time a player is doing some game action, one of the methods below is called.
-        (note: each method below must match an input method in cryptjj.action.php)
+        (note: each method below must match an input method in crypt.action.php)
     */
 
     /*

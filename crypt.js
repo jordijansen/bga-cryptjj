@@ -1,15 +1,15 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+ * Crypt implementation : © Jordi Jansen <thestartplayer@gmail.com>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * cryptjj.js
+ * crypt.js
  *
- * CryptJj user interface script
+ * Crypt user interface script
  * 
  * In this file, you are describing the logic of your user interface, in Javascript language.
  *
@@ -30,9 +30,9 @@ define(["dojo",
         g_gamethemeurl + 'modules/js/CollectorCardManager.js',
     ],
 function (dojo, declare) {
-    return declare("bgagame.cryptjj", ebg.core.gamegui, {
+    return declare("bgagame.crypt", ebg.core.gamegui, {
         constructor: function () {
-            console.log('cryptjj constructor');
+            console.log('crypt constructor');
 
             this.cardWidth = 178;
             this.cardHeight = 261;
@@ -286,7 +286,7 @@ function (dojo, declare) {
             if( ! this.checkAction( 'myAction' ) )
             {   return; }
 
-            this.ajaxcall( "/cryptjj/cryptjj/myAction.html", {
+            this.ajaxcall( "/crypt/crypt/myAction.html", {
                                                                     lock: true,
                                                                     myArgument1: arg1,
                                                                     myArgument2: arg2,
@@ -429,7 +429,7 @@ function (dojo, declare) {
             In this method, you associate each of your game notifications with your local method to handle it.
             
             Note: game notification names correspond to "notifyAllPlayers" and "notifyPlayer" calls in
-                  your cryptjj.game.php file.
+                  your crypt.game.php file.
         
         */
         setupNotifications: function()

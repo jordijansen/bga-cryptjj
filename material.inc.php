@@ -5,7 +5,7 @@ require_once("modules/CryptGlobals.inc.php");
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * CryptJj implementation : © Jordi Jansen <thestartplayer@gmail.com>
+ * Crypt implementation : © Jordi Jansen <thestartplayer@gmail.com>
  * 
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -13,7 +13,7 @@ require_once("modules/CryptGlobals.inc.php");
  *
  * material.inc.php
  *
- * CryptJj game material description
+ * Crypt game material description
  *
  * Here, you can describe the material of your game with PHP variables.
  *   
