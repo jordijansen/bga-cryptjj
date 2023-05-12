@@ -34,7 +34,7 @@ define(
                     console.log("ServantManager#setup")
                     // Set-up servant dice
                     dojo.place(this.game.format_block('jstpl_exhausted_area', {
-                        "exhaustedServantsAreaText": _('Exhausted Servants')
+                        "exhaustedServantsAreaText": _('Exhausted <br /> Servants')
                     }), $('exhausted-servants-wrapper'))
 
                     this.game.addTooltip('exhausted-servants-background', _('Each die that rolls less than its effort value is exhausted and placed here'), '');

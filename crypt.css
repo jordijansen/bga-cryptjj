@@ -639,8 +639,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 .crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background {
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.6274509804);
   background-image: url("img/exhausted-servants.png");
   background-position: center;
   background-repeat: no-repeat;
@@ -649,10 +653,10 @@
   flex: 1;
 }
 .crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background h1 {
-  line-height: 150px;
+  padding-top: 42px;
   color: white;
   font-family: serif;
-  opacity: 0.6;
+  opacity: 0.4;
 }
 .crypt-flex-ui-row #exhausted-servants-wrapper #exhausted-servants-background #exhausted-servants {
   margin-left: 55px;

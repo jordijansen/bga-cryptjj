@@ -432,8 +432,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-left: 10px;
+        margin-right: 10px;
 
         #exhausted-servants-background {
+            border-radius: 5px;
+            box-shadow: 3px 3px 3px #000000a0;
             background-image: url('img/exhausted-servants.png');
             background-position: center;
             background-repeat: no-repeat;
@@ -442,10 +446,10 @@
             flex: 1;
 
             h1 {
-                line-height: 150px;
+                padding-top: 42px;
                 color: white;
                 font-family: serif;
-                opacity: 0.6;
+                opacity: 0.4;
             }
 
             #exhausted-servants {
