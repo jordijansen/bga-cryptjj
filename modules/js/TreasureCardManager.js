@@ -103,7 +103,7 @@ define(
 
                 setMaxWidthOfDisplay() {
                     const cardsAlreadyInDisplay = dojo.query('#treasure-cards-display .treasure-card')
-                    dojo.style('treasure-cards-display', 'max-width', (cardsAlreadyInDisplay.length + 1) * 188 + 'px');
+                    dojo.style('treasure-cards-display', 'max-width', (cardsAlreadyInDisplay.length + 1) * 189 + 'px');
                 },
 
                 enterClaimTreasureMode() {

@@ -142,7 +142,7 @@
                 // Hide buttons by default
                 visibility: hidden;
                 width: 80px;
-                margin: 2px;
+                margin: 4px;
             }
 
             .dice-selection-area {
@@ -479,9 +479,17 @@
 
 #collector-cards, #treasure-cards-display {
     min-height: 261px;
-    max-width: 1128px;
     left: 50%;
     transform: translateX(-50%);
+}
+
+#collector-cards {
+    @media only screen and (max-width: 600px) {
+        max-width: 189px * 3;
+    }
+    @media only screen and (min-width: 600px) {
+        max-width: 189px * 6;
+    }
 }
 
 /* Final Scoring Dialog */
