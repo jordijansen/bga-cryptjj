@@ -154,11 +154,11 @@
             }
         }
 
-        .dice-selection-area:has(.servant-die){
+        &.has-dice-selection .dice-selection-area {
             visibility: visible;
         }
 
-        &:has(.dice-selection-area .servant-die) .row .bgabutton {
+        &.has-dice-selection .row .bgabutton {
             // Show the increase/decrease buttons if at least one dice has been assigned to this card
             visibility: visible;
         }
@@ -390,13 +390,13 @@
         display: flex;
         flex-wrap: wrap;
 
-        .player-treasure-area {
-            width: 180px;
-            margin-left: 10px;
-            margin-bottom: 10px;
+        .player-treasure-area-wrapper {
 
-            &:not(:has(.treasure-card)) {
-                display: none !important;
+            .player-treasure-area {
+                margin-left: 10px;
+                width: 180px;
+                display: none;
+                margin-bottom: 10px;
             }
         }
     }

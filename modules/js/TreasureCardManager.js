@@ -136,6 +136,7 @@ define(
                             dojo.removeClass($(id), 'selectable')
                             dojo.removeClass($(id), 'invalid')
                             dojo.removeClass($(id), 'selected')
+                            dojo.removeClass($(id), 'has-dice-selection')
                         }
                     })
                 },
@@ -243,8 +244,9 @@ define(
 
                     this.game.servantManager.moveServantDieToTreasureCardSelectionArea(servantId, targetCardId, valueToUse);
 
+                    this.updateHasDiceSelection();
                     this.updateInvalid();
-                    this.updateSelected()
+                    this.updateSelected();
                 },
 
                 updateInvalid() {
@@ -254,6 +256,17 @@ define(
                                 dojo.removeClass($(id), 'invalid')
                             } else {
                                 dojo.addClass($(id), 'invalid')
+                            }
+                        })
+                },
+
+                updateHasDiceSelection(forceRemove = false) {
+                    this.cardDisplay.getAllItems()
+                        .forEach(id => {
+                            if (!forceRemove && this.game.servantManager.getServantDieForTreasureCardSelection(id.replace('treasure-card-', '')).length > 0) {
+                                dojo.addClass($(id), 'has-dice-selection')
+                            } else {
+                                dojo.removeClass($(id), 'has-dice-selection')
                             }
                         })
                 },
@@ -283,7 +296,10 @@ define(
                     }
                 },
 
-                getCurrentSelection() {
+                getCurrentSelection(isFinal = false) {
+                    if (isFinal) {
+                        this.updateHasDiceSelection(true);
+                    }
                     return this.cardDisplay.getAllItems()
                         .map(id => id.replace('treasure-card-', ''))
                         .filter(id => this.game.servantManager.getServantDieForTreasureCardSelection(id).length > 0)

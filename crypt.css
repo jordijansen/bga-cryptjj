@@ -110,10 +110,10 @@
   margin-left: 13px;
   visibility: hidden;
 }
-.crypt-card.treasure-card .dice-selection-area:has(.servant-die) {
+.crypt-card.treasure-card.has-dice-selection .dice-selection-area {
   visibility: visible;
 }
-.crypt-card.treasure-card:has(.dice-selection-area .servant-die) .row .bgabutton {
+.crypt-card.treasure-card.has-dice-selection .row .bgabutton {
   visibility: visible;
 }
 .crypt-card.treasure-card.selection .dice-selection-area {
@@ -603,13 +603,11 @@
   display: flex;
   flex-wrap: wrap;
 }
-.crypt-player-area .player-treasure-areas .player-treasure-area {
-  width: 180px;
+.crypt-player-area .player-treasure-areas .player-treasure-area-wrapper .player-treasure-area {
   margin-left: 10px;
+  width: 180px;
+  display: none;
   margin-bottom: 10px;
-}
-.crypt-player-area .player-treasure-areas .player-treasure-area:not(:has(.treasure-card)) {
-  display: none !important;
 }
 
 .crypt-flex-ui-row {

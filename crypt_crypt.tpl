@@ -58,12 +58,12 @@ var jstpl_player_area='<div class="crypt-player-area whiteblock" id="player-area
             </div>\
         </div>\
         <div class="player-treasure-areas">\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-idol"></div></div>\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-jewelery"></div></div>\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-manuscript"></div></div>\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-pottery"></div></div>\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-remains"></div></div>\
-            <div class="player-treasure-area"><div id="player-${player_id}-treasure-tapestry"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-idol"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-jewelery"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-manuscript"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-pottery"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-remains"></div></div>\
+            <div class="player-treasure-area-wrapper"><div class="player-treasure-area" id="player-${player_id}-treasure-tapestry"></div></div>\
         </div>\
     </div>\
 </div>';
