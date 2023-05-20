@@ -150,12 +150,11 @@
                 height: 50px;
                 width: 150px;
                 margin-left: 13px;
-                visibility: hidden;
-            }
-        }
 
-        &.has-dice-selection .dice-selection-area {
-            visibility: visible;
+                .crypt-die-placeholder {
+                    visibility: hidden;
+                }
+            }
         }
 
         &.has-dice-selection .row .bgabutton {
@@ -163,9 +162,11 @@
             visibility: visible;
         }
 
-        &.selection {
+        &.selection, &.has-dice-selection {
             .dice-selection-area {
-                visibility: visible;
+                .crypt-die-placeholder {
+                    visibility: visible;
+                }
             }
         }
 
@@ -377,7 +378,7 @@
     &:nth-child(1):nth-last-child(n+4),
     &:nth-child(2):nth-last-child(n+4),
     &:nth-child(3):nth-last-child(n+4){
-        visibility: hidden;
+        visibility: hidden !important;
     }
 }
 

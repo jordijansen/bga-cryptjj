@@ -296,10 +296,7 @@ define(
                     }
                 },
 
-                getCurrentSelection(isFinal = false) {
-                    if (isFinal) {
-                        this.updateHasDiceSelection(true);
-                    }
+                getCurrentSelection() {
                     return this.cardDisplay.getAllItems()
                         .map(id => id.replace('treasure-card-', ''))
                         .filter(id => this.game.servantManager.getServantDieForTreasureCardSelection(id).length > 0)
@@ -423,7 +420,7 @@ define(
 
                     const elementId = `treasure-card-${cardId}`;
 
-                    if (this.claimTreasureMode) {
+                    if (this.claimTreasureMode && (dojo.hasClass($(elementId), 'selection') || dojo.hasClass($(elementId), 'has-dice-selection'))) {
                         const diceStillInPlayerArea = this.game.servantManager.getServantDieInPlayerArea(this.game.player_id);
                         if (diceStillInPlayerArea.length > 0) {
                             this.addServantDieToCard(diceStillInPlayerArea[0].id, cardId);

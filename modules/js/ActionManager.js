@@ -28,9 +28,9 @@ define(
                     console.log('ActionManager#setup')
                 },
 
-                claimTreasure(claimTreasureSelection) {
+                claimTreasure(claimTreasureSelection, handler) {
                     const args = {actionArgs: JSON.stringify(claimTreasureSelection)}
-                    this._performAction('claimTreasure', args)
+                    this._performAction('claimTreasure', args, handler)
                 },
 
                 recoverServants() {

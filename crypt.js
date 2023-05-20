@@ -343,8 +343,12 @@ function (dojo, declare) {
             // Preventing default browser reaction
             dojo.stopEvent(evt);
 
-            const currentSelection = this.treasureCardManager.getCurrentSelection(true);
-            this.actionManager.claimTreasure(currentSelection)
+            const currentSelection = this.treasureCardManager.getCurrentSelection();
+            this.actionManager.claimTreasure(currentSelection, (isError) => {
+                if (!isError) {
+                    this.treasureCardManager.exitClaimTreasureMode(false);
+                }
+            });
         },
 
         recoverServants: function (evt)
