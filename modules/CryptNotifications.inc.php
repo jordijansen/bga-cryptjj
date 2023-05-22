@@ -192,48 +192,7 @@ class CryptNotifications extends APP_DbObject
     }
 
     public function notifyFinalScoring($finalScoring) {
-        $playersRow = [ '' ];
-        $treasureCardCoinsRow = [ clienttranslate("Treasure Card Coins")];
-        $unExhaustedServantDiceRow = [ clienttranslate("Un-exhausted Servant Dice")];
-        $totalScoreRow = [clienttranslate("Total")];
-
-        $players = $this->game->loadPlayersBasicInfos();
-        foreach( $players as $playerId => $player )    {
-            $playersRow[] = [ 'str' => '${player_name}',
-                'args' => [ 'player_name' => $player['player_name'] ],
-                'type' => 'header'
-            ];
-            $treasureCardCoinsRow[] = $finalScoring[$playerId]['treasureCardCoins'];
-            $unExhaustedServantDiceRow[] = $finalScoring[$playerId]['unExhaustedServantDice'];
-            $totalScoreRow[] = $finalScoring[$playerId]['totalScore'];
-        }
-
-        $table = [$playersRow, $treasureCardCoinsRow, $unExhaustedServantDiceRow];
-
-        foreach( $this->game->treasure_types as $treasureTypeId => $treasureType) { // jewelery, manuscript, remains, etc.
-            $treasureTypeRow = [$treasureType['name']." ".clienttranslate("Collector")];
-            foreach( $players as $playerId => $player ) {
-                if (array_key_exists($treasureTypeId, $finalScoring[$playerId]['collectors'])) {
-                    $collectorScore = $finalScoring[$playerId]['collectors'][$treasureTypeId];
-                    if (isset($collectorScore)) {
-                        $treasureTypeRow[] = $finalScoring[$playerId]['collectors'][$treasureTypeId];
-                    }
-                }
-            }
-            if (sizeof($treasureTypeRow) > 1) {
-                $table[] = $treasureTypeRow;
-            }
-        }
-
-        $table[] = $totalScoreRow;
-
-        self::trace(json_encode($table));
-        $this->game->notifyAllPlayers( "tableWindow", '', array(
-            "id" => 'finalScoring',
-            "title" => clienttranslate("End Game Scoring"),
-            "table" => $table,
-            "closing" => clienttranslate( "Close" )
-        ));
+        $this->game->notifyAllPlayers( "finalScoring", '', $finalScoring);
     }
 
     public function notifyAllCardsFlipped($treasureCards = []) {

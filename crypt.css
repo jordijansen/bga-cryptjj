@@ -446,6 +446,14 @@
   display: inline-block;
   vertical-align: middle;
 }
+.crypt-icon.question-mark {
+  background-image: url("img/questionmark.png");
+}
+.crypt-icon.question-mark.small {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
 .crypt-icon.treasure-type {
   background-image: url("img/treasure-icons.png");
 }
@@ -694,13 +702,32 @@
 }
 
 /* Final Scoring Dialog */
-.tableWindow table {
+#popin_finalScoringDialog_contents {
   font-size: 16px;
 }
-
-.tableWindow table tr td:first-child {
-  text-align: right;
+#popin_finalScoringDialog_contents table {
+  width: 100%;
+}
+#popin_finalScoringDialog_contents table th, #popin_finalScoringDialog_contents table td {
+  padding: 15px;
+  text-align: center;
+}
+#popin_finalScoringDialog_contents table th {
   font-weight: bold;
+}
+#popin_finalScoringDialog_contents table thead tr {
+  border-bottom: 3px solid black;
+}
+#popin_finalScoringDialog_contents table tbody tr {
+  border-bottom: 1px solid lightgray;
+}
+#popin_finalScoringDialog_contents table tbody tr th {
+  text-align: right;
+}
+#popin_finalScoringDialog_contents table tbody tr:last-child {
+  font-weight: bold;
+  border-top: 3px solid black;
+  border-bottom: 0;
 }
 
 @keyframes crypt-pulse {

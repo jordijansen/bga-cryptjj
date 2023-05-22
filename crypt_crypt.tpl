@@ -130,6 +130,7 @@ var jstpl_icon_treasure='<span class="crypt-icon treasure-type small treasure-${
 var jstpl_icon_coin='<span class="crypt-icon coin small">${value}</span>'
 var jstpl_icon_dice='<span class="color-${color} side${value} crypt-icon die small"></span>'
 var jstpl_icon_torch='<span class="crypt-icon torch small torch-card torch-card-${type}"></span>';
+var jstpl_icon_question_mark='<span class="crypt-icon question-mark small"></span>';
 
 
 </script>

@@ -254,10 +254,17 @@ function (dojo, declare) {
                     .join(' ')
             } else if (key.startsWith('icon_torch')) {
                 return this.format_block('jstpl_icon_torch',{type: args['icon_torch']});
+            } else if (key.startsWith('question_mark')) {
+                return this.format_block('jstpl_icon_question_mark',{});
             }
             return key;
         },
 
+       getPlayer : function(playerId) {
+            console.log(playerId)
+           console.log(Object.values(this.gamedatas.players))
+           return Object.values(this.gamedatas.players).find(player => Number(player.player_id) === Number(playerId));
+       },
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -454,6 +461,7 @@ function (dojo, declare) {
             dojo.subscribe('servantDieReRolled', this, 'notif_servantDieReRolled');
             dojo.subscribe('allCardsFlipped', this, 'notif_allCardsFlipped');
             dojo.subscribe('tieBreakerRolled', this, 'notif_tieBreakerRolled');
+            dojo.subscribe('finalScoring', this, 'notif_finalScoring');
 
             this.notifqueue.setSynchronous( 'treasureCardClaimed', 1000 );
             this.notifqueue.setSynchronous( 'servantDiceRecovered', 1000 );
@@ -639,6 +647,76 @@ function (dojo, declare) {
             console.log( tieBreakerRolled );
 
             tieBreakerRolled.rolledServantDice.forEach(die => this.servantManager.setServantDieValue(die.id, die.location_arg))
+        },
+
+        notif_finalScoring: function( notif = {args: {1: {treasureCardCoins: 1, unExhaustedServantDice: 1, totalScore: 3, collectors: {jewelery: {id: 'idol-a', side: 'A', name_translated: '', description_translated: '', score: 0, nrOfCards: 0}}}}}) {
+            console.log( 'notif_finalScoring' );
+
+            const finalScoring = notif['args'];
+            console.log( finalScoring );
+
+            // Create the HTML of my dialog.
+            // The best practice here is to use Javascript templates
+            const html = `
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    ${Object.keys(finalScoring)
+                                        .map(playerId => this.getPlayer(playerId))
+                                        .map(player => `<th style="color: #${player.color};">${player.name}</th>`)
+                                        .join("")}
+                                </tr> 
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>${_("Treasure Card Coins")}</th>
+                                     ${Object.values(finalScoring)
+                                        .map(scoringForPlayer => `<td>${this.getIcon('icon_coin', {'icon_coin': scoringForPlayer.treasureCardCoins})}</td>`)
+                                        .join("")}
+                                </tr>
+                                <tr>
+                                    <th>${_("Un-exhausted Servant Dice")}</th>
+                                     ${Object.values(finalScoring)
+                                        .map(scoringForPlayer => `<td>${this.getIcon('icon_coin', {'icon_coin': scoringForPlayer.unExhaustedServantDice})}</td>`)
+                                        .join("")}
+                                </tr>
+                                ${Object.entries(Object.values(finalScoring)[0].collectors).map(([treasureType, collector]) => `
+                                    <tr id="final-scoring-row-${collector.id}">
+                                        <th>${this.getIcon('icon_treasure', {icon_treasure: treasureType})} ${collector.name_translated} ${collector.side} ${this.getIcon('question_mark')}</th>
+                                        ${Object.values(finalScoring)
+                                            .map(scoringForPlayer => scoringForPlayer.collectors[treasureType])
+                                            .map(collector => `<td>${this.getIcon('icon_coin', {'icon_coin': collector.score})}&nbsp;(&nbsp;${collector.nrOfCards} ${this.getIcon('icon_treasure', {icon_treasure: treasureType})}&nbsp;)</td>`)
+                                            .join("")}
+                                    </tr>`
+                                ).join("")}
+                                <tr>
+                                    <th>${_("Total Score")}</th>
+                                     ${Object.values(finalScoring)
+                                        .map(scoringForPlayer => `<td>${scoringForPlayer.totalScore}</td>`)
+                                        .join("")}
+                                </tr>
+                            </tbody>     
+                        </table>
+                    </div>
+            `
+
+            const finalScoringDialog = new ebg.popindialog();
+            finalScoringDialog.create( 'finalScoringDialog' );
+            finalScoringDialog.setTitle( _("Final Scoring") );
+            finalScoringDialog.setContent( html );
+            finalScoringDialog.show();
+
+            Object.entries(finalScoring).forEach(([playerId, scoringForPlayer]) => {
+                this.playerManager.updateScore({player_id: playerId, player_score: scoringForPlayer.totalScore})
+            });
+
+            Object.entries(Object.values(finalScoring)[0].collectors).forEach(([treasureType, collector]) => {
+                this.addTooltip(`final-scoring-row-${collector.id}`, collector.description_translated, '');
+            });
+
+
         }
     });
 });

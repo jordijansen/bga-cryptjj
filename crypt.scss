@@ -288,6 +288,16 @@
     display: inline-block;
     vertical-align: middle;
 
+    &.question-mark {
+        background-image: url('img/questionmark.png');
+
+        &.small {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+        }
+    }
+
     &.treasure-type {
         background-image: url('img/treasure-icons.png');
 
@@ -494,13 +504,39 @@
 }
 
 /* Final Scoring Dialog */
-.tableWindow table {
+#popin_finalScoringDialog_contents {
     font-size: 16px;
+
+    table {
+        width: 100%;
+        th, td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        thead tr {
+            border-bottom: 3px solid black;
+        }
+
+        tbody tr  {
+            border-bottom: 1px solid lightgray;
+            th {
+                text-align: right;
+            }
+            &:last-child {
+                font-weight: bold;
+                border-top: 3px solid black;
+                border-bottom: 0;
+            }
+        }
+    }
+
 }
-.tableWindow table tr td:first-child{
-    text-align: right;
-    font-weight: bold;
-}
+
 
 @keyframes crypt-pulse {
     0% {

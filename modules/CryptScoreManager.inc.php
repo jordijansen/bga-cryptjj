@@ -123,22 +123,27 @@ class CryptScoreManager extends APP_DbObject
         $collectors = $this->game->collectorCardsManager->getCollectors();
         foreach($collectors as $collector) {
             if ($collector['ability_type'] == COLLECTOR_END_GAME) {
-                if ($collector['id'] == 'idol-B') {
-                    $result['idol'] = $this->calculateIdolB($playerId);
-                } else if ($collector['id'] == 'jewelery-A') {
-                    $result['jewelery'] = $this->calculateJeweleryA($playerId);
-                } else if ($collector['id'] == 'jewelery-B') {
-                    $result['jewelery'] = $this->calculateJeweleryB($playerId);
-                } else if ($collector['id'] == 'manuscript-A') {
-                    $result['manuscript'] = $this->calculateManuscriptA($playerId);
-                } else if ($collector['id'] == 'tapestry-A') {
-                    $result['tapestry'] = $this->calculateTapestryA($playerId);
-                } else if ($collector['id'] == 'tapestry-B') {
-                    $result['tapestry'] = $this->calculateTapestryB($playerId);
-                } else if ($collector['id'] == 'remains-B') {
-                    $result['remains'] = $this->calculateRemainsB($playerId);
-                } else if ($collector['id'] == 'pottery-A') {
-                    $result['pottery'] = $this->calculatePotteryA($playerId);
+                $result[$collector['treasure_type']] = $collector;
+                $result[$collector['treasure_type']]['nrOfCards'] = sizeof($this->game->treasureCardsManager->findByPlayerIdAndType($playerId, $collector['treasure_type']));
+                $result[$collector['treasure_type']]['score'] = 0;
+                if ($result[$collector['treasure_type']]['nrOfCards'] > 0) {
+                    if ($collector['id'] == 'idol-B') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateIdolB($playerId);
+                    } else if ($collector['id'] == 'jewelery-A') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateJeweleryA($playerId);
+                    } else if ($collector['id'] == 'jewelery-B') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateJeweleryB($playerId);
+                    } else if ($collector['id'] == 'manuscript-A') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateManuscriptA($playerId);
+                    } else if ($collector['id'] == 'tapestry-A') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateTapestryA($playerId);
+                    } else if ($collector['id'] == 'tapestry-B') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateTapestryB($playerId);
+                    } else if ($collector['id'] == 'remains-B') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculateRemainsB($playerId);
+                    } else if ($collector['id'] == 'pottery-A') {
+                        $result[$collector['treasure_type']]['score'] = $this->calculatePotteryA($playerId);
+                    }
                 }
             }
         }
