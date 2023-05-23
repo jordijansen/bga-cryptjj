@@ -37,7 +37,16 @@ class CryptScoreManager extends APP_DbObject
         return self::getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id = " .$playerId);
     }
 
-    public function getScoreBreakDown($playerId) {
+    public function getScoreBreakDownForPlayers($players) {
+        $finalScoring = [];
+        foreach($players as $playerId => $player)
+        {
+            $finalScoring[$playerId] = $this->getScoreBreakDown($playerId);
+        }
+        return $finalScoring;
+    }
+
+    private function getScoreBreakDown($playerId) {
         return [
             'treasureCardCoins' => $this->calculateTreasureCardCoins($playerId, true),
             'unExhaustedServantDice' => $this->calculateUnExhaustedServantDice($playerId),

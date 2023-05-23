@@ -155,9 +155,10 @@ class Crypt extends Table
         $result['treasureDeck']['topCardType'] = isset($topCardOfDeck) ? $topCardOfDeck['type'] : 'empty';
         $result['treasureCards'] = $this->treasureCardsManager->getAllTreasureCardsInPlay($current_player_id);
 
+        if (self::getStateName() == STATE_GAME_END) {
+            $result['finalScoring'] = $this->scoreManager->getScoreBreakDownForPlayers($players);
+        }
 
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
-  
         return $result;
     }
 
@@ -228,8 +229,8 @@ class Crypt extends Table
      */
 
     public function runDebug() {
-
-        $this->scoreManager->breakTies();
+        $count = $this->treasure_cards->countCardsInLocation('deck');
+        $this->treasure_cards->pickCardsForLocation($count, 'deck', 'discard', $count);
     }
 
     public function runIntermediateScoring() {
@@ -240,13 +241,7 @@ class Crypt extends Table
             $this->scoreManager->updateTotalScore($playerId, true);
         }
 
-        $finalScoring = [];
-        foreach( $players as $playerId => $player )
-        {
-            $finalScoring[$playerId] = $this->scoreManager->getScoreBreakDown($playerId);
-        }
-        self::trace(json_encode($finalScoring));
-
+        $finalScoring = $this->scoreManager->getScoreBreakDownForPlayers($players);
         $this->notificationsManager->notifyFinalScoring($finalScoring);
     }
 
@@ -690,13 +685,10 @@ class Crypt extends Table
         // Break ties if necessary
         $this->scoreManager->breakTies();
 
-        $finalScoring = [];
-        foreach($players as $playerId => $player)
-        {
-            $finalScoring[$playerId] = $this->scoreManager->getScoreBreakDown($playerId);
-        }
+        $finalScoring = $this->scoreManager->getScoreBreakDownForPlayers($players);
 
         $this->notificationsManager->notifyAllCardsFlipped($this->treasureCardsManager->flipAllCardsInPlayerAreas());
+
         $this->notificationsManager->notifyFinalScoring($finalScoring);
 
         $this->gamestate->nextState(STATE_GAME_END);

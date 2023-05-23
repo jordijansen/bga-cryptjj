@@ -91,6 +91,10 @@ function (dojo, declare) {
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
+            if (gameData['finalScoring']) {
+                this.showFinalScoringDialog(gameData['finalScoring'])
+            }
+
             console.log("Ending game setup");
         },
 
@@ -655,8 +659,14 @@ function (dojo, declare) {
             const finalScoring = notif['args'];
             console.log( finalScoring );
 
-            // Create the HTML of my dialog.
-            // The best practice here is to use Javascript templates
+            Object.entries(finalScoring).forEach(([playerId, scoringForPlayer]) => {
+                this.playerManager.updateScore({player_id: playerId, player_score: scoringForPlayer.totalScore})
+            });
+
+            this.showFinalScoringDialog(finalScoring);
+        },
+
+        showFinalScoringDialog: function(finalScoring = {1: {treasureCardCoins: 1, unExhaustedServantDice: 1, totalScore: 3, collectors: {jewelery: {id: 'idol-a', side: 'A', name_translated: '', description_translated: '', score: 0, nrOfCards: 0}}}}) {
             const html = `
                     <div>
                         <table>
@@ -708,15 +718,9 @@ function (dojo, declare) {
             finalScoringDialog.setContent( html );
             finalScoringDialog.show();
 
-            Object.entries(finalScoring).forEach(([playerId, scoringForPlayer]) => {
-                this.playerManager.updateScore({player_id: playerId, player_score: scoringForPlayer.totalScore})
-            });
-
             Object.entries(Object.values(finalScoring)[0].collectors).forEach(([treasureType, collector]) => {
                 this.addTooltip(`final-scoring-row-${collector.id}`, collector.description_translated, '');
             });
-
-
         }
     });
 });
