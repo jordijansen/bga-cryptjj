@@ -228,9 +228,14 @@ class Crypt extends Table
      * DEBUG FUNCTIONS!!
      */
 
-    public function runDebug() {
+    public function emptyDeck() {
         $count = $this->treasure_cards->countCardsInLocation('deck');
         $this->treasure_cards->pickCardsForLocation($count, 'deck', 'discard', $count);
+    }
+
+    public function getCardOfType() {
+        $cardsOfTypeInDeck = $this->treasure_cards->getCardsOfTypeInLocation('remains', null, 'deck', null);
+        $this->treasure_cards->moveCard(reset($cardsOfTypeInDeck)['id'], 'player_area_'.$this->getActivePlayerId());
     }
 
     public function runIntermediateScoring() {

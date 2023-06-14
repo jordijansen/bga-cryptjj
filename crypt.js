@@ -370,7 +370,10 @@ function (dojo, declare) {
             dojo.stopEvent(evt);
 
             const nrOfServantDiceToRecover = this.servantManager.getServantDieInExhaustedArea(this.player_id).length;
-            const confirmMessage = dojo.string.substitute( _('You will recover ${nrOfServantDiceToRecover} Servant(s). Recovering Servants ends your turn'), { nrOfServantDiceToRecover });
+            let confirmMessage = dojo.string.substitute( _('You will recover ${nrOfServantDiceToRecover} Servant(s). Recovering Servants ends your turn'), { nrOfServantDiceToRecover });
+            if (nrOfServantDiceToRecover === 0) {
+                confirmMessage = _('No Servant Dice to recover, skip your turn?')
+            }
 
             this.confirmationDialog(
                 confirmMessage,
