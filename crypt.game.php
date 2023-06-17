@@ -224,6 +224,10 @@ class Crypt extends Table
         return $state['name'];
     }
 
+    public static function totranslate($text) {
+        return self::_($text);
+    }
+
     /**
      * DEBUG FUNCTIONS!!
      */
@@ -300,16 +304,16 @@ class Crypt extends Table
         self::trace(json_encode($cardsInDisplay));
 
         if (sizeof($claimTreasureSelection) === 0) {
-            throw new BgaUserException(clienttranslate("You need to claim at least one treasure card"));
+            throw new BgaUserException(self::_("You need to claim at least one treasure card"));
         }
 
         if (sizeof($claimTreasureSelection) > 1) {
             if ($this->playerManager->hasBothCards(self::getActivePlayerId())) {
                 if (self::getUniqueValueFromDB("SELECT has_played_before_this_round FROM player WHERE player_id = " .$this->getActivePlayerId()) == 1) {
-                    throw new BgaUserException(clienttranslate("You can only claim one card if you have the Lights Out card"));
+                    throw new BgaUserException(self::_("You can only claim one card if you have the Lights Out card"));
                 }
             } else if ($this->playerManager->hasLightsOutCard(self::getActivePlayerId())) {
-                throw new BgaUserException(clienttranslate("You can only claim one card if you have the Lights Out card"));
+                throw new BgaUserException(self::_("You can only claim one card if you have the Lights Out card"));
             }
         }
 
@@ -322,13 +326,13 @@ class Crypt extends Table
                 // Check if the provided treasure card is in the treasure card display
                 $treasureCard = self::findById($cardsInDisplay, $treasureCardSelection['id']);
                 if ($treasureCard == null) {
-                    throw new BgaUserException(clienttranslate("Card not in treasure card display!"));
+                    throw new BgaSystemException("Card not in treasure card display!");
                 }
 
                 // Check if the provided servant dice are in the player area
                 foreach ($treasureCardSelection['servantDice'] as $servantDieId) {
                     if ($servantDice[$servantDieId] == null) {
-                        throw new BgaUserException(clienttranslate("Servant die not owned by active player!"));
+                        throw new BgaSystemException("Servant die not owned by active player!");
                     }
                 }
 
@@ -339,7 +343,7 @@ class Crypt extends Table
                     $treasureCardEffort = array_sum(array_column($servantDiceOnTreasureCard, 'location_arg'));
                     // The effort value needs to be higher
                     if ($treasureCardEffort >= $treasureCardSelectionEffort) {
-                        throw new BgaUserException(clienttranslate("Servant(s) effort too low"));
+                        throw new BgaUserException(self::_("Servant(s) effort too low"));
                     }
                     // Bump the other servants of the card
                     $this->servantDiceManager->recoverServantDice(array_column($servantDiceOnTreasureCard, 'id'));
@@ -391,13 +395,14 @@ class Crypt extends Table
                 if (sizeof($treasureCardsToFlip) == $collector['nr_of_cards_to_flip']) {
                     $this->collectorCardsManager->useCollector(self::getCurrentPlayerId(), $collector, $treasureCardsToFlip, $activateCollector['treasureCardsSelected'], $activateCollector['servantDiceSelected']);
                 } else {
-                    throw new BgaUserException(clienttranslate("Wrong number of cards provided"));
+                    throw new BgaSystemException("Wrong number of cards provided");
                 }
             } else {
-                throw new BgaUserException(clienttranslate("Collector not allowed at the moment"));
+                throw new BgaSystemException("Collector not allowed at the moment");
+
             }
         } else {
-            throw new BgaUserException(clienttranslate("Unknown collector!"));
+            throw new BgaSystemException("Unknown collector!");
         }
 
     }

@@ -157,6 +157,7 @@ class CryptNotifications extends APP_DbObject
         $playerPerformingAction = $this->game->getPlayer($playerId);
 
         $this->game->notifyAllPlayers('collectorUsed', clienttranslate( '${player_name} activates ${icon_treasure} ${collector.name_translated}'), array(
+            'i18n' => array('collector.name_translated'),
             'player_id' => $playerId,
             'player_name' => $playerPerformingAction['player_name'],
             'player_score' => $this->game->scoreManager->getTotalScore($playerId),
@@ -169,11 +170,11 @@ class CryptNotifications extends APP_DbObject
     public function servantDieReRolled($playerId, $servantDie, $originalServantDie, $exhausted) {
         $player = $this->game->getPlayer($playerId);
 
-        $additionalText = clienttranslate( 'which is equal or higher than ${effort}, so it is recovered');
+        $logMessage = clienttranslate('${player_name} re-rolls ${icon_dice_1} into a ${icon_dice_2} which is equal or higher than ${effort}, so it is recovered');
         if ($exhausted) {
-            $additionalText = clienttranslate( 'which is lower than ${effort}, so it remains exhausted');
+            $logMessage = clienttranslate( '${player_name} re-rolls ${icon_dice_1} into a ${icon_dice_2} which is lower than ${effort}, so it remains exhausted');
         }
-        $this->game->notifyAllPlayers('servantDieReRolled', clienttranslate( '${player_name} re-rolls ${icon_dice_1} into a ${icon_dice_2} ') .$additionalText, array(
+        $this->game->notifyAllPlayers('servantDieReRolled', $logMessage, array(
             'playerId' => $playerId,
             'player_name' => $player['player_name'],
             'servantDie' => $servantDie,

@@ -697,7 +697,7 @@ function (dojo, declare) {
                                 </tr>
                                 ${Object.entries(Object.values(finalScoring)[0].collectors).map(([treasureType, collector]) => `
                                     <tr id="final-scoring-row-${collector.id}">
-                                        <th>${this.getIcon('icon_treasure', {icon_treasure: treasureType})} ${collector.name_translated} ${collector.side} ${this.getIcon('question_mark')}</th>
+                                        <th>${this.getIcon('icon_treasure', {icon_treasure: treasureType})} ${_(collector.name_translated)} ${collector.side} ${this.getIcon('question_mark')}</th>
                                         ${Object.values(finalScoring)
                                             .map(scoringForPlayer => scoringForPlayer.collectors[treasureType])
                                             .map(collector => `<td>${this.getIcon('icon_coin', {'icon_coin': collector.score})}&nbsp;(&nbsp;${collector.nrOfCards} ${this.getIcon('icon_treasure', {icon_treasure: treasureType})}&nbsp;)</td>`)
@@ -722,7 +722,7 @@ function (dojo, declare) {
             finalScoringDialog.show();
 
             Object.entries(Object.values(finalScoring)[0].collectors).forEach(([treasureType, collector]) => {
-                this.addTooltip(`final-scoring-row-${collector.id}`, collector.description_translated, '');
+                this.addTooltip(`final-scoring-row-${collector.id}`, _(collector.description_translated), '');
             });
         }
     });
