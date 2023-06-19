@@ -141,7 +141,7 @@ define(
                             this.game.servantManager.enterSelectServantDiceMode(this.activateCollectorMode.servantDiceForReRoll);
                         }
                         this.activateCollectorMode.active = false;
-                        this.game.gamedatas.gamestate.descriptionmyturn = _(selected.name_translated) + ': ' + dojo.string.substitute( _("flips ${i} ${type} treasure card(s)"), {i: Number(selected.nr_of_cards_to_flip), type: selected.treasure_type} );
+                        this.game.gamedatas.gamestate.descriptionmyturn = _(selected.name_translated) + ': ' + dojo.string.substitute( _("flip ${i} ${type} treasure card(s)"), {i: Number(selected.nr_of_cards_to_flip), type: _(selected.treasure_type)} );
                         this.game.gamedatas.gamestate.description = this.game.gamedatas.gamestate.descriptionmyturn;
                         this.game.updatePageTitle();
                     }

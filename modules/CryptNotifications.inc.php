@@ -156,13 +156,14 @@ class CryptNotifications extends APP_DbObject
     public function notifyCollectorUsed($playerId, $collector, $flippedTreasureCards) {
         $playerPerformingAction = $this->game->getPlayer($playerId);
 
-        $this->game->notifyAllPlayers('collectorUsed', clienttranslate( '${player_name} activates ${icon_treasure} ${collector.name_translated}'), array(
-            'i18n' => array('collector.name_translated'),
+        $this->game->notifyAllPlayers('collectorUsed', clienttranslate( '${player_name} activates ${icon_treasure} ${collector_name_translated}'), array(
+            'i18n' => array('collector_name_translated'),
             'player_id' => $playerId,
             'player_name' => $playerPerformingAction['player_name'],
             'player_score' => $this->game->scoreManager->getTotalScore($playerId),
             'collector' => $collector,
             'flippedTreasureCards' => $flippedTreasureCards,
+            'collector_name_translated' => $collector['name_translated'],
             'icon_treasure' => $collector['treasure_type']
         ));
     }
