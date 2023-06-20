@@ -100,7 +100,7 @@ class CryptScoreManager extends APP_DbObject
         $result = $result + $this->calculateTreasureCardCoins($playerId, $isEndGame);
         $result = $result + $this->calculateUnExhaustedServantDice($playerId);
         if ($isEndGame) {
-            $result = $result + array_sum($this->calculateCollectors($playerId));
+            $result = $result + array_sum(array_column($this->calculateCollectors($playerId), 'score'));
         }
         return $result;
     }

@@ -198,7 +198,7 @@ define(
                                 dojo.empty('exhausted-servants-text');
                             } else if (nrOfCardsSelected < 1) {
                                 dojo.addClass($(elementId), 'selected');
-                                const servantDie = this.selectServantDiceMode.diceForSelection.find(die => die.id === die.id);
+                                const servantDie = this.selectServantDiceMode.diceForSelection.find(die => die.id === dieId);
                                 const helpText = dojo.string.substitute( _("Roll higher or equal to ${i} to recover"), {i: servantDie.effort})
                                 dojo.place(`<p>${helpText}</p>`, 'exhausted-servants-text');
                             } else {

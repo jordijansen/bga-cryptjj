@@ -238,7 +238,7 @@ class Crypt extends Table
     }
 
     public function getCardOfType() {
-        $cardsOfTypeInDeck = $this->treasure_cards->getCardsOfTypeInLocation('remains', null, 'deck', null);
+        $cardsOfTypeInDeck = $this->treasure_cards->getCardsOfTypeInLocation('tapestry', null, 'deck', null);
         $this->treasure_cards->moveCard(reset($cardsOfTypeInDeck)['id'], 'player_area_'.$this->getActivePlayerId());
     }
 
