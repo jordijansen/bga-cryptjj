@@ -200,20 +200,22 @@ class CryptScoreManager extends APP_DbObject
         $players = $this->game->loadPlayersBasicInfos();
 
         $highestCoinValue = 0;
-        $highestPlayerId = null;
+        $playerCoinValue = 0;
         foreach( $players as $id => $player )
         {
             $treasureCards = $this->game->treasureCardsManager->findByPlayerIdAndType($id, 'tapestry');
             if (sizeof($treasureCards) > 0) {
-                $playerCoinValue = array_sum(array_column($treasureCards, 'value'));
-                if ($playerCoinValue > $highestCoinValue) {
-                    $highestCoinValue = $playerCoinValue;
-                    $highestPlayerId = $id;
+                $coinValue = array_sum(array_column($treasureCards, 'value'));
+                if ($coinValue > $highestCoinValue) {
+                    $highestCoinValue = $coinValue;
+                }
+                if ($playerId == $id) {
+                    $playerCoinValue = $coinValue;
                 }
             }
         }
 
-        if ($highestPlayerId == $playerId) {
+        if ($playerCoinValue > 0 && $playerCoinValue == $highestCoinValue) {
             return 5;
         }
         return 0;
